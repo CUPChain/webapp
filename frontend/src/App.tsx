@@ -10,6 +10,7 @@ import Login from './screens/Login';
 import Footer from './components/Footer';
 import CustomHeader from './components/Header';
 import Reservations from './screens/Reservations';
+import Prescription from './screens/Prescription';
 
 const App = () => {
   return (
@@ -20,6 +21,7 @@ const App = () => {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/reservations" element={<Reservations />} />
+          <Route path="/prescriptions/:id" element={<Prescription />} />
         </Routes>
       </BrowserRouter>
       <Footer />

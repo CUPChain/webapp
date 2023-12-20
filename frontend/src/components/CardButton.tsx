@@ -7,7 +7,7 @@ import { Card, CardBody, CardTitle, CardText, Col, Row, Icon } from 'design-reac
 
 
 
-const CardButton = ({ title, description, href, date }: { title: string; description: string; href: string; date?: string }) => {
+const CardButton = ({ title, description, href, date }: { title: string; description: string; href: string; date?: string; }) => {
     return (
         <Card teaser noWrapper style={{ marginBottom: '1rem' }} >
             <CardBody>
@@ -39,4 +39,4 @@ const CardButton = ({ title, description, href, date }: { title: string; descrip
     );
 };
 
-export default CardButton;;
+export default CardButton;
