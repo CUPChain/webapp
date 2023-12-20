@@ -6,14 +6,22 @@ import 'typeface-titillium-web';
 import 'typeface-roboto-mono';
 import 'typeface-lora';
 import Home from './screens/Home';
+import Login from './screens/Login';
+import Footer from './components/Footer';
+import CustomHeader from './components/Header';
 
 const App = () => {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home />} />
-      </Routes>
-    </BrowserRouter>
+    <>
+      <CustomHeader/>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+        </Routes>
+      </BrowserRouter>
+      <Footer />
+    </>
   );
 };
 
