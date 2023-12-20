@@ -14,7 +14,7 @@ const CustomHeader = () => {
             >
                 <HeaderContent>
                     <a href='/'>
-                        <img src='logo.png' alt='Logo' style={{ width: '100px', height: '100px' }} />
+                        <img src='/logo.png' alt='Logo' style={{ width: '100px', height: '100px' }} />
                     </a>
                     <HeaderRightZone>
                         <Button outline color='primary' size='lg' icon href='/login'>

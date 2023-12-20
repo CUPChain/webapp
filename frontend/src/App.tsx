@@ -9,6 +9,7 @@ import Home from './screens/Home';
 import Login from './screens/Login';
 import Footer from './components/Footer';
 import CustomHeader from './components/Header';
+import Reservations from './screens/Reservations';
 
 const App = () => {
   return (
@@ -18,6 +19,7 @@ const App = () => {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/reservations" element={<Reservations />} />
         </Routes>
       </BrowserRouter>
       <Footer />

@@ -5,7 +5,7 @@ import 'typeface-roboto-mono';
 import 'typeface-lora';
 import { Section, HeroBody } from 'design-react-kit';
 
-const Layout = ({ children, color = 'muted' }: { children: React.ReactNode; color?: 'primary' | 'neutral' | 'muted' | string; }) => {
+const Layout = ({ children, color = '' }: { children: React.ReactNode; color?: 'primary' | 'neutral' | 'muted' | string; }) => {
     return (
         <Section color={color}>
             <div className='container-sm'>
