@@ -31,11 +31,13 @@ const Login = () => {
     const onSubmit: SubmitHandler<LoginInputs> = (data) => {
         // TODO: Call API
         console.log(data);
-    }
+    };
 
     return (
-        <Layout center>
-            <Section color='muted'>
+        <Layout color="primary">
+            <Section color='muted' className='mt-1'>
+                <h3>Login</h3>
+                <Row className='mt-4' />
                 <Controller
                     name="email"
                     control={control}

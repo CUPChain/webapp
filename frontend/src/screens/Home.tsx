@@ -3,18 +3,19 @@ import 'bootstrap-italia/dist/css/bootstrap-italia.min.css';
 import 'typeface-titillium-web';
 import 'typeface-roboto-mono';
 import 'typeface-lora';
-import { HeroTitle } from 'design-react-kit';
-import Layout from '../components/Layout';
+import { Hero, HeroBody, HeroTitle } from 'design-react-kit';
 
 const Home = () => {
     return (
-        <Layout>
-            <HeroTitle>CUPCHAIN</HeroTitle>
-            <p className='d-none d-lg-block'>
-                Chain the CUP, <br />
-                Make it trust(able)!
-            </p>
-        </Layout>
+        <Hero overlay='primary'>
+            <HeroBody>
+                <HeroTitle>CUPCHAIN</HeroTitle>
+                <p className='d-none d-lg-block'>
+                    Chain the CUP, <br />
+                    Make it trust(able)!
+                </p>
+            </HeroBody>
+        </Hero>
     );
 };
 

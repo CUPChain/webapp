@@ -13,12 +13,12 @@ const CustomHeader = () => {
                 type="center"
             >
                 <HeaderContent>
-                    <img src='logo.png' alt='Logo' style={{ width: '100px', height: '100px' }} />
+                    <a href='/'>
+                        <img src='logo.png' alt='Logo' style={{ width: '100px', height: '100px' }} />
+                    </a>
                     <HeaderRightZone>
-                        <Button outline color='primary' size='lg' icon>
-                            <a href='/login' style={{ color: 'white' }}>
-                                <Icon color='white' icon='it-user' /> Login
-                            </a>
+                        <Button outline color='primary' size='lg' icon href='/login'>
+                            <Icon color='white' icon='it-user' /> Login
                         </Button>{' '}
                     </HeaderRightZone>
                 </HeaderContent>

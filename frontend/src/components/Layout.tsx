@@ -3,15 +3,15 @@ import 'bootstrap-italia/dist/css/bootstrap-italia.min.css';
 import 'typeface-titillium-web';
 import 'typeface-roboto-mono';
 import 'typeface-lora';
-import { Hero, HeroBody } from 'design-react-kit';
+import { Section, HeroBody } from 'design-react-kit';
 
-const Layout = ({ children, center = false }: { children: React.ReactNode; center?: boolean }) => {
+const Layout = ({ children, color = 'muted' }: { children: React.ReactNode; color?: 'primary' | 'neutral' | 'muted' | string; }) => {
     return (
-        <Hero overlay='primary' centered={center}>
-            <HeroBody>
+        <Section color={color}>
+            <div className='container-sm'>
                 {children}
-            </HeroBody>
-        </Hero>
+            </div>
+        </Section>
     );
 };
 
