@@ -6,40 +6,25 @@ import 'typeface-lora';
 import Layout from '../components/Layout';
 import BackButton from '../components/BackButton';
 import { Section, Col, Row, Card, CardBody, CardTitle, CardText, Button } from 'design-react-kit';
-import QRCode from 'react-qr-code';
 import Map from 'react-map-gl';
-import { AppointmentType, PrescriptionType } from '../types';
+import { AppointmentType, PrescriptionType, AccountType } from '../types';
+import { useLocation } from 'react-router-dom';
 
 const MAP_ENABLED = false;
 
-const Appointment = () => {
-    const id = window.location.pathname.split('/')[2];
+type ConfirmAppointmentProps = {
+    appointment: AppointmentType;
+    prescription: PrescriptionType;
+    account: AccountType;
+};
 
-    const prescription: PrescriptionType = {
-        id: 1,
-        type: 'Neurologia',
-        doctor: 'Dott. Mario Rossi',
-    };
+const ConfirmAppointment = () => {
+    const location = useLocation();
+    const { appointment, prescription, account } = location.state as ConfirmAppointmentProps;
 
-    const appointment: AppointmentType = {
-        id: 1,
-        type: 'Neurologia',
-        name: 'Ospedale San Raffaele',
-        city: 'Milano',
-        cap: '20100',
-        address: 'Via Roma 1',
-        date: '01/03/2024',
-        time: '10:00'
-    };
-
-    const deleteAppointment = () => {
-        // TODO: implementare cancellazione prenotazione
-        alert('Prenotazione annullata');
-    };
-
-    const modifyAppointment = () => {
-        // TODO: implementare modifica prenotazione
-        alert('Prenotazione modificata');
+    const confirmAppointment = () => {
+        // TODO: implementare conferma prenotazione
+        alert('Prenotazione confermata');
     };
 
     return (
@@ -81,7 +66,7 @@ const Appointment = () => {
                         </Card>
                     </Col>
                     <Col>
-                        <Card teaser noWrapper style={{ marginBottom: '1rem' }} >
+                        <Card spacing className='card-bg card-big no-after'>
                             <CardBody>
                                 <CardTitle tag='h5'>
                                     Dettagli
@@ -112,33 +97,20 @@ const Appointment = () => {
                                         <b>Tessera sanitaria</b>
                                     </li>
                                     <li>
-                                        <b>QR Code di questa pagina</b>
+                                        <b>QR Code che verrà generato una volta confermata la prenotazione</b>
                                     </li>
                                 </ul>
 
-                                <div style={{ textAlign: 'center', marginTop: '3rem', marginBottom: '2rem' }}>
-                                    <QRCode value={appointment.id.toString()} />
-                                </div>
-
                                 <div style={{ textAlign: 'center' }}>
                                     <Button
-                                        onClick={deleteAppointment}
-                                        color='danger'
+                                        onClick={confirmAppointment}
+                                        color='primary'
                                         tag='button'
                                         size='lg'
                                         className='mt-3'
                                         style={{ marginRight: '1rem' }}
                                     >
-                                        Annulla prenotazione
-                                    </Button>
-                                    <Button
-                                        onClick={modifyAppointment}
-                                        color='warning'
-                                        tag='button'
-                                        size='lg'
-                                        className='mt-3 ml-3'
-                                    >
-                                        Modifica prenotazione
+                                        Conferma prenotazione
                                     </Button>
                                 </div>
                             </CardBody>
@@ -150,4 +122,4 @@ const Appointment = () => {
     );
 };
 
-export default Appointment;
+export default ConfirmAppointment;

@@ -4,20 +4,24 @@ import 'typeface-titillium-web';
 import 'typeface-roboto-mono';
 import 'typeface-lora';
 import Layout from '../components/Layout';
-import CardButton from '../components/CardButton';
 import RowTable from '../components/RowTable';
+import BackButton from '../components/BackButton';
 import { Section, Col, Row, Card, CardBody, CardTitle, Input, Table, CardText } from 'design-react-kit';
+import { PrescriptionType, AccountType, AppointmentType } from '../types';
+import { useNavigate } from 'react-router-dom';
 
 
 const Prescription = () => {
     const id = window.location.pathname.split('/')[2];
-    const prescription = {
+    const navigate = useNavigate();
+
+    const prescription: PrescriptionType = {
         id: 1,
         type: 'Neurologia',
         doctor: 'Dott. Mario Rossi',
     };
 
-    const account = {
+    const account: AccountType = {
         name: 'Mario',
         surname: 'Rossi',
         city: 'Milano',
@@ -25,32 +29,57 @@ const Prescription = () => {
         cap: '20100',
     };
 
-    const appointments = [
+    const appointments: AppointmentType[] = [
         {
             id: 1,
-            where: 'Ospedale San Raffaele',
+            name: 'Ospedale San Raffaele',
+            city: 'Milano',
+            cap: '20100',
+            address: 'Via Olgettina 60',
+            type: 'Neurologia',
             distance: '1,2 km',
-            when: 'Giovedì 15 Aprile 2021, 10:00',
-            action: '/prescriptions/' + id + '/appointments/' + 1,
+            date: 'Giovedì 18 Aprile 2024',
+            time: '11:00'
         },
         {
             id: 2,
-            where: 'Ospedale San Raffaele',
+            name: 'Ospedale San Matteo',
+            city: 'Milano',
+            cap: '20100',
+            address: 'Via Olgettina 70',
+            type: 'Neurologia',
             distance: '1,2 km',
-            when: 'Giovedì 15 Aprile 2021, 10:00',
-            action: '/prescriptions/' + id + '/appointments/' + 2,
+            date: 'Giovedì 19 Aprile 2024',
+            time: '10:00'
         },
         {
             id: 3,
-            where: 'Ospedale San Raffaele',
+            name: 'Ospedale San Paolo',
+            city: 'Milano',
+            cap: '20100',
+            address: 'Via Olgettina 80',
+            type: 'Neurologia',
             distance: '1,2 km',
-            when: 'Giovedì 15 Aprile 2021, 10:00',
-            action: '/prescriptions/' + id + '/appointments/' + 3,
+            date: 'Giovedì 18 Maggio 2024',
+            time: '15:00'
         }
     ];
+
+    const onSelection = (id: number) => {
+        let appointment = appointments.find((appointment) => appointment.id === id);
+        navigate('confirm-appointment', {
+            state: {
+                appointment,
+                prescription,
+                account,
+            }
+        });
+    };
+
     return (
         <Layout>
             <Section color='muted' className='mt-1'>
+                <BackButton />
                 <Row>
                     <Col className='col-4'>
                         <Card teaser noWrapper style={{ marginBottom: '1rem' }} >
@@ -137,10 +166,10 @@ const Prescription = () => {
                                             appointments.map((appointment) => (
                                                 <RowTable
                                                     key={appointment.id}
-                                                    where={appointment.where}
+                                                    where={appointment.name}
                                                     distance={appointment.distance}
-                                                    when={appointment.when}
-                                                    action={appointment.action}
+                                                    when={appointment.date + ' ' + appointment.time}
+                                                    action={onSelection.bind(this, appointment.id)}
                                                 />
                                             ))
                                         }

@@ -12,6 +12,7 @@ import CustomHeader from './components/Header';
 import Reservations from './screens/Reservations';
 import Prescription from './screens/Prescription';
 import Appointment from './screens/Appointment';
+import ConfirmAppointment from './screens/ConfirmAppointment';
 
 const App = () => {
   return (
@@ -23,6 +24,7 @@ const App = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/reservations" element={<Reservations />} />
           <Route path="/prescriptions/:id" element={<Prescription />} />
+          <Route path="/prescriptions/:id/confirm-appointment" element={<ConfirmAppointment />} />
           <Route path="/appointments/:id" element={<Appointment />} />
         </Routes>
       </BrowserRouter>

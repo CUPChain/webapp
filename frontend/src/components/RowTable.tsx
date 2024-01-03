@@ -5,18 +5,21 @@ import 'typeface-roboto-mono';
 import 'typeface-lora';
 import { Icon } from 'design-react-kit';
 
+type RowTableProps = {
+    where: string | undefined;
+    distance: string | undefined;
+    when: string | undefined;
+    action: () => void;
+};
 
-
-const RowTable = ({ where, distance, when, action }: { where: string; distance: string; when: string; action: string; }) => {
+const RowTable = ({ where, distance, when, action }: RowTableProps) => {
     return (
-        <tr className='align-middle position-relative'>
-            <td>{where}</td>
-            <td>{distance}</td>
-            <td>{when}</td>
+        <tr className='align-middle position-relative' onClick={action} style={{ cursor: 'pointer' }}>
+            <td>{where || 'Non disponibile'}</td>
+            <td>{distance || 'Non disponibile'}</td>
+            <td>{when || 'Non disponibile'}</td>
             <td>
-                <a href={action} className='stretched-link' style={{ textDecoration: 'none' }}>
-                    <Icon icon='it-arrow-right' color='primary' />
-                </a>
+                <Icon icon='it-arrow-right' color='primary' />
             </td>
         </tr>
     );
