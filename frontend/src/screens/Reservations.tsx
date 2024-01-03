@@ -51,7 +51,7 @@ const Reservations = () => {
                         </p>
                         <>
                             {prescriptions.map((prescription) => (
-                                <Row>
+                                <Row key={prescription.id}>
                                     <CardButton
                                         title={prescription.type}
                                         description={"Richiesto da " + prescription.doctor}
@@ -76,7 +76,7 @@ const Reservations = () => {
                         </p>
                         <>
                             {appointments.map((appointment) => (
-                                <Row>
+                                <Row key={appointment.id}>
                                     <CardButton
                                         title={appointment.type}
                                         date={appointment.date}
