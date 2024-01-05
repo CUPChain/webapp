@@ -15,7 +15,7 @@ class Doctor(db.Model):
     cf = db.Column(db.String(16), primary_key=True)
     name = db.Column(db.String(50))
     surname = db.Column(db.String(50))
-    residence = db.Column(db.String(100))
+    residence = db.Column(db.String(100)) # change from residence to address
 
 
 class Prescription(db.Model):
@@ -25,6 +25,7 @@ class Prescription(db.Model):
     code_medical_examination = db.Column(
         db.String(10), db.ForeignKey("medical_exam.code")
     )
+    # add cf_doctor (il dottore che emette la prescrizione)
 
 
 class Patient(db.Model):
@@ -46,8 +47,8 @@ class Appointment(db.Model):
     id_prescription = db.Column(
         db.Integer, db.ForeignKey("prescription.id"), primary_key=True
     )
-    id_hospital = db.Column(db.Integer, db.ForeignKey("hospital.id"), primary_key=True)
-
+    id_hospital = db.Column(db.Integer, db.ForeignKey("hospital.id"), primary_key=True) # make this not a primary key otherwise same prescription can be used for multiple hospitals
+    # add date (timestamp)
 
 class Hospital(db.Model):
     __tablename__ = "hospital"
