@@ -13,7 +13,6 @@ def not_found(e):
     return app.send_static_file("index.html")
 
 
-# all of this are managed by React Routergit
 # @app.route("/login/")
 # def login():
 #     # here we have the login page
