@@ -1,7 +1,23 @@
 import psycopg2
+from dotenv import load_dotenv
+import os
+
+# Load environment variables
+load_dotenv()
+DB_URL = os.getenv("DB_URL")
+DB_PORT = os.getenv("DB_PORT")
+DB_NAME = os.getenv("DB_NAME")
+DB_USER = os.getenv("DB_USER")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
 
 # Connect to the database cupchain previously created on your local machine, insert your username and password
-conn = psycopg2.connect(host="localhost", dbname="cupchain", user="alessio", password="1234", port=5432)
+conn = psycopg2.connect(
+    host=DB_URL,
+    port=DB_PORT,
+    dbname=DB_NAME,
+    user=DB_USER,
+    password=DB_PASSWORD,
+)
 
 # Open a cursor to perform database operations
 cur = conn.cursor()

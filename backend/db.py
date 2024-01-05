@@ -1,10 +1,20 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from dotenv import load_dotenv
+import os
+
+# load environment variables
+load_dotenv()
+DB_URL = os.getenv("DB_URL")
+DB_PORT = os.getenv("DB_PORT")
+DB_NAME = os.getenv("DB_NAME")
+DB_USER = os.getenv("DB_USER")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
 
 app = Flask(__name__)
 app.config[
     "SQLALCHEMY_DATABASE_URI"
-] = "postgresql://your_username:your_password@localhost/your_database"
+] = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_URL}:{DB_PORT}/{DB_NAME}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
@@ -232,7 +242,7 @@ def get_hospital(id_hospital):
         return jsonify({"message": "Hospital not found"}), 404
 
 
-@app.route("api/v1/is_able_to_dos", methods=["GET"])
+@app.route("/api/v1/is_able_to_dos", methods=["GET"])
 def get_is_able_to_dos():
     result = db.session.execute(db.select(IsAbleToDo))
     is_able_to_dos_list = [
@@ -245,7 +255,7 @@ def get_is_able_to_dos():
     return jsonify({"is_able_to_dos": is_able_to_dos_list})
 
 
-@app.route("api/v1/is_able_to_dos/<id_is_able_to_do>", methods=["GET"])
+@app.route("/api/v1/is_able_to_dos/<id_is_able_to_do>", methods=["GET"])
 def get_is_able_to_do(id_is_able_to_do):
     result = db.session.execute(
         db.select(IsAbleToDo).where(IsAbleToDo.id_hospital == id_is_able_to_do)
