@@ -9,46 +9,22 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
 
-# Define your models
-class Doctor(db.Model):
-    __tablename__ = "doctor"
-    cf = db.Column(db.String(16), primary_key=True)
-    name = db.Column(db.String(50))
-    surname = db.Column(db.String(50))
-    residence = db.Column(db.String(100)) # change from residence to address
-
-
-class Prescription(db.Model):
-    __tablename__ = "prescription"
-    id = db.Column(db.Integer, primary_key=True)
-    cf_Patient = db.Column(db.String(16), db.ForeignKey("patient.cf"))
-    code_medical_examination = db.Column(
-        db.String(10), db.ForeignKey("medical_exam.code")
-    )
-    # add cf_doctor (il dottore che emette la prescrizione)
-
-
-class Patient(db.Model):
-    __tablename__ = "patient"
-    cf = db.Column(db.String(16), primary_key=True)
-    name = db.Column(db.String(50))
-    surname = db.Column(db.String(50))
-    residence = db.Column(db.String(100))
-
-
-class MedicalExam(db.Model):
-    __tablename__ = "medical_exam"
-    code = db.Column(db.String(10), primary_key=True)
-    name = db.Column(db.String(50))
-
-
 class Appointment(db.Model):
     __tablename__ = "appointment"
     id_prescription = db.Column(
         db.Integer, db.ForeignKey("prescription.id"), primary_key=True
     )
-    id_hospital = db.Column(db.Integer, db.ForeignKey("hospital.id"), primary_key=True) # make this not a primary key otherwise same prescription can be used for multiple hospitals
-    # add date (timestamp)
+    id_hospital = db.Column(db.Integer, db.ForeignKey("hospital.id"))
+    date = db.Column(db.DateTime)
+
+
+class Doctor(db.Model):
+    __tablename__ = "doctor"
+    cf = db.Column(db.String(16), primary_key=True)
+    name = db.Column(db.String(50))
+    surname = db.Column(db.String(50))
+    address = db.Column(db.String(100))
+
 
 class Hospital(db.Model):
     __tablename__ = "hospital"
@@ -65,6 +41,30 @@ class IsAbleToDo(db.Model):
     )
 
 
+class MedicalExam(db.Model):
+    __tablename__ = "medical_exam"
+    code = db.Column(db.String(10), primary_key=True)
+    name = db.Column(db.String(50))
+
+
+class Patient(db.Model):
+    __tablename__ = "patient"
+    cf = db.Column(db.String(16), primary_key=True)
+    name = db.Column(db.String(50))
+    surname = db.Column(db.String(50))
+    residence = db.Column(db.String(100))
+
+
+class Prescription(db.Model):
+    __tablename__ = "prescription"
+    id = db.Column(db.Integer, primary_key=True)
+    cf_doctor = db.Column(db.String(16), db.ForeignKey("doctor.cf"))
+    cf_patient = db.Column(db.String(16), db.ForeignKey("patient.cf"))
+    code_medical_examination = db.Column(
+        db.String(10), db.ForeignKey("medical_exam.code")
+    )
+
+
 # REST API routes for CRUD operations
 @app.route("/api/v1/doctors", methods=["GET"])
 def get_doctors():
@@ -74,7 +74,7 @@ def get_doctors():
             "cf": doctor.cf,
             "name": doctor.name,
             "surname": doctor.surname,
-            "residence": doctor.residence,
+            "address": doctor.address,
         }
         for doctor in result
     ]
@@ -90,7 +90,7 @@ def get_doctor(cf):
             "cf": doctor.cf,
             "name": doctor.name,
             "surname": doctor.surname,
-            "residence": doctor.residence,
+            "address": doctor.address,
         }
         return jsonify({"doctor": doctor_data})
     else:
@@ -103,7 +103,7 @@ def get_prescriptions():
     prescriptions_list = [
         {
             "id": prescription.id,
-            "cf_patient": prescription.cf_Patient,
+            "cf_patient": prescription.cf_patient,
             "code_medical_examination": prescription.code_medical_examination,
         }
         for prescription in result
@@ -118,7 +118,7 @@ def get_prescription(id):
     if prescription:
         prescription_data = {
             "id": prescription.id,
-            "cf_patient": prescription.cf_Patient,
+            "cf_patient": prescription.cf_patient,
             "code_medical_examination": prescription.code_medical_examination,
         }
         return jsonify({"prescription": prescription_data})
