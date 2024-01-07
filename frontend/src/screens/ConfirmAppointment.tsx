@@ -76,7 +76,7 @@ const ConfirmAppointment = () => {
                                         <b>Luogo:</b> {appointment.name}
                                     </li>
                                     <li>
-                                        <b>Indirizzo:</b> {appointment.address}, {appointment.city}, {appointment.cap}
+                                        <b>Indirizzo:</b> {appointment.address}
                                     </li>
                                     <li>
                                         <b>Data:</b> {appointment.date}

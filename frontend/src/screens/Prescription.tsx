@@ -24,8 +24,8 @@ const Prescription = () => {
     const account: AccountType = {
         name: 'Mario',
         surname: 'Rossi',
+        address: 'Via Olgettina 50',
         city: 'Milano',
-        comune: 'Milano',
         cap: '20100',
     };
 
@@ -122,7 +122,7 @@ const Prescription = () => {
                                         id='formCitta'
                                         wrapperClassName='col'
                                         readOnly
-                                        value={account.city}
+                                        value={account.address}
                                     />
                                 </Row>
                                 <Row>
@@ -132,7 +132,7 @@ const Prescription = () => {
                                         id='formComune'
                                         wrapperClassName='col'
                                         readOnly
-                                        value={account.comune}
+                                        value={account.city}
                                     />
                                     <Input
                                         type='text'
