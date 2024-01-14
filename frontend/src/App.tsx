@@ -16,8 +16,10 @@ import ConfirmAppointment from './screens/ConfirmAppointment';
 import { useState } from 'react';
 import { ethers } from "ethers";
 import Greeter from './artifacts/contracts/Greeter.sol/Greeter.json'
+import PrescriptionTokens from './artifacts/contracts/PrescriptionTokens.sol/PrescriptionTokens.json';
 
 const greeterAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
+const prescrAddress = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
 
 const App = () => {
   const [greeting, setGreetingValue] = useState<string>()
@@ -52,6 +54,23 @@ const App = () => {
     }
   }
 
+  // NFT
+
+  const [prescrID, setPrescrID] = useState<string>()
+
+  async function mintPrescription() {
+    if (!prescrID) return
+    if (typeof window.ethereum !== 'undefined') {
+      await requestAccount()
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner()
+      const contract = new ethers.Contract(prescrAddress, PrescriptionTokens.abi, signer)
+      // will error if not invoked by owner of contract
+      const transaction = await contract.safeMint(signer.address, prescrID, "http://cringe.kek/"+prescrID)
+      await transaction.wait()
+    }
+  }
+
 
   return (
     <>
@@ -59,6 +78,8 @@ const App = () => {
       <button onClick={fetchGreeting}>Fetch Greeting</button>
       <button onClick={setGreeting}>Set Greeting</button>
       <input onChange={e => setGreetingValue(e.target.value)} placeholder="Set greeting" />
+      <button onClick={mintPrescription}>Mint prescription</button>
+      <input onChange={e => setPrescrID(e.target.value)} placeholder="Set prescription token id" />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />} />
