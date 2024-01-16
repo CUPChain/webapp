@@ -1,0 +1,69 @@
+"patient": {
+            cf VARCHAR(16),
+            name VARCHAR(50),
+            surname VARCHAR(50),
+            address VARCHAR(100),
+            cap VARCHAR(5),
+            city VARCHAR(50),
+            latitude FLOAT,
+            longitude FLOAT
+}
+
+"user_patient": {
+            username VARCHAR(50),
+            password VARCHAR(50),
+            cf VARCHAR(16) REFERENCES patient(cf)
+}
+
+"doctor": {
+            cf VARCHAR(16),
+            name VARCHAR(50),
+            surname VARCHAR(50),
+            address VARCHAR(100),
+            cap VARCHAR(5),
+            city VARCHAR(50),
+            latitude FLOAT,
+            longitude FLOAT
+}
+
+"user_doctor": {
+            username VARCHAR(50),
+            password VARCHAR(50),
+            cf VARCHAR(16) REFERENCES doctor(cf)
+}
+
+"medical_exam": {
+            code VARCHAR(10),
+            name VARCHAR(50)
+}
+
+"hospital": {
+            id INTEGER,
+            name VARCHAR(50),
+            address VARCHAR(100),
+            cap VARCHAR(5),
+            city VARCHAR(50),
+            latitude FLOAT,
+            longitude FLOAT
+}
+
+"is_able_to_do": {
+            id_hospital INTEGER REFERENCES hospital(id),
+            code_medical_examination VARCHAR(10) REFERENCES medical_exam(code),
+}
+
+"prescription": {
+            id INTEGER,
+            cf_doctor VARCHAR(16) REFERENCES doctor(cf),
+            cf_patient VARCHAR(16) REFERENCES patient(cf),
+            code_medical_examination VARCHAR(10) REFERENCES medical_exam(code)
+}
+
+"appointment": {
+            id_hospital INTEGER REFERENCES hospital(id),
+            date TIMESTAMP,
+            code_medical_examination VARCHAR(10) REFERENCES medical_exam(code),
+            id_prescription INTEGER REFERENCES prescription(id),
+            token_id INTEGER # to add
+            already_booked_flag BOOLEAN # to add
+}
