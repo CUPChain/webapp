@@ -6,7 +6,55 @@ import 'typeface-lora';
 import Layout from '../components/Layout';
 import CardButton from '../components/CardButton';
 import { Section, Row, Col, Icon } from 'design-react-kit';
+import { ethers } from "ethers";
+import PrescriptionTokens from '../artifacts/contracts/PrescriptionTokens.sol/PrescriptionTokens.json';
+import AppointmentTokens from '../artifacts/contracts/AppointmentTokens.sol/AppointmentTokens.json';
+import { APPOINTMENTS_CONTRACT, PRESCRIPTIONS_CONTRACT, Token } from '../constants';;
 
+async function getOwnedTokens(tokenType: Token): Promise<[number[], string[], number[]]> {
+    if (typeof window.ethereum === 'undefined') {
+        //TODO: Tell user to install metamask?
+        return [[],[],[]]
+    }
+
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    let signer;
+    try {
+        signer = await provider.getSigner()
+    } catch (err) { // User probably not logged in metamask
+        // TODO: how to wait for user to log in?
+        return [[],[],[]]
+    }
+    const contract = (tokenType === Token.Prescription)
+        ? new ethers.Contract(PRESCRIPTIONS_CONTRACT, PrescriptionTokens.abi, signer)
+        : new ethers.Contract(APPOINTMENTS_CONTRACT, AppointmentTokens.abi, signer)
+
+    try {
+        const data = await contract.getMyTokens()
+        console.log("data: ", data)
+        return data
+    } catch (err) {
+        console.log(`Could not fetch ${tokenType.toString()} tokens: `, err)
+        return [[],[],[]]
+    }
+}
+
+// Need to be put outside of Reservations, otherwise they get executed multiple times
+const prescriptionTokens = getOwnedTokens(Token.Prescription)
+
+prescriptionTokens.then((prescriptionsData) => {
+    prescriptionsData[1].forEach(url => {
+        // TODO: fetch backend data
+    });
+})
+
+const appointmentTokens = getOwnedTokens(Token.Appointment)
+
+appointmentTokens.then((appointmentData) => {
+    appointmentData[1].forEach(url => {
+        // TODO: fetch backend data
+    });
+})
 
 const Reservations = () => {
 

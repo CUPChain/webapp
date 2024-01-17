@@ -18,10 +18,9 @@ import { ethers } from "ethers";
 import Greeter from './artifacts/contracts/Greeter.sol/Greeter.json'
 import PrescriptionTokens from './artifacts/contracts/PrescriptionTokens.sol/PrescriptionTokens.json';
 import AppointmentTokens from './artifacts/contracts/AppointmentTokens.sol/AppointmentTokens.json';
+import { APPOINTMENTS_CONTRACT, PRESCRIPTIONS_CONTRACT } from './constants';
 
 const greeterAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
-const prescrAddress = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
-const appointAddress = "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9"
 
 const App = () => {
   const [greeting, setGreetingValue] = useState<string>()
@@ -66,7 +65,7 @@ const App = () => {
       await requestAccount()
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner()
-      const contract = new ethers.Contract(prescrAddress, PrescriptionTokens.abi, signer)
+      const contract = new ethers.Contract(PRESCRIPTIONS_CONTRACT, PrescriptionTokens.abi, signer)
       // for now give token to caller
       const transaction = await contract.safeMint(signer.address, prescrID, "http://cringe.kek/"+prescrID)
       await transaction.wait()
@@ -77,7 +76,7 @@ const App = () => {
     if (typeof window.ethereum !== 'undefined') {
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner()
-      const contract = new ethers.Contract(prescrAddress, PrescriptionTokens.abi, signer)
+      const contract = new ethers.Contract(PRESCRIPTIONS_CONTRACT, PrescriptionTokens.abi, signer)
       try {
         const data = await contract.getMyTokens()
         console.log("data: ", data)
@@ -100,7 +99,7 @@ const App = () => {
       await requestAccount()
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner()
-      const contract = new ethers.Contract(appointAddress, AppointmentTokens.abi, signer)
+      const contract = new ethers.Contract(APPOINTMENTS_CONTRACT, AppointmentTokens.abi, signer)
       const transaction = await contract.safeMint(apptID, "http://cringe.kek/appoints/"+apptID, 1)
       await transaction.wait()
     }
@@ -113,10 +112,10 @@ const App = () => {
       await requestAccount()
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner()
-      const contract = new ethers.Contract(prescrAddress, PrescriptionTokens.abi, signer)
+      const contract = new ethers.Contract(PRESCRIPTIONS_CONTRACT, PrescriptionTokens.abi, signer)
       console.log("ciao")
       try {
-        const transaction = await contract.makeAppointment(prescrID, appointAddress, apptID, "0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc")
+        const transaction = await contract.makeAppointment(prescrID, APPOINTMENTS_CONTRACT, apptID, "0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc")
         await transaction.wait()
       } catch (e) {
         console.log(e)
