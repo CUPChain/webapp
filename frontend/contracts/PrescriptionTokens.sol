@@ -5,26 +5,33 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 
 interface AppointmentContract {
     function safeTransferFrom(address from, address to, uint256 tokenId) external;
     function getAppointmentCategory(uint256 tokenId) view external returns (uint);
 }
 
-contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, Ownable {
+contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, AccessControl {
     mapping (uint256 => uint16) private tokenIdToCategory;
+    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
-    constructor(address initialOwner)
-        ERC721("Prescription", "PRE")
-        Ownable(initialOwner)
-    {}
+    constructor() ERC721("Prescription", "PRE"){
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+    }
 
-    function safeMint(address to, uint256 tokenId, string memory uri, uint16 category)
-        public
-        onlyOwner
-    {
-        // NEED A CHECK TO ONLY ALLOW DOCTORS (oracle)
+    function grantRole(address doctor) public {
+        //check tramite l'oracolo per verificare che l'indirizzo sia realmente di un medico
+        _grantRole(MINTER_ROLE, doctor);
+    }
+    
+    function revokeRole(address doctor) public {
+        //check anche qui per verificare che il medico non eserciti più la professione ????
+        _revokeRole(MINTER_ROLE, doctor);
+    }
+
+    function safeMint(address to, uint256 tokenId, string memory uri, uint16 category) public {
+        require(hasRole(MINTER_ROLE, msg.sender), "Caller is not a minter");
         _safeMint(to, tokenId);
         _setTokenURI(tokenId, uri);
         tokenIdToCategory[tokenId] = category;
