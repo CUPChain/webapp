@@ -13,6 +13,8 @@ import { useNavigate } from 'react-router-dom';
 
 const Prescription = () => {
     const id = window.location.pathname.split('/')[2];
+    //TODO: get prescription token metadata
+    //TODO: get list of available appointments from db
     const navigate = useNavigate();
 
     const prescription: PrescriptionType = {

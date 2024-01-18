@@ -9,7 +9,7 @@ import { Section, Row, Col, Icon } from 'design-react-kit';
 import { ethers } from "ethers";
 import PrescriptionTokens from '../artifacts/contracts/PrescriptionTokens.sol/PrescriptionTokens.json';
 import AppointmentTokens from '../artifacts/contracts/AppointmentTokens.sol/AppointmentTokens.json';
-import { APPOINTMENTS_CONTRACT, PRESCRIPTIONS_CONTRACT, Token } from '../constants';;
+import { APPOINTMENTS_CONTRACT, PRESCRIPTIONS_CONTRACT, Token } from '../constants';
 
 async function getOwnedTokens(tokenType: Token): Promise<[number[], string[], number[]]> {
     if (typeof window.ethereum === 'undefined') {
@@ -39,24 +39,21 @@ async function getOwnedTokens(tokenType: Token): Promise<[number[], string[], nu
     }
 }
 
-// Need to be put outside of Reservations, otherwise they get executed multiple times
-const prescriptionTokens = getOwnedTokens(Token.Prescription)
-
-prescriptionTokens.then((prescriptionsData) => {
-    prescriptionsData[1].forEach(url => {
-        // TODO: fetch backend data
-    });
-})
-
-const appointmentTokens = getOwnedTokens(Token.Appointment)
-
-appointmentTokens.then((appointmentData) => {
-    appointmentData[1].forEach(url => {
-        // TODO: fetch backend data
-    });
-})
-
 const Reservations = () => {
+    
+    const prescriptionTokens = getOwnedTokens(Token.Prescription)
+    prescriptionTokens.then((prescriptionsData) => {
+        prescriptionsData[1].forEach(url => {
+            // TODO: fetch backend data
+        });
+    })
+
+    const appointmentTokens = getOwnedTokens(Token.Appointment)
+    appointmentTokens.then((appointmentData) => {
+        appointmentData[1].forEach(url => {
+            // TODO: fetch backend data
+        });
+    })
 
     const prescriptions = [
         {
