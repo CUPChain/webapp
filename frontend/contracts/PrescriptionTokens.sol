@@ -21,12 +21,12 @@ contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC72
     }
 
     function grantRole(address doctor) public {
-        //check tramite l'oracolo per verificare che l'indirizzo sia realmente di un medico
+        //TODO: check tramite l'oracolo per verificare che l'indirizzo sia realmente di un medico
         _grantRole(MINTER_ROLE, doctor);
     }
     
     function revokeRole(address doctor) public {
-        //check anche qui per verificare che il medico non eserciti più la professione ????
+        //TODO: check anche qui per verificare che il medico non eserciti più la professione ????
         _revokeRole(MINTER_ROLE, doctor);
     }
 
@@ -94,7 +94,7 @@ contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC72
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        override(ERC721, ERC721Enumerable, ERC721URIStorage)
+        override(ERC721, ERC721Enumerable, ERC721URIStorage, AccessControl)
         returns (bool)
     {
         return super.supportsInterface(interfaceId);

@@ -5,24 +5,35 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 
-contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, Ownable {
+contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, AccessControl {
     // Appointments need to store their type (category)
     mapping (uint256 => uint16) private tokenIdToCategory;
     address prescriptionsContract;
+    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
-    constructor(address initialOwner, address _prescriptionsContract)
+    constructor(address _prescriptionsContract)
         ERC721("Appointment", "APP")
-        Ownable(initialOwner)
     {
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         prescriptionsContract = _prescriptionsContract;
+    }
+
+    function grantRole(address hospital) public {
+        //TODO: check tramite l'oracolo per verificare che l'indirizzo sia realmente di un medico
+        _grantRole(MINTER_ROLE, hospital);
+    }
+    
+    function revokeRole(address hospital) public {
+        //TODO: check anche qui per verificare che il medico non eserciti più la professione ????
+        _revokeRole(MINTER_ROLE, hospital);
     }
 
     function safeMint(uint256 tokenId, string memory uri, uint16 category)
         public
     {
-        // NEED A CHECK TO ONLY ALLOW HOSPITALS
+        require(hasRole(MINTER_ROLE, msg.sender), "Caller is not a minter");
         _safeMint(msg.sender, tokenId);
         _setTokenURI(tokenId, uri);
         tokenIdToCategory[tokenId] = category;
@@ -81,7 +92,7 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        override(ERC721, ERC721Enumerable, ERC721URIStorage)
+        override(ERC721, ERC721Enumerable, ERC721URIStorage, AccessControl)
         returns (bool)
     {
         return super.supportsInterface(interfaceId);

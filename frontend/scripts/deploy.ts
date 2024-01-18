@@ -27,14 +27,14 @@ async function main() {
   );
 
   // ---
-  const prescrTokens = await ethers.deployContract("PrescriptionTokens", ["0x90F79bf6EB2c4f870365E785982E1f101E93b906"]);
+  const prescrTokens = await ethers.deployContract("PrescriptionTokens", []);
   await prescrTokens.waitForDeployment();
 
   console.log(
     `contract PrescriptionTokens successfully deployed to ${prescrTokens.target}`
   );
 
-  const appTokens = await ethers.deployContract("AppointmentTokens", ["0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65", prescrTokens.target]);
+  const appTokens = await ethers.deployContract("AppointmentTokens", [prescrTokens.target]);
   await appTokens.waitForDeployment();
 
   console.log(
