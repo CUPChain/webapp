@@ -9,6 +9,7 @@ import { Section, Col, Row, Card, CardBody, CardTitle, CardText, Button } from '
 import Map from 'react-map-gl';
 import { AppointmentType, PrescriptionType, AccountType } from '../types';
 import { useLocation } from 'react-router-dom';
+import { exchangePrescriptionApptointment } from '../utils';
 
 const MAP_ENABLED = false;
 
@@ -23,7 +24,8 @@ const ConfirmAppointment = () => {
     const { appointment, prescription, account } = location.state as ConfirmAppointmentProps;
 
     const confirmAppointment = () => {
-        // TODO: implementare conferma prenotazione
+        exchangePrescriptionApptointment(prescription.id, appointment.id)
+        // TODO: check for errors?
         alert('Prenotazione confermata');
     };
 

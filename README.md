@@ -38,3 +38,19 @@ npm start
 cd backend
 flask run
 ```
+## Blockchain
+Execute these commands from inside the `frontend/` folder
+### `npx hardhat node`
+Starts the blockchain node. It always resets the chain.
+
+### `npx hardhat run scripts/deploy.ts --network localhost`
+Deploys the contracts located in `contracts/`. The script needs to get updated when creating new contracts.
+
+### Chain explorer
+```bash
+git clone https://github.com/blockscout/blockscout.git
+cd blockscout/docker-compose
+docker-compose up --build
+docker-compose -f hardhat-network.yml up -d
+```
+The explorer will be available on http://localhost.

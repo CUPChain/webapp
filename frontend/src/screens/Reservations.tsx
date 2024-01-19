@@ -6,9 +6,24 @@ import 'typeface-lora';
 import Layout from '../components/Layout';
 import CardButton from '../components/CardButton';
 import { Section, Row, Col, Icon } from 'design-react-kit';
-
+import { Token } from '../constants';
+import { getOwnedTokens } from '../utils';
 
 const Reservations = () => {
+    
+    const prescriptionTokens = getOwnedTokens(Token.Prescription)
+    prescriptionTokens.then((prescriptionsData) => {
+        prescriptionsData[1].forEach(url => {
+            // TODO: fetch backend data
+        });
+    })
+
+    const appointmentTokens = getOwnedTokens(Token.Appointment)
+    appointmentTokens.then((appointmentData) => {
+        appointmentData[1].forEach(url => {
+            // TODO: fetch backend data
+        });
+    })
 
     const prescriptions = [
         {

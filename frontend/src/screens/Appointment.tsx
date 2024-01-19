@@ -9,11 +9,22 @@ import { Section, Col, Row, Card, CardBody, CardTitle, CardText, Button } from '
 import QRCode from 'react-qr-code';
 import Map from 'react-map-gl';
 import { AppointmentType, PrescriptionType } from '../types';
+import { getTokenData } from '../utils';
+import { Token } from '../constants';
 
 const MAP_ENABLED = false;
 
 const Appointment = () => {
+    // TODO: id of prescription will be different from id of appointment
+    // How do we know what was the id of the prescription that got exchanged for the appointment?
     const id = window.location.pathname.split('/')[2];
+
+    getTokenData(Number.parseInt(id), Token.Prescription).then((data) => {
+        // TODO: fetch backend data, check hash
+    })
+    getTokenData(Number.parseInt(id), Token.Appointment).then((data) => {
+        // TODO: fetch backend data, check hash
+    })
 
     const prescription: PrescriptionType = {
         id: 1,
