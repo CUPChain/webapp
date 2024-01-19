@@ -9,57 +9,14 @@ import { Section, Col, Row, Card, CardBody, CardTitle, CardText, Button } from '
 import QRCode from 'react-qr-code';
 import Map from 'react-map-gl';
 import { AppointmentType, PrescriptionType } from '../types';
-import { ethers } from "ethers";
-import PrescriptionTokens from '../artifacts/contracts/PrescriptionTokens.sol/PrescriptionTokens.json';
-import AppointmentTokens from '../artifacts/contracts/AppointmentTokens.sol/AppointmentTokens.json';
-import { APPOINTMENTS_CONTRACT, PRESCRIPTIONS_CONTRACT, Token } from '../constants';
+import { getTokenData } from '../utils';
+import { Token } from '../constants';
 
 const MAP_ENABLED = false;
 
-// Retrieve token metadata URI and metadata hash
-//TODO: throwa errori quando fallisce?
-async function getTokenData(tokenID: number, tokenType: Token): Promise<[string, string]> {
-    if (typeof window.ethereum === 'undefined') {
-        //TODO: Tell user to install metamask?
-        return ["", ""]
-    }
-
-    const provider = new ethers.BrowserProvider(window.ethereum);
-    let signer;
-    try {
-        signer = await provider.getSigner()
-    } catch (err) { // User probably not logged in metamask
-        // TODO: how to wait for user to log in?
-        return ["", ""]
-    }
-    const contract = (tokenType === Token.Prescription)
-        ? new ethers.Contract(PRESCRIPTIONS_CONTRACT, PrescriptionTokens.abi, signer)
-        : new ethers.Contract(APPOINTMENTS_CONTRACT, AppointmentTokens.abi, signer)
-
-    let tokenUri;
-    let tokenHash;
-
-    try {
-        tokenUri = await contract.tokenURI(tokenID);
-        console.log("tokenUri: ", tokenUri)
-    } catch (err) {
-        console.log(`Could not fetch token ${tokenID} uri: `, err)
-        return ["", ""]
-    }
-    try {
-        // TODO: implementare in token
-        tokenHash = await contract.tokenHash(tokenID);
-        console.log("tokenUri: ", tokenHash)
-    } catch (err) {
-        console.log(`Could not fetch token ${tokenID} hash: `, err)
-        return ["", ""]
-    }
-
-    return [tokenUri, tokenHash]
-}
-
 const Appointment = () => {
     // TODO: id of prescription will be different from id of appointment
+    // How do we know what was the id of the prescription that got exchanged for the appointment?
     const id = window.location.pathname.split('/')[2];
 
     getTokenData(Number.parseInt(id), Token.Prescription).then((data) => {

@@ -9,12 +9,19 @@ import BackButton from '../components/BackButton';
 import { Section, Col, Row, Card, CardBody, CardTitle, Input, Table, CardText } from 'design-react-kit';
 import { PrescriptionType, AccountType, AppointmentType } from '../types';
 import { useNavigate } from 'react-router-dom';
+import { Token } from '../constants';
+import { getTokenData } from '../utils';
 
 
 const Prescription = () => {
     const id = window.location.pathname.split('/')[2];
-    //TODO: get prescription token metadata
+    
+    getTokenData(Number.parseInt(id), Token.Prescription).then((data) => {
+        // TODO: fetch backend data, check hash
+    })
+    
     //TODO: get list of available appointments from db
+
     const navigate = useNavigate();
 
     const prescription: PrescriptionType = {

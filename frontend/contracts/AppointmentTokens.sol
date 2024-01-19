@@ -20,6 +20,7 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
         prescriptionsContract = _prescriptionsContract;
     }
 
+    // should anyone be able to call this method?
     function grantRole(address hospital) public {
         //TODO: check tramite l'oracolo per verificare che l'indirizzo sia realmente di un medico
         _grantRole(MINTER_ROLE, hospital);
