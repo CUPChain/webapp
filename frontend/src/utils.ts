@@ -50,7 +50,7 @@ async function getOwnedTokens(tokenType: Token): Promise<[number[], string[], nu
         //TODO: Tell user to install metamask?
         return [[],[],[]]
     }
-    await requestAccount()
+
     const provider = new ethers.BrowserProvider(window.ethereum);
     let signer;
     try {
@@ -74,24 +74,25 @@ async function getOwnedTokens(tokenType: Token): Promise<[number[], string[], nu
 }
 
 async function requestAccount() {
-    await window.ethereum.request({ method: 'eth_requestAccounts' });
+    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+    console.log(accounts)
 }
 
-async function exchangePrescriptionApptointment(prescrID: number, apptID: number) {
-    if (typeof window.ethereum !== 'undefined') {
-      await requestAccount()
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner()
-      const contract = new ethers.Contract(PRESCRIPTIONS_CONTRACT, PrescriptionTokens.abi, signer)
-      console.log("ciao")
-      try {
-        const transaction = await contract.makeAppointment(prescrID, APPOINTMENTS_CONTRACT, apptID, "0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc")
+async function exchangePrescriptionAppointment(prescrID: number, apptID: number, hospital: string) {
+    if (typeof window.ethereum === 'undefined') {
+        return
+    }
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const signer = await provider.getSigner()
+    const contract = new ethers.Contract(PRESCRIPTIONS_CONTRACT, PrescriptionTokens.abi, signer)
+    console.log("ciao")
+    try {
+        const transaction = await contract.makeAppointment(prescrID, APPOINTMENTS_CONTRACT, apptID, hospital)
         console.log(transaction)
         await transaction.wait()
-      } catch (e) {
+    } catch (e) {
         console.log(e)
-      }
     }
-  }
+}
 
-export { getTokenData, getOwnedTokens, exchangePrescriptionApptointment }
+export { getTokenData, getOwnedTokens, exchangePrescriptionAppointment }
