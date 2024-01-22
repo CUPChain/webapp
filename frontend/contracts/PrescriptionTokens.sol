@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
+import "./Oracle.sol"; //TODO: check correctness
 
 interface AppointmentContract {
     function safeTransferFrom(address from, address to, uint256 tokenId) external;
@@ -15,6 +16,9 @@ interface AppointmentContract {
 contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, AccessControl {
     mapping (uint256 => uint16) private tokenIdToCategory;
     mapping (uint256 => bytes32) private tokenIdToHash;
+
+    Oracle private oracle; //TODO: check correctness
+
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
     constructor() ERC721("Prescription", "PRE"){
@@ -23,6 +27,7 @@ contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, AccessC
 
     function grantRole(address doctor) public {
         //TODO: check tramite l'oracolo per verificare che l'indirizzo sia realmente di un medico
+        bool isADoctor = oracle.checkDoctor()  //TODO: check correctness
         _grantRole(MINTER_ROLE, doctor);
     }
     
