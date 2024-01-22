@@ -10,8 +10,7 @@ type AppointmentType = {
     city: string, // City
     cap: string, // CAP
     address: string, // Street address
-    // lat: number, // Latitude
-    // lon: number, // Longitude
+    // location: location, // Location
     date: string, // Date of appointment
     time: string, // Time of appointment
     doctor?: string, // Doctor name (optional)

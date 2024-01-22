@@ -1,4 +1,5 @@
 import React from 'react';
+import { useEffect, useState } from 'react';
 import 'bootstrap-italia/dist/css/bootstrap-italia.min.css';
 import 'typeface-titillium-web';
 import 'typeface-roboto-mono';
@@ -8,46 +9,80 @@ import CardButton from '../components/CardButton';
 import { Section, Row, Col, Icon } from 'design-react-kit';
 import { Token } from '../constants';
 import { getOwnedTokens } from '../utils';
+import { AppointmentType, PrescriptionType } from '../types';
+import { BACKEND_URL } from '../constants';
+import { verifyHash } from '../utils';
+
 
 const Reservations = () => {
+    const [prescriptions, setPrescriptions] = useState<PrescriptionType[]>([]);
+    const [appointments, setAppointments] = useState<AppointmentType[]>([]);
 
-    const prescriptionTokens = getOwnedTokens(Token.Prescription);
-    prescriptionTokens.then((prescriptionsData) => {
-        prescriptionsData[1].forEach(url => {
-            // TODO: fetch backend data
-        });
-    });
+    useEffect(() => {
+        const fetchData = async () => {
+            // Get prescriptions from blockchain
+            const prescriptionsData = await getOwnedTokens(Token.Prescription);
+            let prescriptions: PrescriptionType[] = [];
+            for (let i = 0; i < prescriptionsData[0].length; i++) {
+                const id = prescriptionsData[0][i];
+                const hash = prescriptionsData[1][i];
+                // const category = prescriptionsData[2][i];
 
-    const appointmentTokens = getOwnedTokens(Token.Appointment);
-    appointmentTokens.then((appointmentData) => {
-        appointmentData[1].forEach(url => {
-            // TODO: fetch backend data
-        });
-    });
+                // Retrieve from backend the additional data
+                const response = await fetch(`${BACKEND_URL}/api/v1/prescriptions/${id}`);
+                const data = await response.json();
 
-    const prescriptions = [
-        {
-            id: 1,
-            type: 'Neurologia',
-            doctor: 'Dott. Mario Rossi',
-        }
-    ];
+                // Verify that the prescription is valid
+                // TODO: usare solo dati che sono stati mandati al backend in creazione token
+                // TODO: handle http errors
+                if (await verifyHash(hash, data)) {
+                    prescriptions[i] = {
+                        id: id,
+                        type: data.type,
+                        doctor: data.doctor
+                    };
+                } else {
+                    console.log(`ERROR: Metadata of Token ${id} is not valid`);
+                }
+            }
 
-    const appointments = [
-        {
-            id: 1,
-            date: '02/02/2024 10:00',
-            type: 'Analisi del sangue',
-            location: 'Laboratorio Analisi - Via Roma 1, 00100 Roma'
-        },
-        {
-            id: 2,
-            date: '10/03/2024 15:00',
-            type: 'Cardiologia',
-            location: 'Ospedale San Giovanni - Via Roma 1, 00100 Roma'
-        }
-    ];
+            setPrescriptions(prescriptions);
 
+            // Get appointments from blockchain
+            const appointmentData = await getOwnedTokens(Token.Appointment);
+            for (let i = 0; i < appointmentData[0].length; i++) {
+                const id = appointmentData[0][i];
+                const hash = appointmentData[1][i];
+                // const category = appointmentData[2][i];
+
+                // Retrieve from backend the additional data
+                const response = await fetch(`${BACKEND_URL}/api/v1/appointments/${id}`);
+                const data = await response.json() as AppointmentType;
+
+                // Verify that the appointment is valid
+                // TODO: usare solo dati che sono stati mandati al backend in creazione token
+                if (await verifyHash(hash, data)) {
+                    appointments[i] = {
+                        id: id,
+                        type: data.type,
+                        name: data.name,
+                        city: data.city,
+                        cap: data.cap,
+                        address: data.address,
+                        date: data.date,
+                        time: data.time,
+                        doctor: data.doctor,
+                        distance: data.distance
+                    };
+                } else {
+                    console.log(`ERROR: Token ${id}Metadata is not valid`);
+                }
+            }
+
+            setAppointments(appointments);
+        };
+        fetchData();
+    }, []);
 
     return (
         <Layout>
@@ -95,7 +130,7 @@ const Reservations = () => {
                                     <CardButton
                                         title={appointment.type}
                                         date={appointment.date}
-                                        description={appointment.location}
+                                        description={appointment.address}
                                         href={`/appointments/${appointment.id}`}
                                     />
                                 </Row>

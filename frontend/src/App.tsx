@@ -15,7 +15,7 @@ import Appointment from './screens/Appointment';
 import ConfirmAppointment from './screens/ConfirmAppointment';
 import NewPrescription from './screens/NewPrescription';
 import { useState } from 'react';
-import { ethers } from "ethers";
+import { ethers, keccak256 } from "ethers";
 import PrescriptionTokens from './artifacts/contracts/PrescriptionTokens.sol/PrescriptionTokens.json';
 import AppointmentTokens from './artifacts/contracts/AppointmentTokens.sol/AppointmentTokens.json';
 import { APPOINTMENTS_CONTRACT, PRESCRIPTIONS_CONTRACT } from './constants';
@@ -37,7 +37,7 @@ const App = () => {
       const signer = await provider.getSigner();
       const contract = new ethers.Contract(PRESCRIPTIONS_CONTRACT, PrescriptionTokens.abi, signer);
       // for now give token to caller
-      const transaction = await contract.safeMint(signer.address, prescrID, "http://cringe.kek/" + prescrID, 1);
+      const transaction = await contract.safeMint(signer.address, prescrID, keccak256(ethers.randomBytes(32)), 1);
       await transaction.wait();
     }
   }
@@ -70,7 +70,7 @@ const App = () => {
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
       const contract = new ethers.Contract(APPOINTMENTS_CONTRACT, AppointmentTokens.abi, signer);
-      const transaction = await contract.safeMint(apptID, "http://cringe.kek/appoints/" + apptID, 1);
+      const transaction = await contract.safeMint(apptID, keccak256(ethers.randomBytes(32)), 1);
       await transaction.wait();
     }
   }
@@ -117,35 +117,33 @@ const App = () => {
   }
 
   return (
-    <body>
-      <div className='d-flex flex-column vh-100'>
-        <CustomHeader />
-        <div className='d-flex flex-row'>
-          <button onClick={mintPrescription}>Mint prescription</button>
-          <input onChange={e => setPrescrID(e.target.value)} placeholder="Set prescription token id" />
-          <button onClick={getOwnedPrescriptions}>Get Prescriptions</button>
-          <button onClick={mintAppointment}>Mint appointment</button>
-          <input onChange={e => setApptID(e.target.value)} placeholder="Set appointment token id" />
-          <button onClick={exchangePreAppt}>Exchange prescr appt</button>
-          <button onClick={grantRoleAppt}>Grant role appt</button>
-          <button onClick={grantRolePre}>Grant role prescr</button>
-        </div>
-        <main className='flex-grow-1'>
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/reservations" element={<Reservations />} />
-              <Route path="/prescriptions/:id" element={<Prescription />} />
-              <Route path="/prescriptions/:id/confirm-appointment" element={<ConfirmAppointment />} />
-              <Route path="/appointments/:id" element={<Appointment />} />
-              <Route path="/doctor/new-prescription" element={<NewPrescription />} />
-            </Routes>
-          </BrowserRouter>
-        </main>
-        <Footer />
+    <div className='d-flex flex-column vh-100'>
+      <CustomHeader />
+      <div className='d-flex flex-row'>
+        <button onClick={mintPrescription}>Mint prescription</button>
+        <input onChange={e => setPrescrID(e.target.value)} placeholder="Set prescription token id" />
+        <button onClick={getOwnedPrescriptions}>Get Prescriptions</button>
+        <button onClick={mintAppointment}>Mint appointment</button>
+        <input onChange={e => setApptID(e.target.value)} placeholder="Set appointment token id" />
+        <button onClick={exchangePreAppt}>Exchange prescr appt</button>
+        <button onClick={grantRoleAppt}>Grant role appt</button>
+        <button onClick={grantRolePre}>Grant role prescr</button>
       </div>
-    </body>
+      <main className='flex-grow-1'>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/reservations" element={<Reservations />} />
+            <Route path="/prescriptions/:id" element={<Prescription />} />
+            <Route path="/prescriptions/:id/confirm-appointment" element={<ConfirmAppointment />} />
+            <Route path="/appointments/:id" element={<Appointment />} />
+            <Route path="/doctor/new-prescription" element={<NewPrescription />} />
+          </Routes>
+        </BrowserRouter>
+      </main>
+      <Footer />
+    </div>
   );
 };
 
