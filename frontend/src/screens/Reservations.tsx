@@ -10,20 +10,20 @@ import { Token } from '../constants';
 import { getOwnedTokens } from '../utils';
 
 const Reservations = () => {
-    
-    const prescriptionTokens = getOwnedTokens(Token.Prescription)
+
+    const prescriptionTokens = getOwnedTokens(Token.Prescription);
     prescriptionTokens.then((prescriptionsData) => {
         prescriptionsData[1].forEach(url => {
             // TODO: fetch backend data
         });
-    })
+    });
 
-    const appointmentTokens = getOwnedTokens(Token.Appointment)
+    const appointmentTokens = getOwnedTokens(Token.Appointment);
     appointmentTokens.then((appointmentData) => {
         appointmentData[1].forEach(url => {
             // TODO: fetch backend data
         });
-    })
+    });
 
     const prescriptions = [
         {

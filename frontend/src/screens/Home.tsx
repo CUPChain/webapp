@@ -7,7 +7,7 @@ import { Hero, HeroBody, HeroTitle } from 'design-react-kit';
 
 const Home = () => {
     return (
-        <Hero overlay='primary'>
+        <Hero overlay='primary' className='h-100'>
             <HeroBody>
                 <HeroTitle>CUPCHAIN</HeroTitle>
                 <p className='d-none d-lg-block'>

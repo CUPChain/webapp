@@ -58,8 +58,8 @@ const Appointment = () => {
             <Section color='muted' className='mt-1'>
                 <BackButton />
                 <Row>
-                    <Col className='col-4'>
-                        <Card teaser noWrapper style={{ marginBottom: '1rem' }} >
+                    <Col className='col-4 d-flex flex-column'>
+                        <Card className='card-bg' teaser noWrapper style={{ marginBottom: '1rem' }} >
                             <CardBody>
                                 <CardTitle tag='h6' style={{ marginBottom: '0.1rem' }}>
                                     {prescription.type}
@@ -69,7 +69,7 @@ const Appointment = () => {
                                 </CardText>
                             </CardBody>
                         </Card>
-                        <Card teaser noWrapper style={{ marginBottom: '1rem' }} >
+                        <Card className='card-bg flex-grow-1' teaser noWrapper style={{ marginBottom: '1rem' }} >
                             <CardBody>
                                 {
                                     MAP_ENABLED ?
@@ -92,7 +92,7 @@ const Appointment = () => {
                         </Card>
                     </Col>
                     <Col>
-                        <Card teaser noWrapper style={{ marginBottom: '1rem' }} >
+                        <Card className='card-bg' teaser noWrapper style={{ marginBottom: '1rem' }} >
                             <CardBody>
                                 <CardTitle tag='h5'>
                                     Dettagli

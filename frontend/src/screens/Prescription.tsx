@@ -15,11 +15,11 @@ import { getTokenData } from '../utils';
 
 const Prescription = () => {
     const id = window.location.pathname.split('/')[2];
-    
+
     getTokenData(Number.parseInt(id), Token.Prescription).then((data) => {
         // TODO: fetch backend data, check hash
-    })
-    
+    });
+
     //TODO: get list of available appointments from db
 
     const navigate = useNavigate();
@@ -91,7 +91,7 @@ const Prescription = () => {
                 <BackButton />
                 <Row>
                     <Col className='col-4'>
-                        <Card teaser noWrapper style={{ marginBottom: '1rem' }} >
+                        <Card className='card-bg' teaser noWrapper style={{ marginBottom: '1rem' }} >
                             <CardBody>
                                 <CardTitle tag='h6' style={{ marginBottom: '0.1rem' }}>
                                     {prescription.type}
@@ -101,7 +101,7 @@ const Prescription = () => {
                                 </CardText>
                             </CardBody>
                         </Card>
-                        <Card spacing className='card-bg card-big no-after'>
+                        <Card noWrapper className='card-bg card-big'>
                             <CardBody>
                                 <CardTitle tag='h5'>
                                     Dettagli Account
