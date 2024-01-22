@@ -9,7 +9,11 @@ import { Section, Col, Row, Card, CardBody, CardTitle, CardText, Button } from '
 import Map from 'react-map-gl';
 import { AppointmentType, PrescriptionType, AccountType } from '../types';
 import { useLocation } from 'react-router-dom';
-import { exchangePrescriptionApptointment } from '../utils';
+import { exchangePrescriptionAppointment } from '../utils';
+import { APPOINTMENTS_CONTRACT, PRESCRIPTIONS_CONTRACT } from '../constants';
+import { ethers } from 'ethers';
+import PrescriptionTokens from '../artifacts/contracts/PrescriptionTokens.sol/PrescriptionTokens.json';
+import AppointmentTokens from '../artifacts/contracts/AppointmentTokens.sol/AppointmentTokens.json';
 
 const MAP_ENABLED = false;
 
@@ -22,11 +26,27 @@ type ConfirmAppointmentProps = {
 const ConfirmAppointment = () => {
     const location = useLocation();
     const { appointment, prescription, account } = location.state as ConfirmAppointmentProps;
+    console.log("appt", appointment.id, " presc", prescription.id)
+
+    // Initialize event listeners, they need contracts with provider as runner, instead of signer
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const prescrContract = new ethers.Contract(PRESCRIPTIONS_CONTRACT, PrescriptionTokens.abi, provider)
+    const apptContract = new ethers.Contract(APPOINTMENTS_CONTRACT, AppointmentTokens.abi, provider)
+
+    prescrContract.on("Transfer", (from, to, tokenID, event) => {
+        console.log(event)
+        alert(`Token prescrizione n. ${tokenID} trasferito da ${from} a ${to}`)
+    })
+    apptContract.on("Transfer", (from, to, tokenID, event) => {
+        console.log(event)
+        alert(`Token appuntamento n. ${tokenID} trasferito da ${from} a ${to}`)
+    })
 
     const confirmAppointment = () => {
-        exchangePrescriptionApptointment(prescription.id, appointment.id)
+        // TODO: cambia indirizzo ospedale con variabile
+        exchangePrescriptionAppointment(prescription.id, appointment.id, "0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc")
         // TODO: check for errors?
-        alert('Prenotazione confermata');
+        //alert('Prenotazione confermata');
     };
 
     return (
