@@ -12,8 +12,9 @@ interface AppointmentContract {
     function getAppointmentCategory(uint256 tokenId) view external returns (uint);
 }
 
-contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, AccessControl {
+contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, AccessControl {
     mapping (uint256 => uint16) private tokenIdToCategory;
+    mapping (uint256 => bytes32) private tokenIdToHash;
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
     constructor() ERC721("Prescription", "PRE"){
@@ -30,27 +31,32 @@ contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC72
         _revokeRole(MINTER_ROLE, doctor);
     }
 
-    function safeMint(address to, uint256 tokenId, string memory uri, uint16 category) public {
+    function _baseURI() internal view override(ERC721) virtual returns (string memory) {
+        //TODO: possiamo mettere url ai metadata qui senza sprecare memoria, supponendo che sia uguale per tutti
+        return "https://cupchain.com/prescriptions/";
+    }
+
+    function safeMint(address to, uint256 tokenId, bytes32 metadataHash, uint16 category) public {
         require(hasRole(MINTER_ROLE, msg.sender), "Caller is not a minter");
         _safeMint(to, tokenId);
-        _setTokenURI(tokenId, uri);
         tokenIdToCategory[tokenId] = category;
+        tokenIdToHash[tokenId] = metadataHash;
     }
 
     // Get list of token ids owned by function caller
-    function getMyTokens() public view returns (uint[] memory ids, string[] memory uris, uint16[] memory categories) {
+    function getMyTokens() public view returns (uint[] memory ids, bytes32[] memory hashes, uint16[] memory categories) {
         uint balance = balanceOf(msg.sender);
         ids = new uint[](balance);
-        uris = new string[](balance);
+        hashes = new bytes32[](balance);
         categories = new uint16[](balance);
 
         for (uint i = 0; i < balanceOf(msg.sender); i++) {
             ids[i] = tokenOfOwnerByIndex(msg.sender, i);
-            uris[i] = tokenURI(ids[i]);
+            hashes[i] = tokenIdToHash[ids[i]];
             categories[i] = tokenIdToCategory[ids[i]];
         }
 
-        return (ids, uris, categories);
+        return (ids, hashes, categories);
     }
 
     // Get category of prescription (type of medical visit needed)
@@ -82,19 +88,10 @@ contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC72
         super._increaseBalance(account, value);
     }
 
-    function tokenURI(uint256 tokenId)
-        public
-        view
-        override(ERC721, ERC721URIStorage)
-        returns (string memory)
-    {
-        return super.tokenURI(tokenId);
-    }
-
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        override(ERC721, ERC721Enumerable, ERC721URIStorage, AccessControl)
+        override(ERC721, ERC721Enumerable, AccessControl)
         returns (bool)
     {
         return super.supportsInterface(interfaceId);

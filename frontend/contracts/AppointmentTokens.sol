@@ -11,6 +11,7 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
     // Appointments need to store their type (category)
     mapping (uint256 => uint16) private tokenIdToCategory;
     address prescriptionsContract;
+    mapping (uint256 => bytes32) private tokenIdToHash;
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
     constructor(address _prescriptionsContract)
@@ -31,32 +32,37 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
         _revokeRole(MINTER_ROLE, hospital);
     }
 
-    function safeMint(uint256 tokenId, string memory uri, uint16 category)
+    function _baseURI() internal view override(ERC721) virtual returns (string memory) {
+        //TODO: possiamo mettere url ai metadata qui senza sprecare memoria, supponendo che sia uguale per tutti
+        return "https://cupchain.com/appointments/";
+    }
+
+    function safeMint(uint256 tokenId, bytes32 metadataHash, uint16 category)
         public
     {
         require(hasRole(MINTER_ROLE, msg.sender), "Caller is not a minter");
         _safeMint(msg.sender, tokenId);
-        _setTokenURI(tokenId, uri);
         tokenIdToCategory[tokenId] = category;
+        tokenIdToHash[tokenId] = metadataHash;
         // instead of doing this on each mint, we could make it so
         // that as soon as an hospital is created, it calls setApprovalForAll (does it work for tokens created after?)
         approve(prescriptionsContract, tokenId);
     }
 
     // Get list of token ids owned by function caller
-    function getMyTokens() public view returns (uint[] memory ids, string[] memory uris, uint16[] memory categories) {
+    function getMyTokens() public view returns (uint[] memory ids, bytes32[] memory hashes, uint16[] memory categories) {
         uint balance = balanceOf(msg.sender);
         ids = new uint[](balance);
-        uris = new string[](balance);
+        hashes = new bytes32[](balance);
         categories = new uint16[](balance);
 
         for (uint i = 0; i < balanceOf(msg.sender); i++) {
             ids[i] = tokenOfOwnerByIndex(msg.sender, i);
-            uris[i] = tokenURI(ids[i]);
+            hashes[i] = tokenIdToHash[ids[i]];
             categories[i] = tokenIdToCategory[ids[i]];
         }
 
-        return (ids, uris, categories);
+        return (ids, hashes, categories);
     }
 
     // Get category of appointment (type of appointment)
