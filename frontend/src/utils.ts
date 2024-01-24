@@ -3,16 +3,16 @@ import PrescriptionTokens from './artifacts/contracts/PrescriptionTokens.sol/Pre
 import AppointmentTokens from './artifacts/contracts/AppointmentTokens.sol/AppointmentTokens.json';
 import { APPOINTMENTS_CONTRACT, PRESCRIPTIONS_CONTRACT, Token } from './constants';
 
-/** Retrieve token metadata URI and metadata hash
-* @param {number} tokenID - ID of the token
-* @param {Token} tokenType - Token.Prescription or Token.Appointment
-* @returns {[string, string]} - [tokenURI, tokenHash]
+
+/** Log in to metamask and return provider and signer
+ * @returns {[ethers.Provider, ethers.Signer]} - [provider, signer]
+ * @throws {Error} - If metamask is not installed or user is not logged in
+ * @throws {Error} - If user is not logged in
 **/
-async function getTokenData(tokenID: number, tokenType: Token): Promise<[string, string]> {
+const loginMetamask = async (): Promise<[ethers.Provider, ethers.Signer]> => {
     //TODO: throwa errori quando fallisce?
     if (typeof window.ethereum === 'undefined') {
-        //TODO: Tell user to install metamask?
-        return ["", ""];
+        throw new Error("Metamask not installed");
     }
 
     const provider = new ethers.BrowserProvider(window.ethereum);
@@ -21,8 +21,21 @@ async function getTokenData(tokenID: number, tokenType: Token): Promise<[string,
         signer = await provider.getSigner();
     } catch (err) { // User probably not logged in metamask
         // TODO: how to wait for user to log in?
-        return ["", ""];
+        throw new Error("User not logged in");
     }
+    return [provider, signer];
+};
+
+/** Retrieve token metadata URI and metadata hash
+ * @param {number} tokenID - ID of the token
+ * @param {Token} tokenType - Token.Prescription or Token.Appointment
+ * @returns {[string, string]} - [tokenURI, tokenHash]
+ * @throws {Error} - If metamask is not installed or user is not logged in
+ * @throws {Error} - If user is not logged in
+**/
+const getTokenData = async (tokenID: number, tokenType: Token): Promise<[string, string]> => {
+    const [provider, signer] = await loginMetamask();
+
     const contract = (tokenType === Token.Prescription)
         ? new ethers.Contract(PRESCRIPTIONS_CONTRACT, PrescriptionTokens.abi, signer)
         : new ethers.Contract(APPOINTMENTS_CONTRACT, AppointmentTokens.abi, signer);
@@ -47,28 +60,19 @@ async function getTokenData(tokenID: number, tokenType: Token): Promise<[string,
     }
 
     return [tokenUri, tokenHash];
-}
+};
 
 
 /** Retrieve all tokens (prescriptions or appointments) owned by the user,
  * along with their metadata hashes and visit categories
  * @parm {Token} tokenType - Token.Prescription or Token.Appointment
  * @returns {[number[], string[], number[]]} - [tokenIDs, metadata hashes, category ids]
+ * @throws {Error} - If metamask is not installed or user is not logged in
+ * @throws {Error} - If user is not logged in
 **/
-async function getOwnedTokens(tokenType: Token): Promise<[number[], string[], number[]]> {
-    if (typeof window.ethereum === 'undefined') {
-        //TODO: Tell user to install metamask?
-        return [[], [], []];
-    }
+const getOwnedTokens = async (tokenType: Token): Promise<[number[], string[], number[]]> => {
+    const [provider, signer] = await loginMetamask();
 
-    const provider = new ethers.BrowserProvider(window.ethereum);
-    let signer;
-    try {
-        signer = await provider.getSigner();
-    } catch (err) { // User probably not logged in metamask
-        // TODO: how to wait for user to log in?
-        return [[], [], []];
-    }
     const contract = (tokenType === Token.Prescription)
         ? new ethers.Contract(PRESCRIPTIONS_CONTRACT, PrescriptionTokens.abi, signer)
         : new ethers.Contract(APPOINTMENTS_CONTRACT, AppointmentTokens.abi, signer);
@@ -81,19 +85,25 @@ async function getOwnedTokens(tokenType: Token): Promise<[number[], string[], nu
         console.log(`Could not fetch ${tokenType.toString()} tokens: `, err);
         return [[], [], []];
     }
-}
+};
 
-async function requestAccount() {
+/** Request user to connect to metamask
+**/
+const requestAccount = async () => {
     const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
     console.log(accounts);
-}
+};
 
-async function exchangePrescriptionAppointment(prescrID: number, apptID: number, hospital: string) {
-    if (typeof window.ethereum === 'undefined') {
-        return;
-    }
-    const provider = new ethers.BrowserProvider(window.ethereum);
-    const signer = await provider.getSigner();
+/** Exchange a prescription for an appointment
+ * @param {number} prescrID - ID of the prescription token
+ * @param {number} apptID - ID of the appointment token
+ * @param {string} hospital - Address of the hospital contract
+ * @throws {Error} - If metamask is not installed or user is not logged in
+ * @throws {Error} - If user is not logged in
+**/
+const exchangePrescriptionAppointment = async (prescrID: number, apptID: number, hospital: string) => {
+    const [provider, signer] = await loginMetamask();
+
     const contract = new ethers.Contract(PRESCRIPTIONS_CONTRACT, PrescriptionTokens.abi, signer);
     console.log("ciao");
     try {
@@ -103,7 +113,7 @@ async function exchangePrescriptionAppointment(prescrID: number, apptID: number,
     } catch (e) {
         console.log(e);
     }
-}
+};
 
 /** Verify that a hash corresponds to a given data object
  * @param {string} hash - Hash to verify
@@ -119,9 +129,23 @@ const verifyHash = async (hash: string, data: any): Promise<boolean> => {
         dataToHash += `${key}:${value};`;
     });
     // Compute hash of data
-    const computedHash = keccak256(ethers.toUtf8Bytes(dataToHash));
+    const computedHash = keccak256(dataToHash);
     // Compare hashes
     return computedHash === hash;
+};
+
+/** Sign a string with metamask
+ * @param {number} tokenID - ID of the token
+ * @param {Token} tokenType - Token.Prescription or Token.Appointment
+ * @returns {[ethers.BytesLike]} - [signature]
+ * @throws {Error} - If metamask is not installed or user is not logged in
+ * @throws {Error} - If user is not logged in
+**/
+const signString = async (s: string): Promise<ethers.BytesLike> => {
+    const [provider, signer] = await loginMetamask();
+    
+    const signature = await signer.signMessage(s);
+    return signature;
 };
 
 export { getTokenData, getOwnedTokens, exchangePrescriptionAppointment, verifyHash };

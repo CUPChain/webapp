@@ -10,26 +10,30 @@ import { Token } from '../constants';
 
 
 const NewPrescription = () => {
-    const id = window.location.pathname.split('/')[2];
-    const navigate = useNavigate();
     const [prescrID, setPrescrID] = React.useState<string>();
     const [prescrTypes, setPrescrTypes] = React.useState<string[]>([
-        'Analisi',
-        'Ricetta',
-        'Visita',
+        'Neurologia',
+        'Oculistica',
+        'Cardiologia',
     ]);
 
-    const getTokenData = async (id: string) => {
-        let response = await fetch(`http://localhost:3001/api/tokens/${id}`);
-        let tokenData: Token = await response.json();
-        return tokenData;
-    };
+    // Create db entry with: user CF, doctor CF, prescription type, token ID, challenge, solution
 
-    // useEffect(async () => {
-    //     const tokenData = await getTokenData(id);
-    //     setPrescrID(tokenData.id);
-    //     setPrescrTypes(tokenData.prescrTypes);
-    // }, [id, navigate]);
+    /** Mint a new prescription token
+     * @returns
+    **/
+    async function mintPrescription() {
+        if (!prescrID) return;
+        if (typeof window.ethereum !== 'undefined') {
+            await requestAccount();
+            const provider = new ethers.BrowserProvider(window.ethereum);
+            const signer = await provider.getSigner();
+            const contract = new ethers.Contract(PRESCRIPTIONS_CONTRACT, PrescriptionTokens.abi, signer);
+            // for now give token to caller
+            const transaction = await contract.safeMint(signer.address, prescrID, keccak256(ethers.randomBytes(32)), 1);
+            await transaction.wait();
+        }
+    }
 
     return (
         <Layout>
