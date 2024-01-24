@@ -6,7 +6,8 @@ import 'typeface-lora';
 import Layout from '../components/Layout';
 import BackButton from '../components/BackButton';
 import { Section, Col, Row, Card, CardBody, CardTitle, CardText, Button } from 'design-react-kit';
-import Map from 'react-map-gl';
+import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
+import { type LatLngExpression } from 'leaflet';
 import { AppointmentType, PrescriptionType, AccountType } from '../types';
 import { useLocation } from 'react-router-dom';
 import { exchangePrescriptionAppointment } from '../utils';
@@ -26,25 +27,26 @@ type ConfirmAppointmentProps = {
 const ConfirmAppointment = () => {
     const location = useLocation();
     const { appointment, prescription, account } = location.state as ConfirmAppointmentProps;
-    console.log("appt", appointment.id, " presc", prescription.id)
+    const position: LatLngExpression = [12.492373, 41.890251];
+    console.log("appt", appointment.id, " presc", prescription.id);
 
     // Initialize event listeners, they need contracts with provider as runner, instead of signer
     const provider = new ethers.BrowserProvider(window.ethereum);
-    const prescrContract = new ethers.Contract(PRESCRIPTIONS_CONTRACT, PrescriptionTokens.abi, provider)
-    const apptContract = new ethers.Contract(APPOINTMENTS_CONTRACT, AppointmentTokens.abi, provider)
+    const prescrContract = new ethers.Contract(PRESCRIPTIONS_CONTRACT, PrescriptionTokens.abi, provider);
+    const apptContract = new ethers.Contract(APPOINTMENTS_CONTRACT, AppointmentTokens.abi, provider);
 
     prescrContract.on("Transfer", (from, to, tokenID, event) => {
-        console.log(event)
-        alert(`Token prescrizione n. ${tokenID} trasferito da ${from} a ${to}`)
-    })
+        console.log(event);
+        alert(`Token prescrizione n. ${tokenID} trasferito da ${from} a ${to}`);
+    });
     apptContract.on("Transfer", (from, to, tokenID, event) => {
-        console.log(event)
-        alert(`Token appuntamento n. ${tokenID} trasferito da ${from} a ${to}`)
-    })
+        console.log(event);
+        alert(`Token appuntamento n. ${tokenID} trasferito da ${from} a ${to}`);
+    });
 
     const confirmAppointment = () => {
         // TODO: cambia indirizzo ospedale con variabile
-        exchangePrescriptionAppointment(prescription.id, appointment.id, "0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc")
+        exchangePrescriptionAppointment(prescription.id, appointment.id, "0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc");
         // TODO: check for errors?
         //alert('Prenotazione confermata');
     };
@@ -65,20 +67,21 @@ const ConfirmAppointment = () => {
                                 </CardText>
                             </CardBody>
                         </Card>
-                        <Card teaser noWrapper style={{ marginBottom: '1rem' }} >
+                        <Card teaser noWrapper style={{ marginBottom: '1rem', overflow: 'hidden' }} >
                             <CardBody>
                                 {
                                     MAP_ENABLED ?
-                                        <Map
-                                            mapLib={import('mapbox-gl')}
-                                            initialViewState={{
-                                                longitude: 9.191383,
-                                                latitude: 45.464211,
-                                                zoom: 13,
-                                            }}
-                                            style={{ width: 600, height: 400 }}
-                                            mapStyle="mapbox://styles/mapbox/streets-v9"
-                                        />
+                                        <MapContainer center={position} zoom={13} scrollWheelZoom={false}>
+                                            <TileLayer
+                                                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                            />
+                                            <Marker position={position}>
+                                                <Popup>
+                                                    A pretty CSS3 popup. <br /> Easily customizable.
+                                                </Popup>
+                                            </Marker>
+                                        </MapContainer>
                                         :
                                         <CardText>
                                             [MAPPA DISABILITATA]

@@ -23,16 +23,16 @@ const NewPrescription = () => {
      * @returns
     **/
     async function mintPrescription() {
-        if (!prescrID) return;
-        if (typeof window.ethereum !== 'undefined') {
-            await requestAccount();
-            const provider = new ethers.BrowserProvider(window.ethereum);
-            const signer = await provider.getSigner();
-            const contract = new ethers.Contract(PRESCRIPTIONS_CONTRACT, PrescriptionTokens.abi, signer);
-            // for now give token to caller
-            const transaction = await contract.safeMint(signer.address, prescrID, keccak256(ethers.randomBytes(32)), 1);
-            await transaction.wait();
-        }
+        // if (!prescrID) return;
+        // if (typeof window.ethereum !== 'undefined') {
+        //     await requestAccount();
+        //     const provider = new ethers.BrowserProvider(window.ethereum);
+        //     const signer = await provider.getSigner();
+        //     const contract = new ethers.Contract(PRESCRIPTIONS_CONTRACT, PrescriptionTokens.abi, signer);
+        //     // for now give token to caller
+        //     const transaction = await contract.safeMint(signer.address, prescrID, keccak256(ethers.randomBytes(32)), 1);
+        //     await transaction.wait();
+        // }
     }
 
     return (

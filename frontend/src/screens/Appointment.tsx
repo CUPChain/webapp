@@ -7,24 +7,26 @@ import Layout from '../components/Layout';
 import BackButton from '../components/BackButton';
 import { Section, Col, Row, Card, CardBody, CardTitle, CardText, Button } from 'design-react-kit';
 import QRCode from 'react-qr-code';
-import Map from 'react-map-gl';
+import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
+import { type LatLngExpression } from 'leaflet';
 import { AppointmentType, PrescriptionType } from '../types';
 import { getTokenData } from '../utils';
 import { Token } from '../constants';
 
-const MAP_ENABLED = false;
+const MAP_ENABLED = true;
 
 const Appointment = () => {
     // TODO: id of prescription will be different from id of appointment
     // How do we know what was the id of the prescription that got exchanged for the appointment?
     const id = window.location.pathname.split('/')[2];
+    const position: LatLngExpression = [51.505, -0.09];
 
-    getTokenData(Number.parseInt(id), Token.Prescription).then((data) => {
-        // TODO: fetch backend data, check hash
-    })
-    getTokenData(Number.parseInt(id), Token.Appointment).then((data) => {
-        // TODO: fetch backend data, check hash
-    })
+    // getTokenData(Number.parseInt(id), Token.Prescription).then((data) => {
+    //     // TODO: fetch backend data, check hash
+    // })
+    // getTokenData(Number.parseInt(id), Token.Appointment).then((data) => {
+    //     // TODO: fetch backend data, check hash
+    // })
 
     const prescription: PrescriptionType = {
         id: 1,
@@ -69,20 +71,21 @@ const Appointment = () => {
                                 </CardText>
                             </CardBody>
                         </Card>
-                        <Card className='card-bg flex-grow-1' teaser noWrapper style={{ marginBottom: '1rem' }} >
+                        <Card className='card-bg flex-grow-1' teaser noWrapper style={{ marginBottom: '1rem', overflow: 'hidden' }} >
                             <CardBody>
                                 {
                                     MAP_ENABLED ?
-                                        <Map
-                                            mapLib={import('mapbox-gl')}
-                                            initialViewState={{
-                                                longitude: 9.191383,
-                                                latitude: 45.464211,
-                                                zoom: 13,
-                                            }}
-                                            style={{ width: 600, height: 400 }}
-                                            mapStyle="mapbox://styles/mapbox/streets-v9"
-                                        />
+                                        <MapContainer center={position} zoom={13} scrollWheelZoom={false}>
+                                            <TileLayer
+                                                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                            />
+                                            <Marker position={position}>
+                                                <Popup>
+                                                    A pretty CSS3 popup. <br /> Easily customizable.
+                                                </Popup>
+                                            </Marker>
+                                        </MapContainer>
                                         :
                                         <CardText>
                                             [MAPPA DISABILITATA]
