@@ -71,10 +71,9 @@ def list_all_appointments():
     return jsonify({"appointments": appointments_list})
 
 
-# - /appointments/id: id, ospedale, categoria, id dottore che fa la visita, nome dottore
-
-
 def retrieve_appointment(id_prescription):
+    # - /appointments/id: id, ospedale, categoria, id dottore che fa la visita, nome dottore
+
     appointment = db.session.execute(
         db.select(Appointment).filter_by(id_prescription=id_prescription),
     ).one_or_none()
@@ -96,10 +95,8 @@ def retrieve_appointment(id_prescription):
         )
 
 
-# - POST /appointments/create: id_ospedale (preso da login), categoria, data, dottore, id_prescription=null. Restituisci id token, creato random, univoco
-
-
 def create_available_appointment():
+    # - POST /appointments/create: id_ospedale (preso da login), categoria, data, dottore, id_prescription=null. Restituisci id token, creato random, univoco
     # TODO: only authenticated hospital can create an appointment
     request_form = request.form.to_dict()
 
@@ -120,11 +117,9 @@ def create_available_appointment():
 
 
 # - PUT /appointments/update/id: aggiorna appointment con id_prescription inviato
-def update_appointment(id_hospital, date, code_medical_examination):  # or token id??
+def update_appointment(id_prescription):
     request_form = request.form.to_dict()
-    available_appointment = Available_Appointment.query.get(
-        id_hospital, date, code_medical_examination  # or token id??
-    )
+    available_appointment = Available_Appointment.query.get(id_prescription)
     # I don't think tokenid must be changed
     available_appointment.id_hospital = request_form["id_hospital"]
     available_appointment.date = request_form["date"]
@@ -133,9 +128,7 @@ def update_appointment(id_hospital, date, code_medical_examination):  # or token
     ]
     db.session.commit()
 
-    response = Available_Appointment.query.get(
-        id_hospital, date, code_medical_examination
-    ).toDict()
+    response = Available_Appointment.query.get(id_prescription).toDict()
     return jsonify(response)
 
 
@@ -268,7 +261,7 @@ def retrieve_prescription(id):
 # - POST /prescriptions/create: categoria, CF/address utente, dottore (preso da login), data, note. Restituisci id token, creato random, univoco
 
 
-def create_prescription():
+def create_prescription(id):
     request_form = request.form.to_dict()
 
     # id = str(uuid.uuid4()) ----> token id
@@ -285,6 +278,13 @@ def create_prescription():
 
     response = Account.query.get(id).toDict()
     return jsonify(response)
+
+
+def delete_prescription(id):
+    Prescription.query.filter_by(id=id).delete()
+    db.session.commit()
+
+    return ('Prescription with Id "{}" deleted successfully!').format(id)
 
 
 def retrieve_all_prescriptions_by_patient(cf):

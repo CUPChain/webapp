@@ -63,6 +63,7 @@ class Appointment(db.Model):
     )
     id_hospital = db.Column(db.Integer, db.ForeignKey("hospital.id"))
     date = db.Column(db.DateTime, nullable=False)  # pay attention here, need attention
+    cf_doctor = db.Column(db.String(16), db.ForeignKey("doctor.cf"))
 
     # validate that this is correct since the dates can be interpreted weirdly from db to python to json and viceversa
     def toDict(self):
