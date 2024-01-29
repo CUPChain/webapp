@@ -23,7 +23,8 @@
             cap VARCHAR(5),
             city VARCHAR(50),
             latitude FLOAT,
-            longitude FLOAT
+            longitude FLOAT,
+            address (?)
 }
 
 "user_doctor": {
@@ -33,7 +34,7 @@
 }
 
 "medical_exam": {
-            code VARCHAR(10),
+            code INTEGER, # to modify
             name VARCHAR(50)
 }
 
@@ -44,7 +45,8 @@
             cap VARCHAR(5),
             city VARCHAR(50),
             latitude FLOAT,
-            longitude FLOAT
+            longitude FLOAT,
+            address (?)
 }
 
 "is_able_to_do": {
@@ -66,4 +68,5 @@
             id_prescription INTEGER REFERENCES prescription(id),
             token_id INTEGER # to add
             already_booked_flag BOOLEAN # to add
+            cf_doctor VARCHAR(16) REFERENCES doctor(cf_doctor) # to add
 }

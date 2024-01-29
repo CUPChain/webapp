@@ -27,10 +27,13 @@ class Account(db.Model):
 
     # Login with MetaMask Fields:
     address = db.Column(db.String(100), nullable=False, unique=True)
-    nonce = db.Column(db.Integer, nullable=False, default=random.randint(0, 2**32-1))
+    nonce = db.Column(
+        db.Integer, nullable=False, default=random.randint(0, 2**32 - 1)
+    )
     jwt = db.Column(db.String(1000), nullable=False, default="")
-    jwt_exp = db.Column(db.DateTime(timezone=True), nullable=False, default=datetime.now)
-
+    jwt_exp = db.Column(
+        db.DateTime(timezone=True), nullable=False, default=datetime.now
+    )
 
     # Validations => https://flask-validator.readthedocs.io/en/latest/index.html
     @classmethod
@@ -68,6 +71,25 @@ class Appointment(db.Model):
     @classmethod
     def __declare_last__(cls):
         ValidateInteger(cls.id_prescription)
+        ValidateInteger(cls.id_hospital)
+
+
+class Available_Appointment(db.Model):
+    __tablename__ = "available_appointment"
+    id_hospital = db.Column(db.Integer, db.ForeignKey("hospital.id"), primary_key=True)
+    date = db.Column(
+        db.DateTime, nullable=False, primary_key=True
+    )  # pay attention here, need attention
+    code_medical_examination = db.Column(
+        db.String(10), db.ForeignKey("medical_exam.code"), primary_key=True
+    )
+
+    # validate that this is correct since the dates can be interpreted weirdly from db to python to json and viceversa
+    def toDict(self):
+        return {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
+
+    @classmethod
+    def __declare_last__(cls):
         ValidateInteger(cls.id_hospital)
 
 

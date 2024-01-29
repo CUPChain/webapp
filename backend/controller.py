@@ -36,7 +36,8 @@ def get_nonce(address: str) -> str:
         return nonce[0].nonce
     else:
         return None
-    
+
+
 def create_jwt_token(address: str) -> str:
     """
     Create JWT token for the address and store it in the database.
@@ -49,13 +50,12 @@ def create_jwt_token(address: str) -> str:
         str: The JWT token.
     """
     # Generate JWT token
-    token = jwt.encode(
-        payload={"address": address},
-        key=os.getenv("JWT_SECRET_KEY")
-    )
+    token = jwt.encode(payload={"address": address}, key=os.getenv("JWT_SECRET_KEY"))
     # Update the nonce of the account
     db.session.execute(
-        db.update(Account).where(Account.address == address).values(nonce=random.randint(0, 2**32-1))
+        db.update(Account)
+        .where(Account.address == address)
+        .values(nonce=random.randint(0, 2**32 - 1))
     )
     # Insert the JWT token in the database
     db.session.execute(
@@ -69,6 +69,7 @@ def list_all_appointments():
     result = db.session.execute(db.select(Appointment))
     appointments_list = [appointment[0].toDict() for appointment in result]
     return jsonify({"appointments": appointments_list})
+
 
 # - /appointments/id: id, ospedale, categoria, id dottore che fa la visita, nome dottore
 
@@ -94,18 +95,55 @@ def retrieve_appointment(id_prescription):
             404,
         )
 
-# - POST /appointments/create: categoria, ospedale (preso da login), data, dottore, id_prescription=null. Restituisci id token, creato random, univoco
+
+# - POST /appointments/create: id_ospedale (preso da login), categoria, data, dottore, id_prescription=null. Restituisci id token, creato random, univoco
+
+
+def create_available_appointment():
+    # TODO: only authenticated hospital can create an appointment
+    request_form = request.form.to_dict()
+
+    # id = str(uuid.uuid4()) ----> token id
+    new_appointment = Available_Appointment(
+        # add token id
+        id_hospital=request_form["id_hospital"],
+        date=request_form["date"],
+        code_medical_examination=request_form["code_medical_examination"],
+        cf_doctor=request_form["cf_doctor"],
+    )
+
+    db.session.add(new_appointment)
+    db.session.commit()
+
+    response = Available_Appointment.query.get(id).toDict()
+    return jsonify(response)
+
+
 # - PUT /appointments/update/id: aggiorna appointment con id_prescription inviato
+def update_appointment(id_hospital, date, code_medical_examination):  # or token id??
+    request_form = request.form.to_dict()
+    available_appointment = Available_Appointment.query.get(
+        id_hospital, date, code_medical_examination  # or token id??
+    )
+    # I don't think tokenid must be changed
+    available_appointment.id_hospital = request_form["id_hospital"]
+    available_appointment.date = request_form["date"]
+    available_appointment.code_medical_examination = request_form[
+        "code_medical_examination"
+    ]
+    db.session.commit()
+
+    response = Available_Appointment.query.get(
+        id_hospital, date, code_medical_examination
+    ).toDict()
+    return jsonify(response)
 
 
-def create_appointments():
-    # TODO
-    pass
+def delete_appointment(token_id):
+    Available_Appointment.query.filter_by(id=token_id).delete()
+    db.session.commit()
 
-
-def update_appointment():
-    # TODO
-    pass
+    return ('Appointment with Id "{}" deleted successfully!').format(token_id)
 
 
 def list_all_doctors():
@@ -115,8 +153,7 @@ def list_all_doctors():
 
 
 def retrieve_doctor(cf):
-    doctor = db.session.execute(
-        db.select(Doctor).filter_by(cf=cf)).one_or_none()
+    doctor = db.session.execute(db.select(Doctor).filter_by(cf=cf)).one_or_none()
     if doctor:
         return jsonify({"doctor": doctor[0].toDict()})
     else:
@@ -128,10 +165,9 @@ def list_all_hospitals():
     hospitals_list = [hospital[0].toDict() for hospital in result]
     return jsonify({"hospitals": hospitals_list})
 
-# - /hospitals/id(o address): nome, indirizzo, cap, citta, latlon
-
 
 def retrieve_hospital(id_hospital):
+    # - /hospitals/id(o address): nome, indirizzo, cap, citta, latlon
     hospital = db.session.execute(
         db.select(Hospital).filter_by(id=id_hospital)
     ).one_or_none()
@@ -140,13 +176,10 @@ def retrieve_hospital(id_hospital):
     else:
         return jsonify({"message": "Hospital not found"}), 404
 
-# - /created_prescriptions: lista prescriptions create da persona loggata
-
 
 def list_all_is_able_to_do():
     result = db.session.execute(db.select(IsAbleToDo))
-    is_able_to_do_list = [is_able_to_do[0].toDict()
-                          for is_able_to_do in result]
+    is_able_to_do_list = [is_able_to_do[0].toDict() for is_able_to_do in result]
     return jsonify({"is_able_to_do": is_able_to_do_list})
 
 
@@ -155,8 +188,7 @@ def retrieve_all_hospital_is_able_to_do(id_is_able_to_do):
         db.select(IsAbleToDo).where(IsAbleToDo.id_hospital == id_is_able_to_do)
     )
     if result:
-        is_able_to_do_data = [is_able_to_do[0].toDict()
-                              for is_able_to_do in result]
+        is_able_to_do_data = [is_able_to_do[0].toDict() for is_able_to_do in result]
         return jsonify({"is_able_to_do": is_able_to_do_data})
     else:
         return (
@@ -167,12 +199,10 @@ def retrieve_all_hospital_is_able_to_do(id_is_able_to_do):
 
 def retrieve_all_is_able_to_do_code(code):
     result = db.session.execute(
-        db.select(IsAbleToDo).where(
-            IsAbleToDo.code_medical_examination == code)
+        db.select(IsAbleToDo).where(IsAbleToDo.code_medical_examination == code)
     )
     if result:
-        is_able_to_do_data = [is_able_to_do[0].toDict()
-                              for is_able_to_do in result]
+        is_able_to_do_data = [is_able_to_do[0].toDict() for is_able_to_do in result]
         return jsonify({"is_able_to_do": is_able_to_do_data})
     else:
         return (
@@ -202,16 +232,20 @@ def list_all_patients():
     patients_list = [patient[0].toDict() for patient in result]
     return jsonify({"patients": patients_list})
 
+
 # - /me: info persona loggata
 
 
 def retrieve_patient(cf):
-    patient = db.session.execute(
-        db.select(Patient).filter_by(cf=cf)).one_or_none()
+    patient = db.session.execute(db.select(Patient).filter_by(cf=cf)).one_or_none()
     if patient:
         return jsonify({"patient": patient[0].toDict()})
     else:
         return jsonify({"message": f"No Patient found with cf: '{cf}'"}), 404
+
+
+# - /created_prescriptions: lista prescriptions create da persona loggata
+# - /received_prescriptions: lista prescriptions ricevute da persona loggata
 
 
 def list_all_prescriptions():
@@ -219,8 +253,9 @@ def list_all_prescriptions():
     prescriptions_list = [prescription[0].toDict() for prescription in result]
     return jsonify({"prescriptions": prescriptions_list})
 
-# - /prescriptions/id: id, categoria, id dottore, nome dottore, note, data (SE AUTORIZZATO) [TODO: autorization]
+
 def retrieve_prescription(id):
+    # - /prescriptions/id: id, categoria, id dottore, nome dottore, note, data (SE AUTORIZZATO) [TODO: autorization]
     prescription = db.session.execute(
         db.select(Prescription).filter_by(id=id)
     ).one_or_none()
@@ -229,11 +264,27 @@ def retrieve_prescription(id):
     else:
         return jsonify({"message": f"No Prescription found with id: '{id}'"}), 404
 
+
 # - POST /prescriptions/create: categoria, CF/address utente, dottore (preso da login), data, note. Restituisci id token, creato random, univoco
 
+
 def create_prescription():
-    # TODO
-    pass
+    request_form = request.form.to_dict()
+
+    # id = str(uuid.uuid4()) ----> token id
+    new_prescription = Prescription(
+        # add token id or create an id ?
+        code_medical_examination=request_form["code_medical_examination"],
+        cf_patient=request_form["cf_patient"],
+        cf_doctor=request_form["cf_doctor"],
+        # date=request_form["date"], maybe a date of issue can be interesting?
+        # note=request_form["note"], maybe a field for some note can be interesting?
+    )
+    db.session.add(new_prescription)
+    db.session.commit()
+
+    response = Account.query.get(id).toDict()
+    return jsonify(response)
 
 
 def retrieve_all_prescriptions_by_patient(cf):
