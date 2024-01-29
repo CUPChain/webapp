@@ -3,6 +3,8 @@ from flask import request
 from .app import app
 from .controller import *
 
+# - /available_appointments?categoria&data: (categoria, data > today, id_prescription=null) [TODO: filter for category and data]
+
 
 # REST API routes for CRUD operations
 @app.route("/api/v1/appointments", methods=["GET"])
@@ -14,6 +16,17 @@ def get_appointments():
 @app.route("/api/v1/appointments/<id_prescription>", methods=["GET"])
 def get_appointment(id_prescription):
     return retrieve_appointment(id_prescription)
+
+# - POST /appointments/create: categoria, ospedale (preso da login), data, dottore, id_prescription=null. Restituisci id token, creato random, univoco
+@app.route("/appointments/create", methods=["POST"])
+def make_appointments(): #category, hospital, date, doctor, id_prescription=null
+    # TODO
+    return create_appointments()
+
+# - PUT /appointments/update/id: aggiorna appointment con id_prescription inviato
+@app.route("/appointments/update/id", methods=["PUT"])
+def modify_appointment():
+    return update_appointment()
 
 
 @app.route("/api/v1/doctors", methods=["GET"])
@@ -70,15 +83,18 @@ def get_patients():
 def get_patient(cf):
     return retrieve_patient(cf)
 
-
 @app.route("/api/v1/prescriptions", methods=["GET"])
 def get_prescriptions():
     return list_all_prescriptions()
 
-
+# - /prescriptions/id: id, categoria, id dottore, nome dottore, note, data (SE AUTORIZZATO) [TODO: autorization]
 @app.route("/api/v1/prescriptions/<id>", methods=["GET"])
 def get_prescription(id):
     return retrieve_prescription(id)
+
+@app.route("/api/v1/prescriptions/create")
+def make_prescription():
+    return create_prescription()
 
 
 @app.route("/api/v1/prescriptions_by_patient/<cf>", methods=["GET"])

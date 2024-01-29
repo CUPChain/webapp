@@ -17,6 +17,7 @@ def not_found(e):
 
 # Applications Routes APIs
 from . import urls
+from . import login
 
 # ----------------------------------------------- #
 

@@ -2,6 +2,7 @@ from sqlalchemy import inspect
 from datetime import datetime
 from flask_validator import *
 from sqlalchemy.orm import validates
+import random
 
 from . import db  # from __init__.py
 
@@ -23,6 +24,13 @@ class Account(db.Model):
     birthday = db.Column(db.Date)
     country = db.Column(db.String(100))
     phone_number = db.Column(db.String(20))
+
+    # Login with MetaMask Fields:
+    address = db.Column(db.String(100), nullable=False, unique=True)
+    nonce = db.Column(db.Integer, nullable=False, default=random.randint(0, 2**32-1))
+    jwt = db.Column(db.String(1000), nullable=False, default="")
+    jwt_exp = db.Column(db.DateTime(timezone=True), nullable=False, default=datetime.now)
+
 
     # Validations => https://flask-validator.readthedocs.io/en/latest/index.html
     @classmethod

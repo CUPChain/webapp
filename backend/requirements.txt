@@ -6,3 +6,5 @@ flask_validator
 flask_migrate
 Werkzeug==2.3.8
 flask_cors
+pyjwt
+web3
