@@ -98,48 +98,44 @@ def filter_appointments():
     pass
 
 
-def create_available_appointment():
+def create_appointment(request_form):
     # - POST /appointments/create: id_ospedale (preso da login), categoria, data, dottore, id_prescription=null. Restituisci id token, creato random, univoco
     # TODO: only authenticated hospital can create an appointment
-    request_form = request.form.to_dict()
 
-    # id = str(uuid.uuid4()) ----> token id
-    new_appointment = Available_Appointment(
-        # add token id
+    new_appointment = Appointment(
         id_hospital=request_form["id_hospital"],
         date=request_form["date"],
         code_medical_examination=request_form["code_medical_examination"],
-        cf_doctor=request_form["cf_doctor"],
+        # cf_doctor=request_form["cf_doctor"],
     )
 
     db.session.add(new_appointment)
     db.session.commit()
 
-    response = Available_Appointment.query.get(id).toDict()
+    response = Appointment.query.get(new_appointment.id).toDict()
     return jsonify(response)
 
 
 # - PUT /appointments/update/id: aggiorna appointment con id_prescription inviato
-def update_appointment(id_prescription):
-    request_form = request.form.to_dict()
-    available_appointment = Available_Appointment.query.get(id_prescription)
-    # I don't think tokenid must be changed
-    available_appointment.id_hospital = request_form["id_hospital"]
-    available_appointment.date = request_form["date"]
-    available_appointment.code_medical_examination = request_form[
-        "code_medical_examination"
-    ]
+def book_appointment(id_prescription, request_form):
+    available_appointment = Appointment.query.get(request_form["id"])
+
+    available_appointment.id_prescription = id_prescription
     db.session.commit()
 
-    response = Available_Appointment.query.get(id_prescription).toDict()
+    response = Appointment.query.get(request_form["id"]).toDict()
     return jsonify(response)
 
 
-def delete_appointment(token_id):
-    Available_Appointment.query.filter_by(id=token_id).delete()
+def cancel_booked_appointment(id_prescription):
+    booked_appointment = Appointment.query.get(id_prescription)
+    booked_appointment.id_prescription = (
+        None  # TODO: check if this is correct or sqlalchemy.sql.null() is needed
+    )
     db.session.commit()
 
-    return ('Appointment with Id "{}" deleted successfully!').format(token_id)
+    response = Appointment.query.get(id_prescription).toDict()
+    return jsonify(response)
 
 
 def list_all_doctors():

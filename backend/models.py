@@ -58,13 +58,12 @@ class Account(db.Model):
 
 class Appointment(db.Model):
     __tablename__ = "appointment"
-    id_prescription = db.Column(
-        db.Integer, db.ForeignKey("prescription.id"), primary_key=True
-    )
+    id = db.Column(db.Integer, primary_key=True)
     id_hospital = db.Column(db.Integer, db.ForeignKey("hospital.id"))
     date = db.Column(db.DateTime, nullable=False)  # pay attention here, need attention
-    cf_doctor = db.Column(db.String(16), db.ForeignKey("doctor.cf"))
+    # cf_doctor = db.Column(db.String(16), db.ForeignKey("doctor.cf"))
     code_medical_examination = db.Column(db.Integer, db.ForeignKey("medical_exam.code"))
+    id_prescription = db.Column(db.Integer, db.ForeignKey("prescription.id"))
 
     # validate that this is correct since the dates can be interpreted weirdly from db to python to json and viceversa
     def toDict(self):
@@ -73,25 +72,6 @@ class Appointment(db.Model):
     @classmethod
     def __declare_last__(cls):
         ValidateInteger(cls.id_prescription)
-        ValidateInteger(cls.id_hospital)
-
-
-class Available_Appointment(db.Model):
-    __tablename__ = "available_appointment"
-    id_hospital = db.Column(db.Integer, db.ForeignKey("hospital.id"), primary_key=True)
-    date = db.Column(
-        db.DateTime, nullable=False, primary_key=True
-    )  # pay attention here, need attention
-    code_medical_examination = db.Column(
-        db.Integer, db.ForeignKey("medical_exam.code"), primary_key=True
-    )
-
-    # validate that this is correct since the dates can be interpreted weirdly from db to python to json and viceversa
-    def toDict(self):
-        return {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
-
-    @classmethod
-    def __declare_last__(cls):
         ValidateInteger(cls.id_hospital)
 
 

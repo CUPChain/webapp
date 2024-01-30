@@ -5,8 +5,8 @@ autonumber
 actor Patient as Patient
 boundary ReservationPage as ReservationPage
 participant PatientWallet as PatientWallet
+participant SmartContract as SmartContract 
 control ReservationController as ReservationController
-entity Reservation as Reservation
 database Database as Database
 
 Patient -> ReservationPage ++ : Get my prescription NFTs
@@ -17,5 +17,28 @@ ReservationController -> Database ++ : Retrieve additional data for my prescript
 Database -> ReservationController -- : Response with additional data for my prescription NFTs
 ReservationController -> ReservationPage -- : Response with additional data for my prescription NFTs
 ReservationPage -> Patient -- : Show my prescription NFTs with additional data
+
+Patient -> ReservationPage ++ : Click on a prescription NFT
+ReservationPage -> ReservationController ++ : Retrieve nearby appointments for the category of the prescription
+ReservationController -> Database ++ : Retrieve nearby appointments for the category of the prescription
+Database -> ReservationController -- : Response with nearby appointments for the category of the prescription
+ReservationController -> ReservationPage -- : Response with nearby appointments for the category of the prescription
+ReservationPage -> Patient -- : Show nearby appointments for the category of the prescription
+
+Patient -> ReservationPage ++ : Click on an appointment
+ReservationPage -> ReservationController ++ : Retrieve appointment details
+ReservationController -> Database ++ : Retrieve appointment details
+Database -> ReservationController -- : Response with appointment details
+ReservationController -> ReservationPage -- : Response with appointment details
+ReservationPage -> Patient -- : Show appointment details
+
+Patient -> ReservationPage ++ : Click on "Reserve Appointment"
+ReservationPage -> ReservationController ++ : Reserve the appointment
+ReservationController -> Database ++ : Reserve the appointment
+Database -> ReservationController -- : Response with reservation status
+ReservationController -> ReservationPage -- : Response with reservation status
+ReservationPage -> SmartContract ++ : Exchange prescription NFT for appointment NFT
+SmartContract -> ReservationPage -- : Emit event 
+ReservationPage -> Patient -- : Show reservation status
 
 @enduml
