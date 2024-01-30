@@ -24,7 +24,7 @@
             city VARCHAR(50),
             latitude FLOAT,
             longitude FLOAT,
-            address (?)
+            pkey BYTEA # quando leggi, usa: select encode(pkey, 'escape') from doctor;
 }
 
 "user_doctor": {
@@ -34,7 +34,7 @@
 }
 
 "medical_exam": {
-            code INTEGER, # to modify
+            code INTEGER,
             name VARCHAR(50)
 }
 
@@ -46,27 +46,27 @@
             city VARCHAR(50),
             latitude FLOAT,
             longitude FLOAT,
-            address (?)
+            pkey BYTEA # quando leggi, usa: select encode(pkey, 'escape') from doctor;
 }
 
 "is_able_to_do": {
             id_hospital INTEGER REFERENCES hospital(id),
-            code_medical_examination VARCHAR(10) REFERENCES medical_exam(code),
+            code_medical_examination INTEGER REFERENCES medical_exam(code),
 }
 
 "prescription": {
             id INTEGER,
             cf_doctor VARCHAR(16) REFERENCES doctor(cf),
             cf_patient VARCHAR(16) REFERENCES patient(cf),
-            code_medical_examination VARCHAR(10) REFERENCES medical_exam(code)
+            code_medical_examination INTEGER REFERENCES medical_exam(code)
 }
 
 "appointment": {
+            id INTEGER
             id_hospital INTEGER REFERENCES hospital(id),
+            cf_doctor VARCHAR(16) REFERENCES doctor(cf_doctor) # non inserito, a parole ti spiego il motivo ricordamelo
             date TIMESTAMP,
-            code_medical_examination VARCHAR(10) REFERENCES medical_exam(code),
+            code_medical_examination INTEGER REFERENCES medical_exam(code),
             id_prescription INTEGER REFERENCES prescription(id),
-            token_id INTEGER # to add
-            already_booked_flag BOOLEAN # to add
-            cf_doctor VARCHAR(16) REFERENCES doctor(cf_doctor) # to add
+            already_booked_flag BOOLEAN # possiamo dedurlo da id_prescription == NULL
 }

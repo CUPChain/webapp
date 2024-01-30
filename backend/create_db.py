@@ -28,7 +28,6 @@ cur = conn.cursor()
 
 ############## Drop all the tables if they already exist ##############
 cur.execute("DROP TABLE IF EXISTS appointment CASCADE;")
-cur.execute("DROP TABLE IF EXISTS available_appointment CASCADE;")
 cur.execute("DROP TABLE IF EXISTS prescription CASCADE;")
 cur.execute("DROP TABLE IF EXISTS is_able_to_do CASCADE;")
 cur.execute("DROP TABLE IF EXISTS hospital CASCADE;")
@@ -72,7 +71,8 @@ cur.execute("""CREATE TABLE IF NOT EXISTS doctor (
             cap VARCHAR(5) NOT NULL,
             city VARCHAR(50) NOT NULL,
             latitude FLOAT NOT NULL,
-            longitude FLOAT NOT NULL
+            longitude FLOAT NOT NULL,
+            pkey BYTEA NOT NULL
 );
 """)
 
@@ -85,7 +85,7 @@ cur.execute("""CREATE TABLE IF NOT EXISTS user_doctor (
 """)
 
 cur.execute("""CREATE TABLE IF NOT EXISTS medical_exam (
-            code VARCHAR(10) PRIMARY KEY,
+            code INTEGER PRIMARY KEY,
             name VARCHAR(50) NOT NULL
 );
 """)
@@ -97,13 +97,14 @@ cur.execute("""CREATE TABLE IF NOT EXISTS hospital (
             cap VARCHAR(5) NOT NULL,
             city VARCHAR(50) NOT NULL,
             latitude FLOAT NOT NULL,
-            longitude FLOAT NOT NULL
+            longitude FLOAT NOT NULL,
+            pkey BYTEA NOT NULL
 );
 """)
 
 cur.execute("""CREATE TABLE IF NOT EXISTS is_able_to_do (
             id_hospital INTEGER REFERENCES hospital(id),
-            code_medical_examination VARCHAR(10) REFERENCES medical_exam(code),
+            code_medical_examination INTEGER REFERENCES medical_exam(code),
             PRIMARY KEY(id_hospital, code_medical_examination)
 );
 """)
@@ -112,34 +113,35 @@ cur.execute("""CREATE TABLE IF NOT EXISTS prescription (
             id INTEGER PRIMARY KEY,
             cf_doctor VARCHAR(16) REFERENCES doctor(cf),
             cf_patient VARCHAR(16) REFERENCES patient(cf),
-            code_medical_examination VARCHAR(10) REFERENCES medical_exam(code)
-);
-""")
-
-cur.execute("""CREATE TABLE IF NOT EXISTS available_appointment (
-            id_hospital INTEGER REFERENCES hospital(id),
-            date TIMESTAMP NOT NULL,
-            code_medical_examination VARCHAR(10) REFERENCES medical_exam(code),
-            PRIMARY KEY(id_hospital, date, code_medical_examination)
+            code_medical_examination INTEGER REFERENCES medical_exam(code)
 );
 """)
 
 cur.execute("""CREATE TABLE IF NOT EXISTS appointment (
-            id_prescription INTEGER REFERENCES prescription(id) PRIMARY KEY,
+            id INTEGER PRIMARY KEY,
             id_hospital INTEGER REFERENCES hospital(id),
-            date TIMESTAMP NOT NULL
+            date TIMESTAMP NOT NULL,
+            code_medical_examination INTEGER REFERENCES medical_exam(code),
+            id_prescription INTEGER REFERENCES prescription(id)
 );
 """)
 
 
 ################# create some constraints #################
 # on insertion of a new appointment, we want to enforce that the hospital is able to do the medical examination contained in the prescription
+# and that the appointment is appropriate for the prescription
 cur.execute("""CREATE FUNCTION check_hospital_can_do_medical_exam()
             RETURNS TRIGGER AS $$
             DECLARE
-                medical_exam_code VARCHAR(10);
+                medical_exam_code INTEGER;
             BEGIN
+                IF NEW.id_prescription IS NULL THEN
+                    RETURN NEW;
+                END IF; 
                 SELECT code_medical_examination INTO medical_exam_code FROM prescription WHERE id = NEW.id_prescription;
+                IF medical_exam_code <> NEW.code_medical_examination THEN
+                    RAISE EXCEPTION 'Medical examination code in prescription and in appointment are different';
+                END IF;
                 IF (SELECT COUNT(*) FROM is_able_to_do WHERE id_hospital = NEW.id_hospital AND code_medical_examination = medical_exam_code) = 0 THEN
                     RAISE EXCEPTION 'Hospital is not able to do this medical examination';
                 END IF;
@@ -149,7 +151,7 @@ cur.execute("""CREATE FUNCTION check_hospital_can_do_medical_exam()
 """)
 
 cur.execute("""CREATE TRIGGER check_hospital_can_do_medical_exam
-            BEFORE INSERT ON appointment
+            BEFORE INSERT OR UPDATE ON appointment
             FOR EACH ROW
             EXECUTE PROCEDURE check_hospital_can_do_medical_exam();
 """)
@@ -168,10 +170,10 @@ cur.execute("""INSERT INTO user_patient (username, password, cf) VALUES
             ('alessandro', '1234', 'BNCLRD00A01H501A');
 """)
 
-cur.execute("""INSERT INTO doctor (cf, name, surname, address, cap, city, latitude, longitude) VALUES
-            ('SGNLCA00A01H501A', 'Luca', 'Sognatore', 'Piazza Risorgimento 49', '20129', 'Milano', 45.468023, 9.211227),
-            ('BLLNCA00A01H501A', 'Carlo', 'Bellini', 'Via degli Olimpionici 12', '00196', 'Roma', 41.934302, 12.468421),
-            ('FRRRBT00A01H501A', 'Roberto', 'Ferrari', 'Via Evangelista Torricelli 3', '10128', 'Torino', 45.053066, 7.663516);
+cur.execute("""INSERT INTO doctor (cf, name, surname, address, cap, city, latitude, longitude, pkey) VALUES
+            ('SGNLCA00A01H501A', 'Luca', 'Sognatore', 'Piazza Risorgimento 49', '20129', 'Milano', 45.468023, 9.211227, '0x123456789ABCDEF'),
+            ('BLLNCA00A01H501A', 'Carlo', 'Bellini', 'Via degli Olimpionici 12', '00196', 'Roma', 41.934302, 12.468421, '0x121212121212122'),
+            ('FRRRBT00A01H501A', 'Roberto', 'Ferrari', 'Via Evangelista Torricelli 3', '10128', 'Torino', 45.053066, 7.663516, '0x333333333333333');
 """)
 
 cur.execute("""INSERT INTO user_doctor (username, password, cf) VALUES
@@ -181,83 +183,77 @@ cur.execute("""INSERT INTO user_doctor (username, password, cf) VALUES
 """)
 
 cur.execute("""INSERT INTO medical_exam (code, name) VALUES
-            ('ECG', 'Elettrocardiogramma'),
-            ('RX', 'Radiografia'),
-            ('VD', 'Visita dermatologica'),
-            ('VN', 'Visita neurologica'),
-            ('VO', 'Visita oculistica');
+            (1, 'Elettrocardiogramma'),
+            (2, 'Radiografia'),
+            (3, 'Visita dermatologica'),
+            (4, 'Visita neurologica'),
+            (5, 'Visita oculistica');
 """)
 
-cur.execute("""INSERT INTO hospital (id, name, address, cap, city, latitude, longitude) VALUES
-            (1, 'Ospedale San Raffaele', 'Via Olgettina 60', '20132', 'Milano', 45.505659, 9.263943),
-            (2, 'Policlinico Gemelli', 'Largo Agostino Gemelli 8', '00168', 'Roma', 41.932443, 12.429196),
-            (3, 'Ospedale Molinette', 'Corso Bramante 88', '10126', 'Torino', 45.041498, 7.674276);
+cur.execute("""INSERT INTO hospital (id, name, address, cap, city, latitude, longitude, pkey) VALUES
+            (1, 'Ospedale San Raffaele', 'Via Olgettina 60', '20132', 'Milano', 45.505659, 9.263943, '0x123426789AB4DEF'),
+            (2, 'Policlinico Gemelli', 'Largo Agostino Gemelli 8', '00168', 'Roma', 41.932443, 12.429196, '0x121aA5121212122'),
+            (3, 'Ospedale Molinette', 'Corso Bramante 88', '10126', 'Torino', 45.041498, 7.674276, '0x332233333333333');
 """)
 
 cur.execute("""INSERT INTO is_able_to_do (id_hospital, code_medical_examination) VALUES
-            (1, 'ECG'),
-            (1, 'RX'),
-            (1, 'VD'),
-            (2, 'ECG'),
-            (2, 'RX'),
-            (2, 'VN'),
-            (3, 'ECG'),
-            (3, 'VN'),
-            (3, 'VO');
+            (1, 1),
+            (1, 2),
+            (1, 3),
+            (2, 1),
+            (2, 2),
+            (2, 4),
+            (3, 1),
+            (3, 4),
+            (3, 5);
 """)
 
 cur.execute("""INSERT INTO prescription (id, cf_doctor, cf_patient, code_medical_examination) VALUES
-            (1, 'SGNLCA00A01H501A', 'RSSMRA00A01H501A', 'ECG'),
-            (2, 'BLLNCA00A01H501A', 'VRDGPP00A01H501A', 'RX'),
-            (3, 'BLLNCA00A01H501A', 'VRDGPP00A01H501A', 'VN'),
-            (4, 'FRRRBT00A01H501A', 'BNCLRD00A01H501A', 'VD'),
-            (5, 'FRRRBT00A01H501A', 'BNCLRD00A01H501A', 'VO');
+            (1, 'SGNLCA00A01H501A', 'RSSMRA00A01H501A', 1),
+            (2, 'BLLNCA00A01H501A', 'VRDGPP00A01H501A', 2),
+            (3, 'BLLNCA00A01H501A', 'VRDGPP00A01H501A', 4),
+            (4, 'FRRRBT00A01H501A', 'BNCLRD00A01H501A', 3),
+            (5, 'FRRRBT00A01H501A', 'BNCLRD00A01H501A', 5);
 """)
 
-cur.execute("""INSERT INTO available_appointment (id_hospital, date, code_medical_examination) VALUES
-            (1, '2024-06-01 10:00:00', 'ECG'),
-            (1, '2024-06-01 11:00:00', 'ECG'),
-            (1, '2024-06-01 12:00:00', 'ECG'),
-            (1, '2024-06-01 13:00:00', 'ECG'),
-            (1, '2024-06-02 14:00:00', 'RX'),
-            (1, '2024-06-02 15:00:00', 'RX'),
-            (1, '2024-06-02 16:00:00', 'RX'),
-            (1, '2024-06-02 17:00:00', 'RX'),
-            (1, '2024-06-03 16:00:00', 'VD'),
-            (1, '2024-06-03 17:00:00', 'VD'),
-            (1, '2024-06-03 18:00:00', 'VD'),
-            (1, '2024-06-03 19:00:00', 'VD'),
-            (2, '2024-05-21 11:00:00', 'RX'),
-            (2, '2024-05-21 12:00:00', 'RX'),
-            (2, '2024-05-21 13:00:00', 'RX'),
-            (2, '2024-05-21 14:00:00', 'RX'),
-            (2, '2024-05-22 15:00:00', 'VN'),
-            (2, '2024-05-22 16:00:00', 'VN'),
-            (2, '2024-05-22 17:00:00', 'VN'),
-            (2, '2024-05-22 18:00:00', 'VN'),
-            (2, '2024-05-23 16:00:00', 'ECG'),
-            (2, '2024-05-23 17:00:00', 'ECG'),
-            (2, '2024-05-23 18:00:00', 'ECG'),
-            (2, '2024-05-23 19:00:00', 'ECG'),
-            (3, '2024-05-07 12:00:00', 'ECG'),
-            (3, '2024-05-07 13:00:00', 'ECG'),
-            (3, '2024-05-07 14:00:00', 'ECG'),
-            (3, '2024-05-07 15:00:00', 'ECG'),
-            (3, '2024-05-08 16:00:00', 'VN'),
-            (3, '2024-05-08 17:00:00', 'VN'),
-            (3, '2024-05-08 18:00:00', 'VN'),
-            (3, '2024-05-08 19:00:00', 'VN'),
-            (3, '2024-05-09 16:00:00', 'VO'),
-            (3, '2024-05-09 17:00:00', 'VO'),
-            (3, '2024-05-09 18:00:00', 'VO'),
-            (3, '2024-05-09 19:00:00', 'VO');
-""")
-
-cur.execute("""INSERT INTO appointment (id_prescription, id_hospital, date) VALUES
-            (1, 1, '2024-06-01 9:00:00'),
-            (2, 2, '2024-11-21 11:00:00'),
-            (3, 3, '2024-03-07 12:00:00'),
-            (4, 1, '2024-04-18 18:00:00');
+cur.execute("""INSERT INTO appointment (id, id_hospital, date, code_medical_examination, id_prescription) VALUES
+            (1, 1, '2024-06-01 9:00:00', 1, 1),
+            (2, 1, '2024-06-01 10:00:00', 1, NULL),
+            (3, 1, '2024-06-01 11:00:00', 1, NULL),
+            (4, 1, '2024-06-01 12:00:00', 1, NULL),
+            (5, 1, '2024-06-01 13:00:00', 1, NULL),
+            (6, 1, '2024-06-02 14:00:00', 2, NULL),
+            (7, 1, '2024-06-02 15:00:00', 2, NULL),
+            (8, 1, '2024-06-02 16:00:00', 2, NULL),
+            (9, 1, '2024-06-02 17:00:00', 2, NULL),
+            (10, 1, '2024-06-03 16:00:00', 3, 4),
+            (11, 1, '2024-06-03 17:00:00', 3, NULL),
+            (12, 1, '2024-06-03 18:00:00', 3, NULL),
+            (13, 1, '2024-06-03 19:00:00', 3, NULL),
+            (14, 2, '2024-05-21 11:00:00', 2, 2),
+            (15, 2, '2024-05-21 12:00:00', 2, NULL),
+            (16, 2, '2024-05-21 13:00:00', 2, NULL),
+            (17, 2, '2024-05-21 14:00:00', 2, NULL),
+            (18, 2, '2024-05-22 15:00:00', 4, NULL),
+            (19, 2, '2024-05-22 16:00:00', 4, NULL),
+            (20, 2, '2024-05-22 17:00:00', 4, NULL),
+            (21, 2, '2024-05-22 18:00:00', 4, NULL),
+            (22, 2, '2024-05-23 16:00:00', 1, NULL),
+            (23, 2, '2024-05-23 17:00:00', 1, NULL),
+            (24, 2, '2024-05-23 18:00:00', 1, NULL),
+            (25, 2, '2024-05-23 19:00:00', 1, NULL),
+            (26, 3, '2024-05-07 12:00:00', 1, NULL),
+            (27, 3, '2024-05-07 13:00:00', 1, NULL),
+            (28, 3, '2024-05-07 14:00:00', 1, NULL),
+            (29, 3, '2024-05-07 15:00:00', 1, NULL),
+            (30, 3, '2024-05-08 16:00:00', 4, 3),
+            (31, 3, '2024-05-08 17:00:00', 4, NULL),
+            (32, 3, '2024-05-08 18:00:00', 4, NULL),
+            (33, 3, '2024-05-08 19:00:00', 4, NULL),
+            (34, 3, '2024-05-09 16:00:00', 5, NULL),
+            (35, 3, '2024-05-09 17:00:00', 5, NULL),
+            (36, 3, '2024-05-09 18:00:00', 5, NULL),
+            (37, 3, '2024-05-09 19:00:00', 5, NULL);
 """)
 
 conn.commit()
