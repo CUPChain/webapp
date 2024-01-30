@@ -248,7 +248,8 @@ def list_all_prescriptions():
 
 
 def retrieve_prescription(id):
-    # - /prescriptions/id: id, categoria, id dottore, nome dottore, note, data (SE AUTORIZZATO) [TODO: autorization]
+    # - /prescriptions/id: id, categoria, id dottore, nome dottore, note, data (SE AUTORIZZATO)
+    # [TODO: autorization]
     prescription = db.session.execute(
         db.select(Prescription).filter_by(id=id)
     ).one_or_none()

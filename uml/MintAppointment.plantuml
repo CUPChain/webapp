@@ -1,0 +1,22 @@
+@startuml
+title Mint Appointment NFT
+autonumber
+actor       Hospital       as Hospital
+boundary    AppointmentPage    as AppointmentPage
+control     AppointmentController     as AppointmentController
+entity      Appointment      as Appointment
+database    Database    as Database
+Hospital -> AppointmentPage ++ : Create appointment
+AppointmentPage -> AppointmentController ++ : Create appointment 
+AppointmentController -> Appointment ++ : Create appointment
+Appointment -> Database ++ : Create Appointment
+Database -> Appointment -- : Appointment created
+Appointment -> AppointmentController -- : Appointment created
+AppointmentController -> AppointmentPage -- : Appointment created
+
+
+participant AppointmentSmartContract as AppointmentSmartContract
+AppointmentPage -> AppointmentSmartContract : Mint Appointment NFT
+AppointmentSmartContract -> AppointmentPage : Emit Event
+AppointmentPage -> Hospital -- : Appointment created
+@enduml

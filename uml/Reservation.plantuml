@@ -1,0 +1,21 @@
+@startuml
+title Reservation
+autonumber
+
+actor Patient as Patient
+boundary ReservationPage as ReservationPage
+participant PatientWallet as PatientWallet
+control ReservationController as ReservationController
+entity Reservation as Reservation
+database Database as Database
+
+Patient -> ReservationPage ++ : Get my prescription NFTs
+ReservationPage -> PatientWallet ++ : Get my prescription NFTs
+PatientWallet -> ReservationPage -- : Response with prescription NFTs
+ReservationPage -> ReservationController ++ : Retrieve additional data for my prescription NFTs
+ReservationController -> Database ++ : Retrieve additional data for my prescription NFTs
+Database -> ReservationController -- : Response with additional data for my prescription NFTs
+ReservationController -> ReservationPage -- : Response with additional data for my prescription NFTs
+ReservationPage -> Patient -- : Show my prescription NFTs with additional data
+
+@enduml

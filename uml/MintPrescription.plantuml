@@ -1,5 +1,5 @@
 @startuml
-title Mint Prescription Token
+title Mint Prescription NFT
 autonumber
 actor       Doctor       as Doctor
 boundary    PrescriptionPage    as PrescriptionPage
