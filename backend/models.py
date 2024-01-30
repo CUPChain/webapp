@@ -88,7 +88,12 @@ class Doctor(db.Model):
     pkey = db.Column(db.LargeBinary, nullable=False)
 
     def toDict(self):
-        return {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
+        return {
+            c.key: getattr(self, c.key)
+            if c.key != "pkey"
+            else getattr(self, c.key).decode("utf-8")
+            for c in inspect(self).mapper.column_attrs
+        }
 
 
 class Hospital(db.Model):
@@ -103,7 +108,12 @@ class Hospital(db.Model):
     pkey = db.Column(db.LargeBinary, nullable=False)
 
     def toDict(self):
-        return {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
+        return {
+            c.key: getattr(self, c.key)
+            if c.key != "pkey"
+            else getattr(self, c.key).decode("utf-8")
+            for c in inspect(self).mapper.column_attrs
+        }
 
 
 class IsAbleToDo(db.Model):
@@ -131,7 +141,7 @@ class Patient(db.Model):
     cf = db.Column(db.String(16), primary_key=True)
     name = db.Column(db.String(50), nullable=False)
     surname = db.Column(db.String(50), nullable=False)
-    residence = db.Column(db.String(100), nullable=False)
+    address = db.Column(db.String(100), nullable=False)
     cap = db.Column(db.String(5), nullable=False)
     city = db.Column(db.String(50), nullable=False)
     latitude = db.Column(db.Float, nullable=False)

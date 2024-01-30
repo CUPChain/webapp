@@ -39,7 +39,7 @@ def cancel_appointment(id_prescription):
 
 @app.route(
     f"/{BASE_ROOT}/{VERSION}/appointments/<id_prescription>",
-    methods=["GET", "PUT", "DELETE"],
+    methods=["GET"],
 )
 def get_appointment(id_prescription):
     if request.method == "GET":
