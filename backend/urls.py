@@ -3,8 +3,6 @@ from flask import request
 from .app import app
 from .controller import *
 
-# - /available_appointments?categoria&data: (categoria, data > today, id_prescription=null) [TODO: filter for category and data]
-
 BASE_ROOT = "api"
 VERSION = "v1"
 
@@ -34,6 +32,11 @@ def get_appointment(id_prescription):
     # - DELETE delete prescription, if needed
     if request.method == "DELETE":
         return delete_appointment(id_prescription)
+
+
+# - /available_appointments?categoria&data: (categoria, data > today, id_prescription=null) [TODO: filter for category and data]
+# category = request.args.get("category")
+# data = request.args.get("data")
 
 
 @app.route(f"/{BASE_ROOT}/{VERSION}/doctors", methods=["GET"])
@@ -104,7 +107,8 @@ def get_prescription(id):
     if request.method == "GET":
         return retrieve_prescription(id)
     if request.method == "POST":
-        return create_prescription(id)
+        request_form = request.form.to_dict()
+        return create_prescription(request_form)
     if request.method == "DELETE":
         return delete_prescription(id)
 

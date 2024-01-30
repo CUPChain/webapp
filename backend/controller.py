@@ -16,8 +16,6 @@ import os
 # STAGING_DATABASE_URL     = ''
 # PRODUCTION_DATABASE_URL  = 'postgresql://user:password@davehost:port/database'
 
-# - /available_appointments?categoria&data: (categoria, data > today, id_prescription=null) [TODO: filter for category and data]
-
 
 def get_nonce(address: str) -> str:
     """
@@ -93,6 +91,11 @@ def retrieve_appointment(id_prescription):
             ),
             404,
         )
+
+
+# - /available_appointments?categoria&data: (categoria, data > today, id_prescription=null) [TODO: filter for category and data]
+def filter_appointments():
+    pass
 
 
 def create_available_appointment():
@@ -259,15 +262,12 @@ def retrieve_prescription(id):
         return jsonify({"message": f"No Prescription found with id: '{id}'"}), 404
 
 
-# - POST /prescriptions/create: categoria, CF/address utente, dottore (preso da login), data, note. Restituisci id token, creato random, univoco
+def create_prescription(request_form):
+    # - POST /prescriptions/create: categoria, CF/address utente, dottore (preso da login), data, note. Restituisci id token, creato random, univoco
 
-
-def create_prescription(id):
-    request_form = request.form.to_dict()
-
-    # id = str(uuid.uuid4()) ----> token id
+    # id = str(uuid.uuid4())
     new_prescription = Prescription(
-        # add token id or create an id ?
+        # id=id,
         code_medical_examination=request_form["code_medical_examination"],
         cf_patient=request_form["cf_patient"],
         cf_doctor=request_form["cf_doctor"],
@@ -277,7 +277,11 @@ def create_prescription(id):
     db.session.add(new_prescription)
     db.session.commit()
 
-    response = Account.query.get(id).toDict()
+    # no need of storing hash since we can query and recalculate the hash
+
+    response = Prescription.query.get(
+        new_prescription.id  # TODO: test if new_prescription.id works
+    ).toDict()
     return jsonify(response)
 
 

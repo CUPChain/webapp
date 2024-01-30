@@ -64,6 +64,7 @@ class Appointment(db.Model):
     id_hospital = db.Column(db.Integer, db.ForeignKey("hospital.id"))
     date = db.Column(db.DateTime, nullable=False)  # pay attention here, need attention
     cf_doctor = db.Column(db.String(16), db.ForeignKey("doctor.cf"))
+    code_medical_examination = db.Column(db.Integer, db.ForeignKey("medical_exam.code"))
 
     # validate that this is correct since the dates can be interpreted weirdly from db to python to json and viceversa
     def toDict(self):
@@ -82,7 +83,7 @@ class Available_Appointment(db.Model):
         db.DateTime, nullable=False, primary_key=True
     )  # pay attention here, need attention
     code_medical_examination = db.Column(
-        db.String(10), db.ForeignKey("medical_exam.code"), primary_key=True
+        db.Integer, db.ForeignKey("medical_exam.code"), primary_key=True
     )
 
     # validate that this is correct since the dates can be interpreted weirdly from db to python to json and viceversa
@@ -100,6 +101,11 @@ class Doctor(db.Model):
     name = db.Column(db.String(50), nullable=False)
     surname = db.Column(db.String(50), nullable=False)
     address = db.Column(db.String(100), nullable=False)
+    cap = db.Column(db.String(5), nullable=False)
+    city = db.Column(db.String(50), nullable=False)
+    latitude = db.Column(db.Float, nullable=False)
+    longitude = db.Column(db.Float, nullable=False)
+    pkey = db.Column(db.LargeBinary, nullable=False)
 
     def toDict(self):
         return {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
@@ -110,6 +116,11 @@ class Hospital(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     address = db.Column(db.String(100), nullable=False)
     name = db.Column(db.String(50), nullable=False)
+    cap = db.Column(db.String(5), nullable=False)
+    city = db.Column(db.String(50), nullable=False)
+    latitude = db.Column(db.Float, nullable=False)
+    longitude = db.Column(db.Float, nullable=False)
+    pkey = db.Column(db.LargeBinary, nullable=False)
 
     def toDict(self):
         return {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
@@ -119,7 +130,7 @@ class IsAbleToDo(db.Model):
     __tablename__ = "is_able_to_do"
     id_hospital = db.Column(db.Integer, db.ForeignKey("hospital.id"), primary_key=True)
     code_medical_examination = db.Column(
-        db.String(10), db.ForeignKey("medical_exam.code"), primary_key=True
+        db.Integer, db.ForeignKey("medical_exam.code"), primary_key=True
     )
 
     def toDict(self):
@@ -128,7 +139,7 @@ class IsAbleToDo(db.Model):
 
 class MedicalExam(db.Model):
     __tablename__ = "medical_exam"
-    code = db.Column(db.String(10), primary_key=True)
+    code = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
 
     def toDict(self):
@@ -141,6 +152,10 @@ class Patient(db.Model):
     name = db.Column(db.String(50), nullable=False)
     surname = db.Column(db.String(50), nullable=False)
     residence = db.Column(db.String(100), nullable=False)
+    cap = db.Column(db.String(5), nullable=False)
+    city = db.Column(db.String(50), nullable=False)
+    latitude = db.Column(db.Float, nullable=False)
+    longitude = db.Column(db.Float, nullable=False)
 
     def toDict(self):
         return {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
@@ -151,9 +166,7 @@ class Prescription(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     cf_doctor = db.Column(db.String(16), db.ForeignKey("doctor.cf"))
     cf_patient = db.Column(db.String(16), db.ForeignKey("patient.cf"))
-    code_medical_examination = db.Column(
-        db.String(10), db.ForeignKey("medical_exam.code")
-    )
+    code_medical_examination = db.Column(db.Integer, db.ForeignKey("medical_exam.code"))
 
     def toDict(self):
         return {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
