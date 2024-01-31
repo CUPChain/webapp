@@ -1,11 +1,8 @@
-from flask import request
-
-from .app import app
+from flask import request, jsonify
+from ..app import app
 from .controller import *
 from web3.auto import w3
 from eth_account.messages import encode_defunct
-
-# REST API routes for CRUD operations
 
 
 @app.route("/api/v1/challenge/<pkey>", methods=["GET"])

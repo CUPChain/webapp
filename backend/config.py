@@ -33,3 +33,8 @@ config = {
     "staging": StagingConfig,
     "production": ProductionConfig,
 }
+
+
+BASE_ROOT = "api"
+VERSION = "v1"
+NONCE_LIMIT = 2147483647

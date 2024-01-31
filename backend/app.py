@@ -2,11 +2,12 @@ import os
 from flask_swagger import swagger
 from flask_swagger_ui import get_swaggerui_blueprint
 from flask import jsonify
+from flasgger import Swagger
 
 from . import create_app
 
 app = create_app(os.getenv("CONFIG_MODE") or "development")
-# swagger = Swagger(app)
+swag = Swagger(app)
 
 
 @app.route("/")
@@ -20,8 +21,13 @@ def not_found(e):
 
 
 # Applications Routes APIs
-from . import views
-from . import login
+from .appointments import view
+from .prescriptions import view
+from .patients import view
+from .hospitals import view
+from .login import view
+from .doctors import view
+from .medical_exam import view
 
 
 # ----------------------------------------------- #
