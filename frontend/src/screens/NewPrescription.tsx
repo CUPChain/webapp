@@ -4,19 +4,16 @@ import 'typeface-titillium-web';
 import 'typeface-roboto-mono';
 import 'typeface-lora';
 import Layout from '../components/Layout';
-import { Section, Card, CardBody, CardTitle, Input, Select, Button } from 'design-react-kit';
-import { useNavigate } from 'react-router-dom';
+import Select, { components, InputProps, PlaceholderProps } from 'react-select';
+import { Section, Card, CardBody, CardTitle, Input, Button } from 'design-react-kit';
 import { BACKEND_URL, Token } from '../constants';
-import { set } from 'react-hook-form';
 import { mintPrescription } from '../utils';
 import { ethers, keccak256, toUtf8Bytes } from 'ethers';
 
 
 const NewPrescription = () => {
-    const [prescrTypes, setPrescrTypes] = React.useState<{code: number, name: string}[]>([])
+    const [prescrTypes, setPrescrTypes] = React.useState<{ value: number, label: string; }[]>([]);
     const [selectedType, setSelectedType] = React.useState(0);
-    const [patientCF, setPatientCF] = React.useState("");
-
     const [patientAddr, setPatientAddr] = React.useState<string>();
 
     useEffect(() => {
@@ -28,24 +25,29 @@ const NewPrescription = () => {
                 console.log(response.statusText);
                 return;
             }
-            
-            const data = await response.json() as { medical_exams: {code: number, name: string}[] }; 
-            setPrescrTypes(data.medical_exams);
+
+            const data = await response.json() as { medical_exams: { code: number, name: string; }[]; };
+            setPrescrTypes(data.medical_exams.map((v) => {
+                return {
+                    value: v.code,
+                    label: v.name
+                };
+            }));
             if (data.medical_exams.length > 0) {
                 setSelectedType(data.medical_exams[1].code);
             }
-        }
+        };
 
         fetchPrescrTypes();
     }, []);
 
     // Save prescription to DB, get its token id in return, mint token with received id
     const saveAndMintPrescription = async () => {
-        if (patientCF == "") { return }
+        if (patientAddr === "") { return; }
 
         let formData = new FormData();
-        formData.append('code_medical_examination', selectedType.toString())
-        formData.append('cf_patient', patientCF);
+        formData.append('code_medical_examination', selectedType.toString());
+        formData.append('patient_address', patientAddr!);
         // cf doctor should be taken from db with login
 
 
@@ -59,26 +61,30 @@ const NewPrescription = () => {
         if (!response.ok) {
             console.log(response.statusText);
             // TODO: error handling
-            return
+            return;
         }
         const tokenId = (await response.json()).id as number;
-        
+
         // TODO: nothing to hash...
         const hashableData = {
             id: tokenId,
             category: selectedType
-        }
-        
+        };
+
         let hashableString = "";
         Object.keys(hashableData).sort().forEach((key: string) => {
             // Get value of key and add it to dataToHash
             let value = (hashableData as any)[key];
             hashableString += `${key}:${value};`;
         });
-        const hash = keccak256(ethers.toUtf8Bytes(hashableString))
-        
+        const hash = keccak256(ethers.toUtf8Bytes(hashableString));
+
         await mintPrescription(patientAddr!, tokenId, hash, selectedType);
-    }
+    };
+
+    const Placeholder = (props: PlaceholderProps<{ value: number, label: string; }>) => {
+        return <components.Placeholder {...props} />;
+    };
 
     return (
         <Layout>
@@ -91,23 +97,19 @@ const NewPrescription = () => {
 
                         <Input
                             type='text'
-                            label='Indirizzo pubblico del medico'
+                            label='Address del paziente'
+                            onChange={(v) => { setPatientAddr(v.target.value); }}
                         />
 
-                        <Input
-                            type='text'
-                            label='Codice fiscale del paziente'
+                        <Select
+                            name='prescrType'
+                            components={{ Placeholder }}
+                            placeholder={'Seleziona tipo di visita'}
+                            isSearchable={true}
+                            options={prescrTypes}
                         />
 
-                        <Select label='Tipo di prescrizione' defaultValue={selectedType} onChange={(v) => {setSelectedType(parseInt(v))}} >
-                            {prescrTypes.map((prescrType) => (
-                                <option key={prescrType.code} value={prescrType.code.toString()}>
-                                    {prescrType.name}
-                                </option>
-                            ))}
-                        </Select>
-
-                        <Button color='primary' onClick={saveAndMintPrescription}>
+                        <Button color='primary' onClick={saveAndMintPrescription} style={{ marginTop: '2rem' }}>
                             Crea prescrizione
                         </Button>
                     </CardBody>

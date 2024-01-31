@@ -1,18 +1,32 @@
 body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
+        'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
+        'Helvetica Neue', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+        monospace;
 }
 
-
 .card::after {
-  content: none !important;
+    content: none !important;
+}
+
+label {
+    pointer-events: none;
+}
+
+.css-13cymwt-control{
+    border-radius: 0px !important;
+    border-width: 0px 0px 1px 0px !important;
+    border-bottom: 1px solid #5d7083 !important;
+}
+
+.css-qbdosj-Input > input:focus {
+    border-color: #5d7083 !important;
+    box-shadow: none !important;
 }
