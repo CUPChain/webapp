@@ -326,6 +326,32 @@ def retrieve_all_prescriptions_by_doctor(cf):
         )  # not reachable since output an empty list
 
 
+def retrieve_all_prescriptions_for_doctor_by_patient(cf, request_form):
+    doctor = request_form["cf_doctor"]
+    prescriptions = db.session.execute(
+        db.select(Prescription)
+        .where(Prescription.cf_doctor == doctor)
+        .where(Prescription.cf_patient == cf)
+    )
+    if prescriptions:
+        return jsonify(
+            {
+                "prescription": [
+                    prescription[0].toDict() for prescription in prescriptions
+                ]
+            }
+        )
+    else:
+        return (
+            jsonify(
+                {
+                    "message": "No Prescriptions found for doctor: '{doctor}' and patient: '{cf}'"
+                }
+            ),
+            404,
+        )  # not reachable since output an empty list
+
+
 # Controllare che esistano chiamate API:
 # - /categories/id: codice?, nome categoria
 
