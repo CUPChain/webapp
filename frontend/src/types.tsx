@@ -13,9 +13,10 @@ type AppointmentType = {
     // location: location, // Location
     date: string, // Date of appointment
     time: string, // Time of appointment
-    doctor?: string, // Doctor name (optional)
     distance?: string, // Distance from user (optional)
-    id_hospital: number
+    id_hospital: number,
+    latitude: number,
+    longitude: number
 };
 
 type PrescriptionType = {

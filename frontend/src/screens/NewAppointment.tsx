@@ -1,20 +1,20 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import 'bootstrap-italia/dist/css/bootstrap-italia.min.css';
 import 'typeface-titillium-web';
 import 'typeface-roboto-mono';
 import 'typeface-lora';
 import Layout from '../components/Layout';
-import BackButton from '../components/BackButton';
 import Select, { components, PlaceholderProps } from 'react-select';
 import { Section, Card, CardBody, CardTitle, Input, Button } from 'design-react-kit';
 import { BACKEND_URL } from '../constants';
-import { mintPrescription } from '../utils';
+import { mintAppointment } from '../utils';
+import { ethers, keccak256 } from 'ethers';
 
 
-const NewPrescription = () => {
-    const [prescrTypes, setPrescrTypes] = React.useState<{ value: number, label: string; }[]>([]);
-    const [selectedType, setSelectedType] = React.useState(0);
-    const [patientAddr, setPatientAddr] = React.useState<string>();
+const NewAppointment = () => {
+    const [apptTypes, setApptTypes] = useState<{ value: number, label: string; }[]>([]);
+    const [selectedType, setSelectedType] = useState(0);
+    const [apptDate, setApptDate] = useState<Date>();
 
     useEffect(() => {
         // Retrieve list of possible medical exams
@@ -27,7 +27,7 @@ const NewPrescription = () => {
             }
 
             const data = await response.json() as { medical_exams: { code: number, name: string; }[]; };
-            setPrescrTypes(data.medical_exams.map((v) => {
+            setApptTypes(data.medical_exams.map((v) => {
                 return {
                     value: v.code,
                     label: v.name
@@ -42,16 +42,14 @@ const NewPrescription = () => {
     }, []);
 
     // Save prescription to DB, get its token id in return, mint token with received id
-    const saveAndMintPrescription = async () => {
-        if (patientAddr === "") { return; }
+    const saveAndMintAppointment = async () => {
 
         // Load token from local storage
         const token = localStorage.getItem('token');
 
         let formData = new FormData();
         formData.append('code_medical_examination', selectedType.toString());
-        formData.append('patient_address', patientAddr!);
-        // cf doctor should be taken from db with login
+        //formData.append('date', apptDate?.getDate.toString());
 
         // Send prescription to backend
         const requestOptions = {
@@ -72,7 +70,21 @@ const NewPrescription = () => {
         }
         const tokenId = (await response.json()).id as number;
 
-        await mintPrescription(patientAddr!, tokenId, "NO",selectedType);
+        const hashableData = {
+            id: tokenId,
+            category: selectedType,
+            date: apptDate
+        };
+
+        let hashableString = "";
+        Object.keys(hashableData).sort().forEach((key: string) => {
+            // Get value of key and add it to dataToHash
+            let value = (hashableData as any)[key];
+            hashableString += `${key}:${value};`;
+        });
+        const hash = keccak256(ethers.toUtf8Bytes(hashableString));
+
+        await mintAppointment(tokenId, hash, selectedType);
     };
 
     const Placeholder = (props: PlaceholderProps<{ value: number, label: string; }>) => {
@@ -82,28 +94,25 @@ const NewPrescription = () => {
     return (
         <Layout>
             <Section color='muted' className='mt-1'>
-                <BackButton />
                 <Card spacing className='card-bg card-big no-after'>
                     <CardBody>
                         <CardTitle tag='h5'>
-                            Crea una nuova prescrizione
+                            Crea un nuovo appuntamento
                         </CardTitle>
 
                         <Input
-                            type='text'
-                            label='Codice fiscale del paziente'
-                            onChange={(v) => { setPatientAddr(v.target.value); }}
+                            //TODO: date
                         />
 
                         <Select
-                            name='prescrType'
+                            name='apptType'
                             components={{ Placeholder }}
                             placeholder={'Seleziona tipo di visita'}
                             isSearchable={true}
-                            options={prescrTypes}
+                            options={apptTypes}
                         />
 
-                        <Button color='primary' onClick={saveAndMintPrescription} style={{ marginTop: '2rem' }}>
+                        <Button color='primary' onClick={saveAndMintAppointment} style={{ marginTop: '2rem' }}>
                             Crea prescrizione
                         </Button>
                     </CardBody>
@@ -113,4 +122,4 @@ const NewPrescription = () => {
     );
 };
 
-export default NewPrescription;
+export default NewAppointment;

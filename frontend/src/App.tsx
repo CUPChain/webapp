@@ -14,6 +14,7 @@ import Prescription from './screens/Prescription';
 import Appointment from './screens/Appointment';
 import ConfirmAppointment from './screens/ConfirmAppointment';
 import NewPrescription from './screens/NewPrescription';
+import PrescriptionList from './screens/PrescriptionList';
 import { useState } from 'react';
 import { ethers, keccak256 } from "ethers";
 import PrescriptionTokens from './artifacts/contracts/PrescriptionTokens.sol/PrescriptionTokens.json';
@@ -138,6 +139,7 @@ const App = () => {
             <Route path="/prescriptions/:id" element={<Prescription />} />
             <Route path="/prescriptions/:id/confirm-appointment" element={<ConfirmAppointment />} />
             <Route path="/appointments/:id" element={<Appointment />} />
+            <Route path="/doctor" element={<PrescriptionList />} />
             <Route path="/doctor/new-prescription" element={<NewPrescription />} />
           </Routes>
         </BrowserRouter>

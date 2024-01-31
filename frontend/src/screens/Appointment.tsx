@@ -22,14 +22,16 @@ const Appointment = () => {
     
     const [appointment, setAppointment] = React.useState<AppointmentType>({
         id: 0,
-        type: 'Invalid',
-        name: 'Invalid',
-        city: 'Invalid',
-        cap: 'Invalid',
-        address: 'Invalid',
-        date: 'Invalid',
-        time: 'Invalid',
-        id_hospital: 0
+        type: '',
+        name: '',
+        city: '',
+        cap: '',
+        address: '',
+        date: '',
+        time: '',
+        id_hospital: 0,
+        latitude: 0,
+        longitude: 0
     });
     const [prescription, setPrescription] = React.useState<PrescriptionType>({id: 0, type: "Invalid"});
 
@@ -97,12 +99,12 @@ const Appointment = () => {
                             <CardBody>
                                 {
                                     MAP_ENABLED ?
-                                        <MapContainer center={[0, 0]} zoom={13} scrollWheelZoom={false}>
+                                        <MapContainer center={[appointment.latitude, appointment.longitude]} zoom={13} scrollWheelZoom={false}>
                                             <TileLayer
                                                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                                                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                             />
-                                            <Marker position={[0, 0]}>
+                                            <Marker position={[appointment.latitude, appointment.longitude]}>
                                                 <Popup>
                                                     A pretty CSS3 popup. <br /> Easily customizable.
                                                 </Popup>

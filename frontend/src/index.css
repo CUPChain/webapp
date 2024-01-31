@@ -30,3 +30,7 @@ label {
     border-color: #5d7083 !important;
     box-shadow: none !important;
 }
+
+.form-group {
+    margin-bottom: 0px !important;
+}

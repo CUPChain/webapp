@@ -1,5 +1,5 @@
 from flask import request, jsonify
-import uuid
+import datetime
 
 from . import db
 from .models import *
@@ -58,50 +58,94 @@ def create_jwt_token(pkey: str) -> str:
     )
     # Insert the JWT token in the database
     db.session.execute(
-        db.update(Account).where(Account.pkey == pkey).values(jwt=token)
+        db.update(Account)
+        .where(Account.pkey == pkey)
+        .values(jwt=token, jwt_exp=datetime.datetime.utcnow() + datetime.timedelta(days=1))
     )
     db.session.commit()
     return token
 
+def validate_jwt_token(token: str) -> bool:
+    """
+    Validate the JWT token.
+
+    Args:
+        token (str): The JWT token.
+
+    Returns:
+        bool: True if the token is valid, False otherwise.
+    """
+    try:
+        print(token)
+        jwt.decode(token, key=os.getenv("JWT_SECRET_KEY"), algorithms=["HS256"])
+        return True
+    except:
+        return False
+    
+def get_account() -> Account:
+    """
+    Get the account from the database corresponding to the address.+
+
+    Returns:
+        Account: The account.
+    """
+    jwt = request.headers.get("auth")
+    if not validate_jwt_token(jwt):
+        print("Invalid token")
+        return None
+    account = db.session.execute(
+        db.select(Account).filter_by(jwt=jwt)
+    ).one_or_none()
+    if account:
+        return account[0]
+    else:
+        return None
+
 
 def list_all_appointments(category=None, date=None):
     # - /available_appointments?categoria&data: (categoria, data > today, id_prescription=null) [TODO: filter for category and data]
+    now = datetime.datetime.now()
+
     if category and date:
         result = db.session.execute(
             db.select(Appointment)
             .where(Appointment.date >= date
-            ).where(Appointment.code_medical_examination == category
-            ).where(Appointment.id_prescription == None)
+                   ).where(Appointment.code_medical_examination == category
+                           ).where(Appointment.id_prescription == None)
         )
     elif category:
         result = db.session.execute(
             db.select(Appointment).where(
                 Appointment.code_medical_examination == category
-            ).where(Appointment.id_prescription == None)
+            ).where(Appointment.date >= now).where(Appointment.id_prescription == None)
         )
     elif date:
         result = db.session.execute(
             db.select(Appointment).where(Appointment.date >= date
-            ).where(Appointment.id_prescription == None))
+                                         ).where(Appointment.id_prescription == None))
     else:
-        result = db.session.execute(db.select(Appointment))
+        result = db.session.execute(db.select(Appointment).where(Appointment.date >= now).where(
+            Appointment.id_prescription == None))
     appointments_list = [appointment[0].toDict() for appointment in result]
     return jsonify({"appointments": appointments_list})
 
 
-def retrieve_appointment(id, category=None, date=None):
+def retrieve_appointment(id):
     # - /appointments/id: id, ospedale, categoria, id dottore che fa la visita, nome dottore
 
-    appointment = db.session.execute(
-        db.select(Appointment).filter_by(id=id),
-    ).one_or_none()
+    appointment = db.session.query(Appointment, Hospital).join(
+        Appointment, Appointment.id_hospital == Hospital.id).filter(Appointment.id == id).one_or_none()
+    # .execute(
+    #     db.select(Appointment).filter_by(id=id).join(
+    #         Hospital, Appointment.id_hospital == Hospital.id),
+    # ).one_or_none()
     # appointment = db.one_or_404(
     #     db.select(Appointment).filter_by(id_prescription=id_prescription),
     #     description=f"No appointments associated with the id of the prescription: '{id_prescription}'.",
     # )
 
     if appointment:
-        return jsonify({"appointment": appointment[0].toDict()})
+        return jsonify({"appointment": appointment[0].toDict(), "hospital": appointment[1].toDict()})
     else:
         return (
             jsonify(
@@ -160,7 +204,8 @@ def list_all_doctors():
 
 
 def retrieve_doctor(cf):
-    doctor = db.session.execute(db.select(Doctor).filter_by(cf=cf)).one_or_none()
+    doctor = db.session.execute(
+        db.select(Doctor).filter_by(cf=cf)).one_or_none()
     if doctor:
         return jsonify({"doctor": doctor[0].toDict()})
     else:
@@ -186,7 +231,8 @@ def retrieve_hospital(id_hospital):
 
 def list_all_is_able_to_do():
     result = db.session.execute(db.select(IsAbleToDo))
-    is_able_to_do_list = [is_able_to_do[0].toDict() for is_able_to_do in result]
+    is_able_to_do_list = [is_able_to_do[0].toDict()
+                          for is_able_to_do in result]
     return jsonify({"is_able_to_do": is_able_to_do_list})
 
 
@@ -195,7 +241,8 @@ def retrieve_all_hospital_is_able_to_do(id_is_able_to_do):
         db.select(IsAbleToDo).where(IsAbleToDo.id_hospital == id_is_able_to_do)
     )
     if result:
-        is_able_to_do_data = [is_able_to_do[0].toDict() for is_able_to_do in result]
+        is_able_to_do_data = [is_able_to_do[0].toDict()
+                              for is_able_to_do in result]
         return jsonify({"is_able_to_do": is_able_to_do_data})
     else:
         return (
@@ -206,10 +253,12 @@ def retrieve_all_hospital_is_able_to_do(id_is_able_to_do):
 
 def retrieve_all_is_able_to_do_code(code):
     result = db.session.execute(
-        db.select(IsAbleToDo).where(IsAbleToDo.code_medical_examination == code)
+        db.select(IsAbleToDo).where(
+            IsAbleToDo.code_medical_examination == code)
     )
     if result:
-        is_able_to_do_data = [is_able_to_do[0].toDict() for is_able_to_do in result]
+        is_able_to_do_data = [is_able_to_do[0].toDict()
+                              for is_able_to_do in result]
         return jsonify({"is_able_to_do": is_able_to_do_data})
     else:
         return (
@@ -244,7 +293,8 @@ def list_all_patients():
 
 
 def retrieve_patient(cf):
-    patient = db.session.execute(db.select(Patient).filter_by(cf=cf)).one_or_none()
+    patient = db.session.execute(
+        db.select(Patient).filter_by(cf=cf)).one_or_none()
     if patient:
         return jsonify({"patient": patient[0].toDict()})
     else:

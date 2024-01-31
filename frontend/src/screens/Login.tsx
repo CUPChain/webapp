@@ -4,8 +4,7 @@ import 'typeface-titillium-web';
 import 'typeface-roboto-mono';
 import 'typeface-lora';
 import Layout from '../components/Layout';
-import { Input, Section, Row, Col, Alert, Button } from 'design-react-kit';
-import { useForm, Controller, SubmitHandler } from "react-hook-form";
+import { Section, Button } from 'design-react-kit';
 import metamask from '../images/metamask.svg';
 import { BACKEND_URL } from '../constants';
 import { loginMetamask, signString } from '../utils';
@@ -24,11 +23,9 @@ const Login = () => {
             return;
         }
         const challenge = await challengeResponse.json() as { nonce: string; };
-        console.log("challenge: ", challenge);
 
         // Sign challenge
         const signature = await signString(challenge.nonce.toString(), signer);
-        console.log("signature: ", signature);
 
         // Send signature to server
         const loginResponse = await fetch(`${BACKEND_URL}/api/v1/login`, {
@@ -46,7 +43,9 @@ const Login = () => {
             return;
         }
         const loginData = await loginResponse.json() as { token: string; };
-        console.log("token: ", loginData.token);
+        
+        // Store token
+        localStorage.setItem('token', loginData.token);
     };
 
     return (

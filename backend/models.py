@@ -1,5 +1,4 @@
 from sqlalchemy import inspect
-from datetime import datetime
 from flask_validator import *
 from sqlalchemy.orm import validates
 import random
@@ -8,17 +7,22 @@ from . import db  # from __init__.py
 
 NONCE_LIMIT = 2147483647
 
+
 class Account(db.Model):
     # Login with MetaMask Fields:
-    pkey = db.Column(db.String(42), nullable=False, unique=True, primary_key=True)
+    pkey = db.Column(db.String(42), nullable=False,
+                     unique=True, primary_key=True)
     nonce = db.Column(
         db.Integer, nullable=False, default=random.randint(0, NONCE_LIMIT)
     )
-    jwt = db.Column(db.String(1000), nullable = True)
-    jwt_exp = db.Column(db.DateTime, nullable = True)
-    cf_patient = db.Column(db.String(16), db.ForeignKey("patient.cf"), nullable = True)
-    cf_doctor = db.Column(db.String(16), db.ForeignKey("doctor.cf"), nullable = True)
-    id_hospital = db.Column(db.Integer, db.ForeignKey("hospital.id"), nullable = True)
+    jwt = db.Column(db.String(1000), nullable=True)
+    jwt_exp = db.Column(db.DateTime, nullable=True)
+    cf_patient = db.Column(
+        db.String(16), db.ForeignKey("patient.cf"), nullable=True)
+    cf_doctor = db.Column(
+        db.String(16), db.ForeignKey("doctor.cf"), nullable=True)
+    id_hospital = db.Column(
+        db.Integer, db.ForeignKey("hospital.id"), nullable=True)
 
     def toDict(self):
         return {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
@@ -32,8 +36,9 @@ class Appointment(db.Model):
     date = db.Column(db.DateTime, nullable=False)
     # cf_doctor = db.Column(db.String(16), db.ForeignKey("doctor.cf"))
     code_medical_examination = db.Column(
-        db.Integer, db.ForeignKey("medical_exam.code"))
-    id_prescription = db.Column(db.Integer, db.ForeignKey("prescription.id"))
+        db.Integer, db.ForeignKey("medical_exam.code"), nullable=False)
+    id_prescription = db.Column(
+        db.Integer, db.ForeignKey("prescription.id"), nullable=True)
 
     # validate that this is correct since the dates can be interpreted weirdly from db to python to json and viceversa
     def toDict(self):
@@ -55,7 +60,7 @@ class Doctor(db.Model):
     city = db.Column(db.String(50), nullable=False)
     latitude = db.Column(db.Float, nullable=False)
     longitude = db.Column(db.Float, nullable=False)
-    pkey = db.Column(db.LargeBinary, nullable=False)
+    # pkey = db.Column(db.LargeBinary, nullable=False)
 
     def toDict(self):
         return {
@@ -75,7 +80,7 @@ class Hospital(db.Model):
     city = db.Column(db.String(50), nullable=False)
     latitude = db.Column(db.Float, nullable=False)
     longitude = db.Column(db.Float, nullable=False)
-    pkey = db.Column(db.LargeBinary, nullable=False)
+    # pkey = db.Column(db.LargeBinary, nullable=False)
 
     def toDict(self):
         return {

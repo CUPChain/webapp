@@ -25,9 +25,7 @@ def get_appointments():
     # here I can manage GET PUT etc...
     # - /available_appointments?categoria&data: (categoria, data > today, id_prescription=null) [TODO: filter for category and data]
     category = request.args.get("category")
-    print(category)
     date = request.args.get("date")
-    print(date)
     return list_all_appointments(category, date)
 
 
@@ -115,25 +113,39 @@ def cancel_appointment(id_prescription):
         in: path
         type: string
         required: true
-      - name: category
-        in: formData
+      - name: auth
+        in: header
         type: string
         required: true
-      - name: id_hospital
-        in: formData
-        type: integer
-        required: true
-      - name: data
-        in: formData
-        type: datetime
-        required: true
-      - name: id_prescription
-        in: formData
-        type: string
     responses:
       200:
         description: Appointment cancelled successfully
     """
+    # Get the account from the JWT token
+    account = get_account()
+    if account == None:
+        return (
+            jsonify(
+                {
+                    "error": f"Login required."
+                }
+            ),
+            302,
+        )
+    
+    # Check if the account is owner of the prescription
+    prescription = Prescription.query.filter_by(id=id_prescription).first()
+    if prescription.cf_patient != account.cf_patient:
+        return (
+            jsonify(
+                {
+                    "error": f"Account {account.cf_patient} is not owner of the prescription {id_prescription}."
+                }
+            ),
+            403,
+        )
+    
+    # Cancel the appointment    
     return cancel_booked_appointment(id_prescription)
 
 

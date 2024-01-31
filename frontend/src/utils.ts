@@ -125,8 +125,22 @@ const mintPrescription = async (patientAddr: string, tokenID: number, hash: Byte
     const [, signer] = await loginMetamask();
 
     const contract = new ethers.Contract(PRESCRIPTIONS_CONTRACT, PrescriptionTokens.abi, signer);
-    // for now give token to caller
     const transaction = await contract.safeMint(patientAddr, tokenID, hash, category);
+    await transaction.wait();
+};
+
+/** Mint an appointment token
+ * @param {number} tokenID - ID of the token to be minted
+ * @param {BytesLike} hash - Hash of the metadata residing in the database
+ * @param {number} category - ID of the prescription category
+ * @throws {Error} - If metamask is not installed or user is not logged in
+ * @throws {Error} - If user is not logged in
+**/
+const mintAppointment = async (tokenID: number, hash: BytesLike, category: number) => {
+    const [, signer] = await loginMetamask();
+
+    const contract = new ethers.Contract(APPOINTMENTS_CONTRACT, AppointmentTokens.abi, signer);
+    const transaction = await contract.safeMint(tokenID, hash, category);
     await transaction.wait();
 };
 
@@ -180,4 +194,4 @@ const signString = async (s: string, signer: ethers.Signer): Promise<ethers.Byte
     return signature;
 };
 
-export { getTokenData, getOwnedTokens, exchangePrescriptionAppointment, verifyHash, mintPrescription, isOwned, loginMetamask, signString};
+export { getTokenData, getOwnedTokens, exchangePrescriptionAppointment, verifyHash, mintPrescription, isOwned, loginMetamask, signString, mintAppointment};

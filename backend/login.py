@@ -66,3 +66,13 @@ def login():
         return jsonify({
             "token": token
         })
+    else:
+        return (
+            jsonify(
+                {
+                    "error": f"Signature verification failed.",
+                    "nonce": None,
+                }
+            ),
+            404,
+        )
