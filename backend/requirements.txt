@@ -8,4 +8,6 @@ Werkzeug==2.3.8
 flask_cors
 pyjwt
 web3
+flask-swagger
+flask_swagger_ui
 flasgger
