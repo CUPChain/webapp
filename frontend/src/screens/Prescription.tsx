@@ -16,7 +16,7 @@ import { getTokenData, isOwned } from '../utils';
 const Prescription = () => {
     const id = window.location.pathname.split('/')[2];
 
-    const [prescription, setPrescription] = useState<PrescriptionType>();
+    const [prescription, setPrescription] = useState<PrescriptionType>({id: 0, type: "Invalid"});
     const [appointments, setAppointments] = useState<AppointmentType[]>([]);
 
     useEffect(() => {
@@ -27,20 +27,30 @@ const Prescription = () => {
                 return
             }
 
-            const [category,] = await getTokenData(id, Token.Appointment);
+            const [category,] = await getTokenData(id, Token.Prescription);
             
-            const categoryName = await fetch(`${BACKEND_URL}/api/v1/medical_exams/${category}`)
-                                        .then(response => response.json()) //TODO: http errors
-                                        .then(data => data.name);
+            // Get category name from database
+            const categoryResponse = await fetch(`${BACKEND_URL}/api/v1/medical_exams/${category}`)
+            if (!categoryResponse.ok) {
+                console.log("error:", categoryResponse);
+                return
+            }
+            const categoryName = await categoryResponse.json()
+                .then(data => data.medical_exam.name);
 
             setPrescription({ id: id, type: categoryName});
 
-            // Get appointments from blockchain
-            const availableAppointments = await fetch(`${BACKEND_URL}/api/v1/available_appointments/${category}`)
-                                                .then(response => response.json()) //TODO: http errors
-                                                .then(data => data as AppointmentType[]);
+            // Get available appointments from database
+            const appointmentsResponse = await fetch(`${BACKEND_URL}/api/v1/available_appointments/${category}`)
+            if (!appointmentsResponse.ok) {
+                console.log("error:", appointmentsResponse);
+                return
+            }
+            const availableAppointments = await appointmentsResponse.json()
+                .then(data => data.appointments as AppointmentType[]);
 
-            setAppointments(availableAppointments.sort()); //TODO: sort by?
+            availableAppointments.sort();
+            setAppointments(availableAppointments); //TODO: sort by what?
         };
         
         fetchData(Number.parseInt(id));
@@ -81,7 +91,7 @@ const Prescription = () => {
                                     {prescription.type}
                                 </CardTitle>
                                 <CardText>
-                                    {"Prescription id " + prescription.id}
+                                    {"Prescription id: " + prescription.id}
                                 </CardText>
                             </CardBody>
                         </Card>

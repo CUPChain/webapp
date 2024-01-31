@@ -45,7 +45,6 @@ const getTokenData = async (tokenID: number, tokenType: Token): Promise<[number,
 
     try {
         [category, hash] = await contract.getToken(tokenID);
-        console.log("category: ", category, " hash: ", hash);
     } catch (err) {
         console.log(`Could not fetch token ${tokenID}: `, err);
         return [0, ""];
@@ -156,8 +155,8 @@ const isOwned = async (tokenID: number, tokenType: Token): Promise<boolean> => {
 
     try {
         const address = await contract.ownerOf(tokenID);
-        console.log("address: ", address);
-        return address === signer.getAddress();
+        const signerAddress = await signer.getAddress();
+        return address === signerAddress;
     } catch (err) {
         console.log(`Could not fetch ${tokenType.toString()} tokens: `, err);
         return false;
