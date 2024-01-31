@@ -32,8 +32,7 @@ cur.execute("DROP TABLE IF EXISTS prescription CASCADE;")
 cur.execute("DROP TABLE IF EXISTS is_able_to_do CASCADE;")
 cur.execute("DROP TABLE IF EXISTS hospital CASCADE;")
 cur.execute("DROP TABLE IF EXISTS medical_exam CASCADE;")
-cur.execute("DROP TABLE IF EXISTS user_patient CASCADE;")
-cur.execute("DROP TABLE IF EXISTS user_doctor CASCADE;")
+cur.execute("DROP TABLE IF EXISTS account CASCADE;")
 cur.execute("DROP TABLE IF EXISTS patient CASCADE;")
 cur.execute("DROP TABLE IF EXISTS doctor CASCADE;")
 cur.execute("DROP FUNCTION IF EXISTS check_hospital_can_do_medical_exam CASCADE;")
@@ -55,14 +54,6 @@ cur.execute("""CREATE TABLE IF NOT EXISTS patient (
 );
 """)            
 
-cur.execute("""CREATE TABLE IF NOT EXISTS user_patient (
-            username VARCHAR(50) PRIMARY KEY,
-            password VARCHAR(50) NOT NULL,
-            cf VARCHAR(16) NOT NULL,
-            FOREIGN KEY(cf) REFERENCES patient(cf)
-);
-""")
-
 cur.execute("""CREATE TABLE IF NOT EXISTS doctor (
             cf VARCHAR(16) PRIMARY KEY,
             name VARCHAR(50) NOT NULL,
@@ -71,16 +62,7 @@ cur.execute("""CREATE TABLE IF NOT EXISTS doctor (
             cap VARCHAR(5) NOT NULL,
             city VARCHAR(50) NOT NULL,
             latitude FLOAT NOT NULL,
-            longitude FLOAT NOT NULL,
-            pkey BYTEA NOT NULL
-);
-""")
-
-cur.execute("""CREATE TABLE IF NOT EXISTS user_doctor (
-            username VARCHAR(50) PRIMARY KEY,
-            password VARCHAR(50) NOT NULL,
-            cf VARCHAR(16) NOT NULL,
-            FOREIGN KEY(cf) REFERENCES doctor(cf)
+            longitude FLOAT NOT NULL
 );
 """)
 
@@ -97,8 +79,18 @@ cur.execute("""CREATE TABLE IF NOT EXISTS hospital (
             cap VARCHAR(5) NOT NULL,
             city VARCHAR(50) NOT NULL,
             latitude FLOAT NOT NULL,
-            longitude FLOAT NOT NULL,
-            pkey BYTEA NOT NULL
+            longitude FLOAT NOT NULL
+);
+""")
+
+cur.execute("""CREATE TABLE IF NOT EXISTS account (
+            pkey VARCHAR(42) PRIMARY KEY,
+            nonce INTEGER NOT NULL,
+            jwt VARCHAR(1000),
+            jwt_exp TIMESTAMP,
+            cf_patient VARCHAR(16) REFERENCES patient(cf),
+            cf_doctor VARCHAR(16) REFERENCES doctor(cf),
+            id_hospital INTEGER REFERENCES hospital(id)
 );
 """)
 
@@ -164,22 +156,10 @@ cur.execute("""INSERT INTO patient (cf, name, surname, address, cap, city, latit
             ('BNCLRD00A01H501A', 'Alessandro', 'Bianchi', 'Via Giuseppe Verdi 12', '10124', 'Torino', 45.069133, 7.690493);
 """)
 
-cur.execute("""INSERT INTO user_patient (username, password, cf) VALUES
-            ('mario', '1234', 'RSSMRA00A01H501A'),
-            ('giuseppe', '1234', 'VRDGPP00A01H501A'),
-            ('alessandro', '1234', 'BNCLRD00A01H501A');
-""")
-
-cur.execute("""INSERT INTO doctor (cf, name, surname, address, cap, city, latitude, longitude, pkey) VALUES
-            ('SGNLCA00A01H501A', 'Luca', 'Sognatore', 'Piazza Risorgimento 49', '20129', 'Milano', 45.468023, 9.211227, '0x123456789ABCDEF'),
-            ('BLLNCA00A01H501A', 'Carlo', 'Bellini', 'Via degli Olimpionici 12', '00196', 'Roma', 41.934302, 12.468421, '0x121212121212122'),
-            ('FRRRBT00A01H501A', 'Roberto', 'Ferrari', 'Via Evangelista Torricelli 3', '10128', 'Torino', 45.053066, 7.663516, '0x333333333333333');
-""")
-
-cur.execute("""INSERT INTO user_doctor (username, password, cf) VALUES
-            ('luca', '1234', 'SGNLCA00A01H501A'),
-            ('carlo', '1234', 'BLLNCA00A01H501A'),
-            ('roberto', '1234', 'FRRRBT00A01H501A');
+cur.execute("""INSERT INTO doctor (cf, name, surname, address, cap, city, latitude, longitude) VALUES
+            ('SGNLCA00A01H501A', 'Luca', 'Sognatore', 'Piazza Risorgimento 49', '20129', 'Milano', 45.468023, 9.211227),
+            ('BLLNCA00A01H501A', 'Carlo', 'Bellini', 'Via degli Olimpionici 12', '00196', 'Roma', 41.934302, 12.468421),
+            ('FRRRBT00A01H501A', 'Roberto', 'Ferrari', 'Via Evangelista Torricelli 3', '10128', 'Torino', 45.053066, 7.663516);
 """)
 
 cur.execute("""INSERT INTO medical_exam (code, name) VALUES
@@ -190,10 +170,22 @@ cur.execute("""INSERT INTO medical_exam (code, name) VALUES
             (5, 'Visita oculistica');
 """)
 
-cur.execute("""INSERT INTO hospital (id, name, address, cap, city, latitude, longitude, pkey) VALUES
-            (1, 'Ospedale San Raffaele', 'Via Olgettina 60', '20132', 'Milano', 45.505659, 9.263943, '0x123426789AB4DEF'),
-            (2, 'Policlinico Gemelli', 'Largo Agostino Gemelli 8', '00168', 'Roma', 41.932443, 12.429196, '0x121aA5121212122'),
-            (3, 'Ospedale Molinette', 'Corso Bramante 88', '10126', 'Torino', 45.041498, 7.674276, '0x332233333333333');
+cur.execute("""INSERT INTO hospital (id, name, address, cap, city, latitude, longitude) VALUES
+            (1, 'Ospedale San Raffaele', 'Via Olgettina 60', '20132', 'Milano', 45.505659, 9.263943),
+            (2, 'Policlinico Gemelli', 'Largo Agostino Gemelli 8', '00168', 'Roma', 41.932443, 12.429196),
+            (3, 'Ospedale Molinette', 'Corso Bramante 88', '10126', 'Torino', 45.041498, 7.674276);
+""")
+
+cur.execute("""INSERT INTO account (pkey, nonce, jwt, jwt_exp, cf_patient, cf_doctor, id_hospital) VALUES
+            ('0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266', (RANDOM()*100)::int, NULL, NULL, 'RSSMRA00A01H501A', NULL, NULL),
+            ('0x70997970C51812dc3A010C7d01b50e0d17dc79C8', (RANDOM()*100)::int, NULL, NULL, 'VRDGPP00A01H501A', NULL, NULL),
+            ('0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC', (RANDOM()*100)::int, NULL, NULL, 'BNCLRD00A01H501A', NULL, NULL),
+            ('0x90F79bf6EB2c4f870365E785982E1f101E93b906', (RANDOM()*100)::int, NULL, NULL, NULL, 'SGNLCA00A01H501A', NULL),
+            ('0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65', (RANDOM()*100)::int, NULL, NULL, NULL, 'BLLNCA00A01H501A', NULL),
+            ('0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc', (RANDOM()*100)::int, NULL, NULL, NULL, 'FRRRBT00A01H501A', NULL),
+            ('0x976EA74026E726554dB657fA54763abd0C3a0aa9', (RANDOM()*100)::int, NULL, NULL, NULL, NULL, 1),
+            ('0x14dC79964da2C08b23698B3D3cc7Ca32193d9955', (RANDOM()*100)::int, NULL, NULL, NULL, NULL, 2),
+            ('0x23618e81E3f5cdF7f54C3d65f7FBc0aBf5B21E8f', (RANDOM()*100)::int, NULL, NULL, NULL, NULL, 3);
 """)
 
 cur.execute("""INSERT INTO is_able_to_do (id_hospital, code_medical_examination) VALUES
