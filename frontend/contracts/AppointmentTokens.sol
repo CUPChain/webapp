@@ -65,6 +65,12 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
         return (ids, hashes, categories);
     }
 
+    // Get category of appointment (type of appointment)
+    function getCategory(uint256 tokenId) public view returns (uint16) {
+        return tokenIdToCategory[tokenId];
+    }
+
+    //TODO: redundant functions
     // Get category and metadata hash of appointment (type of medical appointment)
     function getToken(uint256 tokenId) public view returns (uint16, bytes32) {
         return (tokenIdToCategory[tokenId], tokenIdToHash[tokenId]);

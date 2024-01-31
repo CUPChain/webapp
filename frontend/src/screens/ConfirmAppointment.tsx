@@ -45,7 +45,7 @@ const ConfirmAppointment = () => {
     });
 
     const confirmAppointment = () => {
-        exchangePrescriptionAppointment(prescription.id, appointment.id, PRESCRIPTIONS_CONTRACT);
+        exchangePrescriptionAppointment(prescription.id, appointment.id);
         // TODO: check for errors?
         //alert('Prenotazione confermata');
     };

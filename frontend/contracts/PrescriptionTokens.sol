@@ -10,7 +10,7 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 
 interface AppointmentContract {
     function safeTransferFrom(address from, address to, uint256 tokenId) external;
-    function getAppointmentCategory(uint256 tokenId) view external returns (uint);
+    function getCategory(uint256 tokenId) view external returns (uint16);
 }
 
 contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, AccessControl {
@@ -71,7 +71,7 @@ contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, AccessC
 
     // Exchange for appointment token
     function makeAppointment(uint256 prescriptionToken, address appointmentsContract, uint256 appointmentToken, address hospital) public {
-        require(tokenIdToCategory[prescriptionToken] == AppointmentContract(appointmentsContract).getAppointmentCategory(appointmentToken));
+        require(tokenIdToCategory[prescriptionToken] == AppointmentContract(appointmentsContract).getCategory(appointmentToken), "Categories don't match");
         safeTransferFrom(msg.sender, hospital, prescriptionToken);
         AppointmentContract(appointmentsContract).safeTransferFrom(hospital, msg.sender, appointmentToken);
     }

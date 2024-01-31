@@ -20,8 +20,18 @@ const Appointment = () => {
     // How do we know what was the id of the prescription that got exchanged for the appointment?
     const id = window.location.pathname.split('/')[2];
     
-    const [appointment, setAppointment] = React.useState<AppointmentType>();
-    const [prescription, setPrescription] = React.useState<PrescriptionType>();
+    const [appointment, setAppointment] = React.useState<AppointmentType>({
+        id: 0,
+        type: 'Invalid',
+        name: 'Invalid',
+        city: 'Invalid',
+        cap: 'Invalid',
+        address: 'Invalid',
+        date: 'Invalid',
+        time: 'Invalid',
+        id_hospital: 0
+    });
+    const [prescription, setPrescription] = React.useState<PrescriptionType>({id: 0, type: "Invalid"});
 
     useEffect(() => {
         const getAppointmentData = async (id: number) => {
@@ -34,6 +44,7 @@ const Appointment = () => {
             const [, hash] = await getTokenData(id, Token.Appointment);
 
             // Retrieve from backend the additional data
+            //TODO: should find appointment by appointmentID, not prescriptionID
             const response = await fetch(`${BACKEND_URL}/api/v1/appointments/${id}`);
             if (!response.ok) {
                 console.log(response.statusText);
@@ -86,12 +97,12 @@ const Appointment = () => {
                             <CardBody>
                                 {
                                     MAP_ENABLED ?
-                                        <MapContainer center={[appointment.latitude, appointment.longitude]} zoom={13} scrollWheelZoom={false}>
+                                        <MapContainer center={[0, 0]} zoom={13} scrollWheelZoom={false}>
                                             <TileLayer
                                                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                                                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                             />
-                                            <Marker position={[appointment.latitude, appointment.longitude]}>
+                                            <Marker position={[0, 0]}>
                                                 <Popup>
                                                     A pretty CSS3 popup. <br /> Easily customizable.
                                                 </Popup>

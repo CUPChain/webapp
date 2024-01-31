@@ -92,8 +92,15 @@ const requestAccount = async () => {
  * @throws {Error} - If metamask is not installed or user is not logged in
  * @throws {Error} - If user is not logged in
 **/
-const exchangePrescriptionAppointment = async (prescrID: number, apptID: number, hospital: string) => {
+const exchangePrescriptionAppointment = async (prescrID: number, apptID: number) => {
     const [, signer] = await loginMetamask();
+
+    const appointmentContract = new ethers.Contract(APPOINTMENTS_CONTRACT, AppointmentTokens.abi, signer);
+    try {
+        var hospital = await appointmentContract.ownerOf(apptID);
+    } catch (e) {
+        console.log("Can't get appointment token owner: ", e);
+    }
 
     const contract = new ethers.Contract(PRESCRIPTIONS_CONTRACT, PrescriptionTokens.abi, signer);
     console.log("ciao");
