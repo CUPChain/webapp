@@ -23,7 +23,12 @@ def get_appointments():
         description: A list of appointments
     """
     # here I can manage GET PUT etc...
-    return list_all_appointments()
+    # - /available_appointments?categoria&data: (categoria, data > today, id_prescription=null) [TODO: filter for category and data]
+    category = request.args.get("category")
+    print(category)
+    date = request.args.get("date")
+    print(date)
+    return list_all_appointments(category, date)
 
 
 @app.route(f"/{BASE_ROOT}/{VERSION}/appointments/create", methods=["POST"])
@@ -152,13 +157,7 @@ def get_appointment(id_prescription):
         description: Appointment details retrieved successfully
     """
 
-    if request.method == "GET":
-        return retrieve_appointment(id_prescription)
-
-
-# - /available_appointments?categoria&data: (categoria, data > today, id_prescription=null) [TODO: filter for category and data]
-# category = request.args.get("category")
-# data = request.args.get("data")
+    return retrieve_appointment(id_prescription)
 
 
 @app.route(f"/{BASE_ROOT}/{VERSION}/doctors", methods=["GET"])

@@ -63,13 +63,30 @@ def create_jwt_token(address: str) -> str:
     return token
 
 
-def list_all_appointments():
-    result = db.session.execute(db.select(Appointment))
+def list_all_appointments(category=None, date=None):
+    if category and date:
+        result = db.session.execute(
+            db.select(Appointment)
+            .where(Appointment.date >= date)
+            .where(Appointment.code_medical_examination == category)
+        )
+    elif category:
+        result = db.session.execute(
+            db.select(Appointment).where(
+                Appointment.code_medical_examination == category
+            )
+        )
+    elif date:
+        result = db.session.execute(
+            db.select(Appointment).where(Appointment.date >= date)
+        )
+    else:
+        result = db.session.execute(db.select(Appointment))
     appointments_list = [appointment[0].toDict() for appointment in result]
     return jsonify({"appointments": appointments_list})
 
 
-def retrieve_appointment(id_prescription):
+def retrieve_appointment(id_prescription, category=None, date=None):
     # - /appointments/id: id, ospedale, categoria, id dottore che fa la visita, nome dottore
 
     appointment = db.session.execute(
