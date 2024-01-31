@@ -6,83 +6,57 @@ import 'typeface-lora';
 import Layout from '../components/Layout';
 import { Input, Section, Row, Col, Alert, Button } from 'design-react-kit';
 import { useForm, Controller, SubmitHandler } from "react-hook-form";
-
-
-interface LoginInputs {
-    email: string;
-    password: string;
-}
-
-const required_msg = 'Questo campo è richiesto';
+import metamask from '../images/metamask.svg';
+import { BACKEND_URL } from '../constants';
+import { loginMetamask, signString } from '../utils';
 
 
 const Login = () => {
-    // Form
-    const {
-        control,
-        formState: { errors },
-        handleSubmit
-    } = useForm({
-        defaultValues: {
-            email: "",
-            password: ""
-        },
-    });
-    const onSubmit: SubmitHandler<LoginInputs> = (data) => {
-        // TODO: Call API
-        console.log(data);
+    const metamaskLoginReq = async () => {
+        // Request account access if needed
+        const [, signer] = await loginMetamask();
+        const pkey = await signer.getAddress();
+
+        // Request challenge from server
+        const challengeResponse = await fetch(`${BACKEND_URL}/api/v1/challenge/${pkey}`);
+        if (!challengeResponse.ok) {
+            console.log("error:", challengeResponse);
+            return;
+        }
+        const challenge = await challengeResponse.json() as { nonce: string; };
+        console.log("challenge: ", challenge);
+
+        // Sign challenge
+        const signature = await signString(challenge.nonce.toString(), signer);
+        console.log("signature: ", signature);
+
+        // Send signature to server
+        const loginResponse = await fetch(`${BACKEND_URL}/api/v1/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                pkey: pkey,
+                signature: signature
+            })
+        });
+        if (!loginResponse.ok) {
+            console.log("error:", loginResponse);
+            return;
+        }
+        const loginData = await loginResponse.json() as { token: string; };
+        console.log("token: ", loginData.token);
     };
 
     return (
         <Layout color='primary'>
             <Section color='muted'>
                 <h3>Login</h3>
-                <Row className='mt-4' />
-                <Controller
-                    name="email"
-                    control={control}
-                    rules={{ required: true }}
-                    render={
-                        ({ field }) =>
-                            <Input
-                                type='text'
-                                label='Email'
-                                invalid={errors.email ? true : false}
-                                validationText={errors.email ? required_msg : ''}
-                                {...field}
-                            />
-                    }
-                />
-                <Controller
-                    name="password"
-                    control={control}
-                    rules={{ required: true }}
-                    render={
-                        ({ field }) =>
-                            <Input
-                                type='text'
-                                label='Password'
-                                invalid={errors.password ? true : false}
-                                validationText={errors.password ? required_msg : ''}
-                                {...field}
-                            />
-                    }
-                />
-                {
-                    errors.email || errors.password ?
-                        <Row className='mt-4'>
-                            <Col>
-                                <Alert color='danger'>
-                                    <strong>Attenzione</strong> Alcuni campi inseriti sono da controllare.
-                                </Alert>
-                            </Col>
-                        </Row> : <></>
-                }
-                <Row className='mt-4'>
-                    <Button color='primary' tag='button' onClick={handleSubmit(onSubmit)}>
-                        Login
-                    </Button>
-                </Row>
+                <Button color='primary' tag='a' onClick={metamaskLoginReq} style={{ display: 'flex', alignItems: 'center' }}>
+                    <img src={metamask} alt='' style={{ width: '2rem', marginRight: '0.5rem' }} />
+                    Metamask
+                </Button>
             </Section>
         </Layout>
     );

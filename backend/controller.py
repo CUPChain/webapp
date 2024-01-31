@@ -17,18 +17,19 @@ import os
 # PRODUCTION_DATABASE_URL  = 'postgresql://user:password@davehost:port/database'
 
 
-def get_nonce(address: str) -> str:
+def get_nonce(pkey: str) -> str:
     """
     Get the nonce from the database corresponding to the address and sends it to the client.
 
     Args:
-        address (str): The address of the account.
+        pkey (str): The address of the account.
 
     Returns:
         str: The nonce of the account.
     """
+    # Get nonce from database
     nonce = db.session.execute(
-        db.select(Account).filter_by(address=address)
+        db.select(Account).filter_by(pkey=pkey)
     ).one_or_none()
     if nonce:
         return nonce[0].nonce
@@ -36,61 +37,63 @@ def get_nonce(address: str) -> str:
         return None
 
 
-def create_jwt_token(address: str) -> str:
+def create_jwt_token(pkey: str) -> str:
     """
     Create JWT token for the address and store it in the database.
     Also, update the nonce of the account.
 
     Args:
-        address (str): The address of the account.
+        pkey (str): The address of the account.
 
     Returns:
         str: The JWT token.
     """
     # Generate JWT token
-    token = jwt.encode(payload={"address": address}, key=os.getenv("JWT_SECRET_KEY"))
+    token = jwt.encode(payload={"pkey": pkey}, key=os.getenv("JWT_SECRET_KEY"))
     # Update the nonce of the account
     db.session.execute(
         db.update(Account)
-        .where(Account.address == address)
-        .values(nonce=random.randint(0, 2**32 - 1))
+        .where(Account.pkey == pkey)
+        .values(nonce=random.randint(0, NONCE_LIMIT))
     )
     # Insert the JWT token in the database
     db.session.execute(
-        db.update(Account).where(Account.address == address).values(jwt=token)
+        db.update(Account).where(Account.pkey == pkey).values(jwt=token)
     )
     db.session.commit()
     return token
 
 
 def list_all_appointments(category=None, date=None):
+    # - /available_appointments?categoria&data: (categoria, data > today, id_prescription=null) [TODO: filter for category and data]
     if category and date:
         result = db.session.execute(
             db.select(Appointment)
-            .where(Appointment.date >= date)
-            .where(Appointment.code_medical_examination == category)
+            .where(Appointment.date >= date
+            ).where(Appointment.code_medical_examination == category
+            ).where(Appointment.id_prescription == None)
         )
     elif category:
         result = db.session.execute(
             db.select(Appointment).where(
                 Appointment.code_medical_examination == category
-            )
+            ).where(Appointment.id_prescription == None)
         )
     elif date:
         result = db.session.execute(
-            db.select(Appointment).where(Appointment.date >= date)
-        )
+            db.select(Appointment).where(Appointment.date >= date
+            ).where(Appointment.id_prescription == None))
     else:
         result = db.session.execute(db.select(Appointment))
     appointments_list = [appointment[0].toDict() for appointment in result]
     return jsonify({"appointments": appointments_list})
 
 
-def retrieve_appointment(id_prescription, category=None, date=None):
+def retrieve_appointment(id, category=None, date=None):
     # - /appointments/id: id, ospedale, categoria, id dottore che fa la visita, nome dottore
 
     appointment = db.session.execute(
-        db.select(Appointment).filter_by(id_prescription=id_prescription),
+        db.select(Appointment).filter_by(id=id),
     ).one_or_none()
     # appointment = db.one_or_404(
     #     db.select(Appointment).filter_by(id_prescription=id_prescription),
@@ -103,16 +106,11 @@ def retrieve_appointment(id_prescription, category=None, date=None):
         return (
             jsonify(
                 {
-                    "message": f"No appointments associated with the id of the prescription: '{id_prescription}'"
+                    "message": f"No appointments associated with the id of the prescription: '{id}'"
                 }
             ),
             404,
         )
-
-
-# - /available_appointments?categoria&data: (categoria, data > today, id_prescription=null) [TODO: filter for category and data]
-def filter_appointments():
-    pass
 
 
 def create_appointment(request_form):

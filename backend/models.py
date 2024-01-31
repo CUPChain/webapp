@@ -6,51 +6,19 @@ import random
 
 from . import db  # from __init__.py
 
+NONCE_LIMIT = 2147483647
 
-# for future when I do the account stuff
 class Account(db.Model):
-    # Auto Generated Fields:
-    id = db.Column(db.Integer, primary_key=True, nullable=False, unique=True)
-    created = db.Column(
-        db.DateTime(timezone=True), default=datetime.now
-    )  # The Date of the Instance Creation => Created one Time when Instantiation
-    updated = db.Column(
-        db.DateTime(timezone=True), default=datetime.now, onupdate=datetime.now
-    )  # The Date of the Instance Update => Changed with Every Update
-
-    # Input by User Fields:
-    email = db.Column(db.String(100), nullable=False, unique=True)
-    username = db.Column(db.String(50), nullable=False)
-    birthday = db.Column(db.Date)
-    country = db.Column(db.String(100))
-    phone_number = db.Column(db.String(20))
-
     # Login with MetaMask Fields:
-    address = db.Column(db.String(100), nullable=False, unique=True)
+    pkey = db.Column(db.String(42), nullable=False, unique=True, primary_key=True)
     nonce = db.Column(
-        db.Integer, nullable=False, default=random.randint(0, 2**32 - 1)
+        db.Integer, nullable=False, default=random.randint(0, NONCE_LIMIT)
     )
-    jwt = db.Column(db.String(1000), nullable=False, default="")
-    jwt_exp = db.Column(
-        db.DateTime(timezone=True), nullable=False, default=datetime.now
-    )
-
-    # Validations => https://flask-validator.readthedocs.io/en/latest/index.html
-    @classmethod
-    def __declare_last__(cls):
-        ValidateEmail(
-            Account.email, True, True, "The email is not valid. Please check it"
-        )  # True => Allow internationalized addresses, True => Check domain name resolution.
-        ValidateString(Account.username, True, True, "The username type must be string")
-        ValidateCountry(Account.country, True, True, "The country is not valid")
-
-    # Set an empty string to null for username field => https://stackoverflow.com/a/57294872
-    @validates("username")
-    def empty_string_to_null(self, key, value):
-        if isinstance(value, str) and value == "":
-            return None
-        else:
-            return value
+    jwt = db.Column(db.String(1000), nullable = True)
+    jwt_exp = db.Column(db.DateTime, nullable = True)
+    cf_patient = db.Column(db.String(16), db.ForeignKey("patient.cf"), nullable = True)
+    cf_doctor = db.Column(db.String(16), db.ForeignKey("doctor.cf"), nullable = True)
+    id_hospital = db.Column(db.Integer, db.ForeignKey("hospital.id"), nullable = True)
 
     def toDict(self):
         return {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
@@ -60,9 +28,11 @@ class Appointment(db.Model):
     __tablename__ = "appointment"
     id = db.Column(db.Integer, primary_key=True)
     id_hospital = db.Column(db.Integer, db.ForeignKey("hospital.id"))
-    date = db.Column(db.DateTime, nullable=False)  # pay attention here, need attention
+    # pay attention here, need attention
+    date = db.Column(db.DateTime, nullable=False)
     # cf_doctor = db.Column(db.String(16), db.ForeignKey("doctor.cf"))
-    code_medical_examination = db.Column(db.Integer, db.ForeignKey("medical_exam.code"))
+    code_medical_examination = db.Column(
+        db.Integer, db.ForeignKey("medical_exam.code"))
     id_prescription = db.Column(db.Integer, db.ForeignKey("prescription.id"))
 
     # validate that this is correct since the dates can be interpreted weirdly from db to python to json and viceversa
@@ -118,7 +88,8 @@ class Hospital(db.Model):
 
 class IsAbleToDo(db.Model):
     __tablename__ = "is_able_to_do"
-    id_hospital = db.Column(db.Integer, db.ForeignKey("hospital.id"), primary_key=True)
+    id_hospital = db.Column(db.Integer, db.ForeignKey(
+        "hospital.id"), primary_key=True)
     code_medical_examination = db.Column(
         db.Integer, db.ForeignKey("medical_exam.code"), primary_key=True
     )
@@ -156,7 +127,8 @@ class Prescription(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     cf_doctor = db.Column(db.String(16), db.ForeignKey("doctor.cf"))
     cf_patient = db.Column(db.String(16), db.ForeignKey("patient.cf"))
-    code_medical_examination = db.Column(db.Integer, db.ForeignKey("medical_exam.code"))
+    code_medical_examination = db.Column(
+        db.Integer, db.ForeignKey("medical_exam.code"))
 
     def toDict(self):
         return {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}

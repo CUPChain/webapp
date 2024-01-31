@@ -171,17 +171,13 @@ const isOwned = async (tokenID: number, tokenType: Token): Promise<boolean> => {
 };
 
 /** Sign a string with metamask
- * @param {number} tokenID - ID of the token
- * @param {Token} tokenType - Token.Prescription or Token.Appointment
- * @returns {[ethers.BytesLike]} - [signature]
- * @throws {Error} - If metamask is not installed or user is not logged in
- * @throws {Error} - If user is not logged in
+ * @param {string} s - String to sign
+ * @param {ethers.Signer} signer - Signer to use
+ * @returns {ethers.BytesLike} - Signature of the string
 **/
-const signString = async (s: string): Promise<ethers.BytesLike> => {
-    const [, signer] = await loginMetamask();
-    
-    const signature = await signer.signMessage(s);
+const signString = async (s: string, signer: ethers.Signer): Promise<ethers.BytesLike> => {    
+    const signature = await signer.signMessage(ethers.toUtf8Bytes(s));
     return signature;
 };
 
-export { getTokenData, getOwnedTokens, exchangePrescriptionAppointment, verifyHash, mintPrescription, isOwned };
+export { getTokenData, getOwnedTokens, exchangePrescriptionAppointment, verifyHash, mintPrescription, isOwned, loginMetamask, signString};

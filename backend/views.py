@@ -138,17 +138,17 @@ def cancel_appointment(id_prescription):
 
 
 @app.route(
-    f"/{BASE_ROOT}/{VERSION}/appointments/<id_prescription>",
+    f"/{BASE_ROOT}/{VERSION}/appointments/<id>",
     methods=["GET"],
 )
-def get_appointment(id_prescription):
+def get_appointment(id):
     """
     Retrieve appointment details by ID
     ---
     tags:
       - Appointments
     parameters:
-      - name: id_prescription
+      - name: id
         in: path
         type: string
         required: true
@@ -157,7 +157,7 @@ def get_appointment(id_prescription):
         description: Appointment details retrieved successfully
     """
 
-    return retrieve_appointment(id_prescription)
+    return retrieve_appointment(id)
 
 
 @app.route(f"/{BASE_ROOT}/{VERSION}/doctors", methods=["GET"])
