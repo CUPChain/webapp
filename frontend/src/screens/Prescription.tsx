@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import 'bootstrap-italia/dist/css/bootstrap-italia.min.css';
 import 'typeface-titillium-web';
 import 'typeface-roboto-mono';
@@ -9,27 +9,46 @@ import BackButton from '../components/BackButton';
 import { Section, Col, Row, Card, CardBody, CardTitle, Input, Table, CardText } from 'design-react-kit';
 import { PrescriptionType, AccountType, AppointmentType } from '../types';
 import { useNavigate } from 'react-router-dom';
-import { Token } from '../constants';
-import { getTokenData } from '../utils';
+import { BACKEND_URL, Token } from '../constants';
+import { getTokenData, isOwned } from '../utils';
 
 
 const Prescription = () => {
     const id = window.location.pathname.split('/')[2];
 
-    getTokenData(Number.parseInt(id), Token.Prescription).then((data) => {
-        // TODO: fetch backend data, check hash
-    });
+    const [prescription, setPrescription] = useState<PrescriptionType>();
+    const [appointments, setAppointments] = useState<AppointmentType[]>([]);
 
-    //TODO: get list of available appointments from db
+    useEffect(() => {
+        const fetchData = async (id: number) => {
+            // Check that token is owned by user
+            if (!await isOwned(id, Token.Prescription)) {
+                // TODO:
+                return
+            }
+
+            const [category,] = await getTokenData(id, Token.Appointment);
+            
+            const categoryName = await fetch(`${BACKEND_URL}/api/v1/medical_exams/${category}`)
+                                        .then(response => response.json()) //TODO: http errors
+                                        .then(data => data.name);
+
+            setPrescription({ id: id, type: categoryName});
+
+            // Get appointments from blockchain
+            const availableAppointments = await fetch(`${BACKEND_URL}/api/v1/available_appointments/${category}`)
+                                                .then(response => response.json()) //TODO: http errors
+                                                .then(data => data as AppointmentType[]);
+
+            setAppointments(availableAppointments.sort()); //TODO: sort by?
+        };
+        
+        fetchData(Number.parseInt(id));
+    }, []);
 
     const navigate = useNavigate();
 
-    const prescription: PrescriptionType = {
-        id: 1,
-        type: 'Neurologia',
-        doctor: 'Dott. Mario Rossi',
-    };
-
+    //TODO: remove
     const account: AccountType = {
         name: 'Mario',
         surname: 'Rossi',
@@ -38,41 +57,6 @@ const Prescription = () => {
         cap: '20100',
     };
 
-    const appointments: AppointmentType[] = [
-        {
-            id: 1,
-            name: 'Ospedale San Raffaele',
-            city: 'Milano',
-            cap: '20100',
-            address: 'Via Olgettina 60',
-            type: 'Neurologia',
-            distance: '1,2 km',
-            date: 'Giovedì 18 Aprile 2024',
-            time: '11:00'
-        },
-        {
-            id: 2,
-            name: 'Ospedale San Matteo',
-            city: 'Milano',
-            cap: '20100',
-            address: 'Via Olgettina 70',
-            type: 'Neurologia',
-            distance: '1,2 km',
-            date: 'Giovedì 19 Aprile 2024',
-            time: '10:00'
-        },
-        {
-            id: 3,
-            name: 'Ospedale San Paolo',
-            city: 'Milano',
-            cap: '20100',
-            address: 'Via Olgettina 80',
-            type: 'Neurologia',
-            distance: '1,2 km',
-            date: 'Giovedì 18 Maggio 2024',
-            time: '15:00'
-        }
-    ];
 
     const onSelection = (id: number) => {
         let appointment = appointments.find((appointment) => appointment.id === id);
@@ -97,7 +81,7 @@ const Prescription = () => {
                                     {prescription.type}
                                 </CardTitle>
                                 <CardText>
-                                    {"Richiesta da " + prescription.doctor}
+                                    {"Prescription id " + prescription.id}
                                 </CardText>
                             </CardBody>
                         </Card>

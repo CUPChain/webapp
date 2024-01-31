@@ -26,8 +26,8 @@ type ConfirmAppointmentProps = {
 
 const ConfirmAppointment = () => {
     const location = useLocation();
-    const { appointment, prescription, account } = location.state as ConfirmAppointmentProps;
-    const position: LatLngExpression = [12.492373, 41.890251];
+    const { appointment, prescription } = location.state as ConfirmAppointmentProps;
+    const position: LatLngExpression = [12.492373, 41.890251]; //TODO: take it from appointment info
     console.log("appt", appointment.id, " presc", prescription.id);
 
     // Initialize event listeners, they need contracts with provider as runner, instead of signer
@@ -45,8 +45,7 @@ const ConfirmAppointment = () => {
     });
 
     const confirmAppointment = () => {
-        // TODO: cambia indirizzo ospedale con variabile
-        exchangePrescriptionAppointment(prescription.id, appointment.id, "0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc");
+        exchangePrescriptionAppointment(prescription.id, appointment.id, PRESCRIPTIONS_CONTRACT);
         // TODO: check for errors?
         //alert('Prenotazione confermata');
     };
@@ -63,7 +62,7 @@ const ConfirmAppointment = () => {
                                     {prescription.type}
                                 </CardTitle>
                                 <CardText>
-                                    {"Richiesta da " + prescription.doctor}
+                                    {"Token id: " + prescription.id}
                                 </CardText>
                             </CardBody>
                         </Card>

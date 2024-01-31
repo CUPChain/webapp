@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import 'bootstrap-italia/dist/css/bootstrap-italia.min.css';
 import 'typeface-titillium-web';
 import 'typeface-roboto-mono';
@@ -10,8 +10,8 @@ import QRCode from 'react-qr-code';
 import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
 import { type LatLngExpression } from 'leaflet';
 import { AppointmentType, PrescriptionType } from '../types';
-import { getTokenData } from '../utils';
-import { Token } from '../constants';
+import { getTokenData, isOwned, verifyHash } from '../utils';
+import { BACKEND_URL, Token } from '../constants';
 
 const MAP_ENABLED = true;
 
@@ -19,31 +19,42 @@ const Appointment = () => {
     // TODO: id of prescription will be different from id of appointment
     // How do we know what was the id of the prescription that got exchanged for the appointment?
     const id = window.location.pathname.split('/')[2];
-    const position: LatLngExpression = [51.505, -0.09];
+    
+    const [appointment, setAppointment] = React.useState<AppointmentType>();
+    const [prescription, setPrescription] = React.useState<PrescriptionType>();
 
-    // getTokenData(Number.parseInt(id), Token.Prescription).then((data) => {
-    //     // TODO: fetch backend data, check hash
-    // })
-    // getTokenData(Number.parseInt(id), Token.Appointment).then((data) => {
-    //     // TODO: fetch backend data, check hash
-    // })
+    useEffect(() => {
+        const getAppointmentData = async (id: number) => {
+            // Check that token is owned by user
+            if (!await isOwned(id, Token.Appointment)) {
+                // TODO:
+                return
+            }
 
-    const prescription: PrescriptionType = {
-        id: 1,
-        type: 'Neurologia',
-        doctor: 'Dott. Mario Rossi',
-    };
+            const [, hash] = await getTokenData(id, Token.Appointment);
 
-    const appointment: AppointmentType = {
-        id: 1,
-        type: 'Neurologia',
-        name: 'Ospedale San Raffaele',
-        city: 'Milano',
-        cap: '20100',
-        address: 'Via Roma 1',
-        date: '01/03/2024',
-        time: '10:00'
-    };
+            // Retrieve from backend the additional data
+            const response = await fetch(`${BACKEND_URL}/api/v1/appointments/${id}`);
+            if (!response.ok) {
+                console.log(response.statusText);
+                // TODO: error handling
+                return
+            }
+            const data = await response.json() as { appointment: AppointmentType };
+            const appointment = data.appointment;
+            const dataToCheck = { id: appointment.id, hospital: appointment.id_hospital, date: appointment.date, type: appointment.type }
+            console.log(appointment)
+
+            // Verify that the appointment is valid
+            if (await verifyHash(hash as string, dataToCheck)) {
+                setAppointment(data.appointment);
+            } else {
+                console.log(`ERROR: Token ${id} metadata is not valid`);
+            }
+        }
+
+        getAppointmentData(Number.parseInt(id));
+    }, []);
 
     const deleteAppointment = () => {
         // TODO: implementare cancellazione prenotazione
@@ -67,7 +78,7 @@ const Appointment = () => {
                                     {prescription.type}
                                 </CardTitle>
                                 <CardText>
-                                    {"Richiesta da " + prescription.doctor}
+                                    {"Id:  " + prescription.id}
                                 </CardText>
                             </CardBody>
                         </Card>
@@ -75,12 +86,12 @@ const Appointment = () => {
                             <CardBody>
                                 {
                                     MAP_ENABLED ?
-                                        <MapContainer center={position} zoom={13} scrollWheelZoom={false}>
+                                        <MapContainer center={[appointment.latitude, appointment.longitude]} zoom={13} scrollWheelZoom={false}>
                                             <TileLayer
                                                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                                                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                             />
-                                            <Marker position={position}>
+                                            <Marker position={[appointment.latitude, appointment.longitude]}>
                                                 <Popup>
                                                     A pretty CSS3 popup. <br /> Easily customizable.
                                                 </Popup>

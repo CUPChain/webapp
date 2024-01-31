@@ -22,67 +22,58 @@ const Reservations = () => {
         const fetchData = async () => {
             // Get prescriptions from blockchain
             const prescriptionsData = await getOwnedTokens(Token.Prescription);
-            let prescriptions: PrescriptionType[] = [];
+            let receivedPrescriptions: PrescriptionType[] = [];
             for (let i = 0; i < prescriptionsData[0].length; i++) {
                 const id = prescriptionsData[0][i];
+                // not needed?
                 const hash = prescriptionsData[1][i];
-                // const category = prescriptionsData[2][i];
+                const category = prescriptionsData[2][i];
 
-                // Retrieve from backend the additional data
-                const response = await fetch(`${BACKEND_URL}/api/v1/prescriptions/${id}`);
-                const data = await response.json();
+                const categoryName = await fetch(`${BACKEND_URL}/api/v1/medical_exams/${category}`)
+                                            .then(response => response.json()) //TODO: http errors
+                                            .then(data => data.name);
 
-                // Verify that the prescription is valid
-                // TODO: usare solo dati che sono stati mandati al backend in creazione token
-                // TODO: handle http errors
-                if (await verifyHash(hash, data)) {
-                    prescriptions[i] = {
+                receivedPrescriptions[i] = {
                         id: id,
-                        type: data.type,
-                        doctor: data.doctor
-                    };
-                } else {
-                    console.log(`ERROR: Metadata of Token ${id} is not valid`);
-                }
+                        type: categoryName
+                };
             }
 
-            setPrescriptions(prescriptions);
+            setPrescriptions(receivedPrescriptions);
 
             // Get appointments from blockchain
             const appointmentData = await getOwnedTokens(Token.Appointment);
+            let receivedAppointments: AppointmentType[] = [];
             for (let i = 0; i < appointmentData[0].length; i++) {
                 const id = appointmentData[0][i];
                 const hash = appointmentData[1][i];
-                // const category = appointmentData[2][i];
+                const category = appointmentData[2][i];
 
                 // Retrieve from backend the additional data
                 const response = await fetch(`${BACKEND_URL}/api/v1/appointments/${id}`);
-                const data = await response.json() as AppointmentType;
+                if (!response.ok) {
+                    console.log(response.statusText);
+                    // TODO: error handling
+                    continue
+                }
+                const data = await response.json() as { appointment: AppointmentType };
+                const appointment = data.appointment;
+                const dataToCheck = { id: appointment.id, hospital: appointment.id_hospital, date: appointment.date, type: appointment.type }
+                console.log(appointment)
 
                 // Verify that the appointment is valid
-                // TODO: usare solo dati che sono stati mandati al backend in creazione token
-                if (await verifyHash(hash, data)) {
-                    appointments[i] = {
-                        id: id,
-                        type: data.type,
-                        name: data.name,
-                        city: data.city,
-                        cap: data.cap,
-                        address: data.address,
-                        date: data.date,
-                        time: data.time,
-                        doctor: data.doctor,
-                        distance: data.distance
-                    };
+                if (await verifyHash(hash, dataToCheck)) {
+                    receivedAppointments[i] = data.appointment;
                 } else {
-                    console.log(`ERROR: Token ${id}Metadata is not valid`);
+                    console.log(`ERROR: Token ${id} metadata is not valid`);
                 }
             }
 
-            setAppointments(appointments);
+            setAppointments(receivedAppointments);
         };
         fetchData();
     }, []);
+    console.log(appointments)
 
     return (
         <Layout>
@@ -104,7 +95,7 @@ const Reservations = () => {
                                 <Row key={prescription.id}>
                                     <CardButton
                                         title={prescription.type}
-                                        description={"Richiesto da " + prescription.doctor}
+                                        description={"Token id: " + prescription.id}
                                         href={`/prescriptions/${prescription.id}`}
                                     />
                                 </Row>
@@ -130,7 +121,7 @@ const Reservations = () => {
                                     <CardButton
                                         title={appointment.type}
                                         date={appointment.date}
-                                        description={appointment.address}
+                                        description={appointment.address + '\n' + "Token id: " + appointment.id}
                                         href={`/appointments/${appointment.id}`}
                                     />
                                 </Row>

@@ -117,6 +117,13 @@ def get_prescriptions():
 def make_prescription():
     # - POST /prescriptions/create: categoria, id dottore, nome dottore, note, data (SE AUTORIZZATO) [TODO: autorization]
     request_form = request.form.to_dict()
+
+    # Check all required fields are present
+    if (request_form.get("code_medical_examination") == None or request_form.get("cf_patient") == None):
+        return  (
+            jsonify({"message": "Missing required field(s)", "request": request_form}),
+            400,
+        ) 
     return create_prescription(request_form)
 
 

@@ -64,9 +64,9 @@ contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, AccessC
         return (ids, hashes, categories);
     }
 
-    // Get category of prescription (type of medical visit needed)
-    function getPrescriptionCategory(uint256 tokenId) public view returns (uint) {
-        return tokenIdToCategory[tokenId];
+    // Get category and metadata hash of prescription (type of medical visit needed)
+    function getToken(uint256 tokenId) public view returns (uint16, bytes32) {
+        return (tokenIdToCategory[tokenId], tokenIdToHash[tokenId]);
     }
 
     // Exchange for appointment token

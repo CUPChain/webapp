@@ -15,12 +15,12 @@ type AppointmentType = {
     time: string, // Time of appointment
     doctor?: string, // Doctor name (optional)
     distance?: string, // Distance from user (optional)
+    id_hospital: number
 };
 
 type PrescriptionType = {
     id: number,
     type: string, // Neurologist, Cardiologist, etc.
-    doctor: string, // Doctor name
 };
 
 type AccountType = {
