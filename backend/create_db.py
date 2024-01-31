@@ -110,7 +110,7 @@ cur.execute("""CREATE TABLE IF NOT EXISTS is_able_to_do (
 """)
 
 cur.execute("""CREATE TABLE IF NOT EXISTS prescription (
-            id INTEGER PRIMARY KEY,
+            id SERIAL PRIMARY KEY,
             cf_doctor VARCHAR(16) REFERENCES doctor(cf),
             cf_patient VARCHAR(16) REFERENCES patient(cf),
             code_medical_examination INTEGER REFERENCES medical_exam(code)
@@ -118,7 +118,7 @@ cur.execute("""CREATE TABLE IF NOT EXISTS prescription (
 """)
 
 cur.execute("""CREATE TABLE IF NOT EXISTS appointment (
-            id INTEGER PRIMARY KEY,
+            id SERIAL PRIMARY KEY,
             id_hospital INTEGER REFERENCES hospital(id),
             date TIMESTAMP NOT NULL,
             code_medical_examination INTEGER REFERENCES medical_exam(code),
@@ -208,52 +208,52 @@ cur.execute("""INSERT INTO is_able_to_do (id_hospital, code_medical_examination)
             (3, 5);
 """)
 
-cur.execute("""INSERT INTO prescription (id, cf_doctor, cf_patient, code_medical_examination) VALUES
-            (1, 'SGNLCA00A01H501A', 'RSSMRA00A01H501A', 1),
-            (2, 'BLLNCA00A01H501A', 'VRDGPP00A01H501A', 2),
-            (3, 'BLLNCA00A01H501A', 'VRDGPP00A01H501A', 4),
-            (4, 'FRRRBT00A01H501A', 'BNCLRD00A01H501A', 3),
-            (5, 'FRRRBT00A01H501A', 'BNCLRD00A01H501A', 5);
+cur.execute("""INSERT INTO prescription (cf_doctor, cf_patient, code_medical_examination) VALUES
+            ('SGNLCA00A01H501A', 'RSSMRA00A01H501A', 1),
+            ('BLLNCA00A01H501A', 'VRDGPP00A01H501A', 2),
+            ('BLLNCA00A01H501A', 'VRDGPP00A01H501A', 4),
+            ('FRRRBT00A01H501A', 'BNCLRD00A01H501A', 3),
+            ('FRRRBT00A01H501A', 'BNCLRD00A01H501A', 5);
 """)
 
-cur.execute("""INSERT INTO appointment (id, id_hospital, date, code_medical_examination, id_prescription) VALUES
-            (1, 1, '2024-06-01 9:00:00', 1, 1),
-            (2, 1, '2024-06-01 10:00:00', 1, NULL),
-            (3, 1, '2024-06-01 11:00:00', 1, NULL),
-            (4, 1, '2024-06-01 12:00:00', 1, NULL),
-            (5, 1, '2024-06-01 13:00:00', 1, NULL),
-            (6, 1, '2024-06-02 14:00:00', 2, NULL),
-            (7, 1, '2024-06-02 15:00:00', 2, NULL),
-            (8, 1, '2024-06-02 16:00:00', 2, NULL),
-            (9, 1, '2024-06-02 17:00:00', 2, NULL),
-            (10, 1, '2024-06-03 16:00:00', 3, 4),
-            (11, 1, '2024-06-03 17:00:00', 3, NULL),
-            (12, 1, '2024-06-03 18:00:00', 3, NULL),
-            (13, 1, '2024-06-03 19:00:00', 3, NULL),
-            (14, 2, '2024-05-21 11:00:00', 2, 2),
-            (15, 2, '2024-05-21 12:00:00', 2, NULL),
-            (16, 2, '2024-05-21 13:00:00', 2, NULL),
-            (17, 2, '2024-05-21 14:00:00', 2, NULL),
-            (18, 2, '2024-05-22 15:00:00', 4, NULL),
-            (19, 2, '2024-05-22 16:00:00', 4, NULL),
-            (20, 2, '2024-05-22 17:00:00', 4, NULL),
-            (21, 2, '2024-05-22 18:00:00', 4, NULL),
-            (22, 2, '2024-05-23 16:00:00', 1, NULL),
-            (23, 2, '2024-05-23 17:00:00', 1, NULL),
-            (24, 2, '2024-05-23 18:00:00', 1, NULL),
-            (25, 2, '2024-05-23 19:00:00', 1, NULL),
-            (26, 3, '2024-05-07 12:00:00', 1, NULL),
-            (27, 3, '2024-05-07 13:00:00', 1, NULL),
-            (28, 3, '2024-05-07 14:00:00', 1, NULL),
-            (29, 3, '2024-05-07 15:00:00', 1, NULL),
-            (30, 3, '2024-05-08 16:00:00', 4, 3),
-            (31, 3, '2024-05-08 17:00:00', 4, NULL),
-            (32, 3, '2024-05-08 18:00:00', 4, NULL),
-            (33, 3, '2024-05-08 19:00:00', 4, NULL),
-            (34, 3, '2024-05-09 16:00:00', 5, NULL),
-            (35, 3, '2024-05-09 17:00:00', 5, NULL),
-            (36, 3, '2024-05-09 18:00:00', 5, NULL),
-            (37, 3, '2024-05-09 19:00:00', 5, NULL);
+cur.execute("""INSERT INTO appointment (id_hospital, date, code_medical_examination, id_prescription) VALUES
+            (1, '2024-06-01 9:00:00', 1, 1),
+            (1, '2024-06-01 10:00:00', 1, NULL),
+            (1, '2024-06-01 11:00:00', 1, NULL),
+            (1, '2024-06-01 12:00:00', 1, NULL),
+            (1, '2024-06-01 13:00:00', 1, NULL),
+            (1, '2024-06-02 14:00:00', 2, NULL),
+            (1, '2024-06-02 15:00:00', 2, NULL),
+            (1, '2024-06-02 16:00:00', 2, NULL),
+            (1, '2024-06-02 17:00:00', 2, NULL),
+            (1, '2024-06-03 16:00:00', 3, 4),
+            (1, '2024-06-03 17:00:00', 3, NULL),
+            (1, '2024-06-03 18:00:00', 3, NULL),
+            (1, '2024-06-03 19:00:00', 3, NULL),
+            (2, '2024-05-21 11:00:00', 2, 2),
+            (2, '2024-05-21 12:00:00', 2, NULL),
+            (2, '2024-05-21 13:00:00', 2, NULL),
+            (2, '2024-05-21 14:00:00', 2, NULL),
+            (2, '2024-05-22 15:00:00', 4, NULL),
+            (2, '2024-05-22 16:00:00', 4, NULL),
+            (2, '2024-05-22 17:00:00', 4, NULL),
+            (2, '2024-05-22 18:00:00', 4, NULL),
+            (2, '2024-05-23 16:00:00', 1, NULL),
+            (2, '2024-05-23 17:00:00', 1, NULL),
+            (2, '2024-05-23 18:00:00', 1, NULL),
+            (2, '2024-05-23 19:00:00', 1, NULL),
+            (3, '2024-05-07 12:00:00', 1, NULL),
+            (3, '2024-05-07 13:00:00', 1, NULL),
+            (3, '2024-05-07 14:00:00', 1, NULL),
+            (3, '2024-05-07 15:00:00', 1, NULL),
+            (3, '2024-05-08 16:00:00', 4, 3),
+            (3, '2024-05-08 17:00:00', 4, NULL),
+            (3, '2024-05-08 18:00:00', 4, NULL),
+            (3, '2024-05-08 19:00:00', 4, NULL),
+            (3, '2024-05-09 16:00:00', 5, NULL),
+            (3, '2024-05-09 17:00:00', 5, NULL),
+            (3, '2024-05-09 18:00:00', 5, NULL),
+            (3, '2024-05-09 19:00:00', 5, NULL);
 """)
 
 conn.commit()
