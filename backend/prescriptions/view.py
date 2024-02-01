@@ -2,12 +2,18 @@ from flask import request
 from ..config import BASE_ROOT, VERSION
 from ..app import app
 from .controller import *
+from ..auth import get_account
 
 
-@app.route(f"/{BASE_ROOT}/{VERSION}/prescriptions", methods=["GET"])
+@app.route(
+    f"/{BASE_ROOT}/{VERSION}/prescriptions",
+    methods=["GET"]
+    # Auth required for this endpoint
+)
 def get_prescriptions():
     """
-    Retrieve all prescriptions
+    Retrieve all prescriptions created by the logged in doctor
+    or given to the logged in patient
     ---
     tags:
       - Prescriptions
@@ -15,10 +21,35 @@ def get_prescriptions():
       200:
         description: A list of prescriptions
     """
-    return list_all_prescriptions()
+    # Get the account from the JWT token
+    account = get_account()
+    if account == None:
+        return (
+            jsonify({"error": f"Login required."}),
+            302,
+        )
+
+    # If the account is a doctor, retrieve all prescriptions for that doctor
+    if account.cf_doctor != None:
+        # Retrieve all prescriptions for a doctor
+        return retrieve_all_prescriptions_by_doctor(account.cf_doctor)
+    # If the account is a patient, retrieve all prescriptions for that patient
+    elif account.cf_patient != None:
+        # Retrieve all prescriptions for a patient
+        return retrieve_all_prescriptions_by_patient(account.cf_patient)
+    else:
+        return (
+            jsonify(
+                {"error": f"Only doctors and patients can retrieve prescriptions."}),
+            403,
+        )
 
 
-@app.route(f"/{BASE_ROOT}/{VERSION}/prescriptions/create", methods=["POST"])
+@app.route(
+    f"/{BASE_ROOT}/{VERSION}/prescriptions/create",
+    methods=["POST"]
+    # Auth required for this endpoint
+)
 def make_prescription():
     """
     Create a new prescription
@@ -56,7 +87,22 @@ def make_prescription():
       200:
         description: Prescription created successfully
     """
-    # - POST /prescriptions/create: categoria, id dottore, nome dottore, note, data (SE AUTORIZZATO) [TODO: autorization]
+    # Get the account from the JWT token
+    account = get_account()
+    if account == None:
+        return (
+            jsonify({"error": f"Login required."}),
+            302,
+        )
+
+    # Check if the account is a doctor
+    if account.cf_doctor == None:
+        return (
+            jsonify({"error": f"Only doctors can create prescriptions."}),
+            403,
+        )
+
+    # Get the request form
     request_form = request.form.to_dict()
 
     # Check all required fields are present
@@ -65,14 +111,20 @@ def make_prescription():
         or request_form.get("cf_patient") == None
     ):
         return (
-            jsonify({"message": "Missing required field(s)", "request": request_form}),
+            jsonify({"message": "Missing required field(s)",
+                    "request": request_form}),
             400,
         )
+
+    # Create the prescription
     return create_prescription(request_form)
 
 
-# - /prescriptions/id: id, categoria, id dottore, nome dottore, note, data (SE AUTORIZZATO) [TODO: autorization]
-@app.route(f"/{BASE_ROOT}/{VERSION}/prescriptions/<id>", methods=["GET", "DELETE"])
+@app.route(
+    f"/{BASE_ROOT}/{VERSION}/prescriptions/<id>",
+    methods=["GET", "DELETE"]
+    # Auth required for this endpoint
+)
 def get_prescription(id):
     """
     Retrieve or delete prescription by ID
@@ -90,6 +142,30 @@ def get_prescription(id):
       204:
         description: Prescription deleted successfully
     """
+    # Get the account from the JWT token
+    account = get_account()
+    if account == None:
+        return (
+            jsonify({"error": f"Login required."}),
+            302,
+        )
+
+    # Check if the account is a doctor or if he requested his own prescription
+    prescription: Prescription = Prescription.query.get(id)
+    if prescription == None:
+        # TODO: better to return a different error because we don't want to leak
+        return (
+            jsonify({"error": f"Prescription not found."}),
+            404,
+        )
+
+    # Check if the account is a doctor or if he requested his own prescription
+    if account.cf_doctor == None and account.cf_patient != prescription.cf_patient:
+        return (
+            jsonify({"error": f"Not authorized to retrieve this prescription."}),
+            403,
+        )
+
     if request.method == "GET":
         return retrieve_prescription(id)
     elif request.method == "DELETE":
@@ -99,67 +175,3 @@ def get_prescription(id):
             jsonify({"message": "Method not allowed"}),
             405,
         )
-
-
-@app.route(f"/{BASE_ROOT}/{VERSION}/prescriptions_by_patient/<cf>", methods=["GET"])
-def get_prescriptions_by_patient(cf):
-    """
-    Retrieve all prescriptions for a patient
-    ---
-    tags:
-      - Prescriptions
-    parameters:
-      - name: cf
-        in: path
-        type: string
-        required: true
-    responses:
-      200:
-        description: A list of prescriptions for the patient
-    """
-    return retrieve_all_prescriptions_by_patient(cf)
-
-
-@app.route(f"/{BASE_ROOT}/{VERSION}/prescriptions_by_doctor/<cf>", methods=["GET"])
-def get_prescriptions_by_doctor(cf):
-    """
-    Retrieve all prescriptions by a doctor
-    ---
-    tags:
-      - Prescriptions
-    parameters:
-      - name: cf
-        in: path
-        type: string
-        required: true
-    responses:
-      200:
-        description: A list of prescriptions by the doctor
-    """
-    return retrieve_all_prescriptions_by_doctor(cf)
-
-
-@app.route(f"/{BASE_ROOT}/{VERSION}/prescriptions_for_doctor/<cf>", methods=["POST"])
-def get_prescriptions_for_doctor_by_pat(cf):
-    """
-    Retrieve all prescriptions for a doctor by patient
-    ---
-    tags:
-      - Prescriptions
-    parameters:
-      - name: cf
-        in: path
-        type: string
-        required: true
-      - name: cf_doctor
-        in: formData
-        type: string
-        required: true
-
-    responses:
-      200:
-        description: A list of prescriptions from the doctor for a patient
-    """
-    # cf is the cf of a patient
-    request_form = request.form.to_dict()
-    return retrieve_all_prescriptions_for_doctor_by_patient(cf, request_form)

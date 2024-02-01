@@ -2,9 +2,14 @@ from flask import request
 from ..config import BASE_ROOT, VERSION
 from ..app import app
 from .controller import *
+from ..auth import get_account
 
 
-@app.route(f"/{BASE_ROOT}/{VERSION}/hospitals", methods=["GET"])
+@app.route(
+    f"/{BASE_ROOT}/{VERSION}/hospitals",
+    methods=["GET"]
+    # Auth not required for this endpoint
+)
 def get_hospitals():
     """
     Retrieve all hospitals
@@ -18,7 +23,11 @@ def get_hospitals():
     return list_all_hospitals()
 
 
-@app.route(f"/{BASE_ROOT}/{VERSION}/hospitals/<id_hospital>", methods=["GET"])
+@app.route(
+    f"/{BASE_ROOT}/{VERSION}/hospitals/<id_hospital>",
+    methods=["GET"]
+    # Auth not required for this endpoint
+)
 def get_hospital(id_hospital):
     """
     Retrieve hospital details by ID
@@ -38,7 +47,9 @@ def get_hospital(id_hospital):
 
 
 @app.route(
-    f"/{BASE_ROOT}/{VERSION}/hospital_is_able_to_do/<id_is_able_to_do>", methods=["GET"]
+    f"/{BASE_ROOT}/{VERSION}/hospital_is_able_to_do/<id_is_able_to_do>",
+    methods=["GET"]
+    # Auth not required for this endpoint
 )
 def get_hospital_is_able_to_do(id_is_able_to_do):
     """
@@ -58,7 +69,11 @@ def get_hospital_is_able_to_do(id_is_able_to_do):
     return retrieve_all_hospital_is_able_to_do(id_is_able_to_do)
 
 
-@app.route(f"/{BASE_ROOT}/{VERSION}/is_able_to_do", methods=["GET"])
+@app.route(
+    f"/{BASE_ROOT}/{VERSION}/is_able_to_do",
+    methods=["GET"]
+    # Auth not required for this endpoint
+)
 def get_is_able_to_do():
     """
     Retrieve all abilities
@@ -72,7 +87,11 @@ def get_is_able_to_do():
     return list_all_is_able_to_do()
 
 
-@app.route(f"/{BASE_ROOT}/{VERSION}/is_able_to_do_code/<code>", methods=["GET"])
+@app.route(
+    f"/{BASE_ROOT}/{VERSION}/is_able_to_do_code/<code>",
+    methods=["GET"]
+    # Auth not required for this endpoint
+)
 def get_is_able_to_do_code(code):
     """
     Retrieve ability details by code

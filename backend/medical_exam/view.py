@@ -3,7 +3,11 @@ from ..app import app
 from .controller import *
 
 
-@app.route(f"/{BASE_ROOT}/{VERSION}/medical_exams", methods=["GET"])
+@app.route(
+    f"/{BASE_ROOT}/{VERSION}/medical_exams",
+    methods=["GET"]
+    # Auth not required for this endpoint
+)
 def get_medical_exams():
     """
     Retrieve all medical exams
@@ -17,7 +21,11 @@ def get_medical_exams():
     return list_all_medical_exams()
 
 
-@app.route(f"/{BASE_ROOT}/{VERSION}/medical_exams/<code>", methods=["GET"])
+@app.route(
+    f"/{BASE_ROOT}/{VERSION}/medical_exams/<code>",
+    methods=["GET"]
+    # Auth not required for this endpoint
+)
 def get_medical_exam(code):
     """
     Retrieve medical exam details by code

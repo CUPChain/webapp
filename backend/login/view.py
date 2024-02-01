@@ -9,7 +9,11 @@ from eth_account.messages import encode_defunct
 # - POST /login: (richiede address) Implementare jwt, check signature e' corretta, check number era salvato
 
 
-@app.route("/api/v1/challenge/<pkey>", methods=["GET"])
+@app.route(
+    "/api/v1/challenge/<pkey>",
+    methods=["GET"]
+    # Auth not required for this endpoint
+)
 def get_challenge(pkey: str):
     """
     Client sends the address to the server.
@@ -30,7 +34,11 @@ def get_challenge(pkey: str):
         )
 
 
-@app.route("/api/v1/login", methods=["POST"])
+@app.route(
+    "/api/v1/login",
+    methods=["POST"]
+    # Auth not required for this endpoint
+)
 def login():
     """
     Client sends the signed nonce and the address to the server.
