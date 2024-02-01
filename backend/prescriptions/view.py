@@ -92,8 +92,13 @@ def get_prescription(id):
     """
     if request.method == "GET":
         return retrieve_prescription(id)
-    if request.method == "DELETE":
+    elif request.method == "DELETE":
         return delete_prescription(id)
+    else:
+        return (
+            jsonify({"message": "Method not allowed"}),
+            405,
+        )
 
 
 @app.route(f"/{BASE_ROOT}/{VERSION}/prescriptions_by_patient/<cf>", methods=["GET"])

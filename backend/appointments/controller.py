@@ -45,8 +45,8 @@ def retrieve_appointment(id):
 
     appointment = (
         db.session.query(Appointment, Hospital)
-        .join(Appointment, Appointment.id_hospital == Hospital.id)
         .filter(Appointment.id == id)
+        .join(Appointment, Appointment.id_hospital == Hospital.id)
         .one_or_none()
     )
     # .execute(

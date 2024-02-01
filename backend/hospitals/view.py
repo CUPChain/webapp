@@ -28,7 +28,7 @@ def get_hospital(id_hospital):
     parameters:
       - name: id_hospital
         in: path
-        type: string
+        type: integer
         required: true
     responses:
       200:
@@ -45,11 +45,11 @@ def get_hospital_is_able_to_do(id_is_able_to_do):
     Retrieve hospital's ability details by ID
     ---
     tags:
-      - Abilities
+      - Hospital Abilities
     parameters:
       - name: id_is_able_to_do
         in: path
-        type: string
+        type: integer
         required: true
     responses:
       200:
@@ -64,7 +64,7 @@ def get_is_able_to_do():
     Retrieve all abilities
     ---
     tags:
-      - Abilities
+      - Hospital Abilities
     responses:
       200:
         description: A list of abilities
@@ -78,11 +78,11 @@ def get_is_able_to_do_code(code):
     Retrieve ability details by code
     ---
     tags:
-      - Abilities
+      - Hospital Abilities
     parameters:
       - name: code
         in: path
-        type: string
+        type: integer
         required: true
     responses:
       200:

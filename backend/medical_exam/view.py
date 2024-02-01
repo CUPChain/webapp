@@ -27,7 +27,7 @@ def get_medical_exam(code):
     parameters:
       - name: code
         in: path
-        type: string
+        type: integer
         required: true
     responses:
       200:

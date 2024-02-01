@@ -2,7 +2,7 @@ from flask import request
 import os
 import jwt
 from . import db
-from login.model import Account
+from .login.model import Account
 
 
 def validate_jwt_token(token: str) -> bool:

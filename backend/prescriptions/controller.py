@@ -1,6 +1,7 @@
 from flask import jsonify
 from .. import db
 from .model import *
+from ..medical_exam.model import MedicalExam
 
 
 def list_all_prescriptions():
@@ -12,11 +13,23 @@ def list_all_prescriptions():
 def retrieve_prescription(id):
     # - /prescriptions/id: id, categoria, id dottore, nome dottore, note, data (SE AUTORIZZATO)
     # [TODO: autorization]
-    prescription = db.session.execute(
-        db.select(Prescription).filter_by(id=id)
-    ).one_or_none()
+
+    prescription = (
+        db.session.query(Prescription, MedicalExam)
+        .filter(Prescription.id == id)
+        .join(Prescription, Prescription.code_medical_examination == MedicalExam.code)
+        .one_or_none()
+    )
+    # prescription = db.session.execute(
+    #     db.select(Prescription).filter_by(id=id)
+    # ).one_or_none()
     if prescription:
-        return jsonify({"prescription": prescription[0].toDict()})
+        return jsonify(
+            {
+                "prescription": prescription[0].toDict(),
+                "medical_exam": prescription[1].toDict(),
+            }
+        )
     else:
         return jsonify({"message": f"No Prescription found with id: '{id}'"}), 404
 
