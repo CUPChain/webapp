@@ -32,6 +32,7 @@ def get_account() -> Account:
     """
     # Get the JWT token from the request header
     jwt = request.headers.get("auth")
+    print(jwt)
     if not validate_jwt_token(jwt):
         return None
 

@@ -16,7 +16,7 @@ import { getTokenData, isOwned } from '../utils';
 const Prescription = () => {
     const id = window.location.pathname.split('/')[2];
 
-    const [prescription, setPrescription] = useState<PrescriptionType>({id: 0, type: "Invalid"});
+    const [prescription, setPrescription] = useState<PrescriptionType>({ id: 0, type: "Invalid" });
     const [appointments, setAppointments] = useState<AppointmentType[]>([]);
 
     useEffect(() => {
@@ -28,7 +28,7 @@ const Prescription = () => {
             }
 
             const [category,] = await getTokenData(id, Token.Prescription);
-            
+
             // Get category name from database
             const categoryResponse = await fetch(`${BACKEND_URL}/api/v1/medical_exams/${category}`)
             if (!categoryResponse.ok) {
@@ -38,10 +38,10 @@ const Prescription = () => {
             const categoryName = await categoryResponse.json()
                 .then(data => data.medical_exam.name);
 
-            setPrescription({ id: id, type: categoryName});
+            setPrescription({ id: id, type: categoryName });
 
             // Get available appointments from database
-            const appointmentsResponse = await fetch(`${BACKEND_URL}/api/v1/appointments?categoria=${category}`)
+            const appointmentsResponse = await fetch(`${BACKEND_URL}/api/v1/appointments?category=${category}`)
             if (!appointmentsResponse.ok) {
                 console.log("error:", appointmentsResponse);
                 return
@@ -52,7 +52,7 @@ const Prescription = () => {
             availableAppointments.sort();
             setAppointments(availableAppointments); //TODO: sort by what?
         };
-        
+
         fetchData(Number.parseInt(id));
     }, []);
 
