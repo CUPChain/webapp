@@ -48,6 +48,7 @@ const ConfirmAppointment = () => {
         exchangePrescriptionAppointment(prescription.id, appointment.id);
         // TODO: check for errors?
         //alert('Prenotazione confermata');
+        //TODO: save in db
     };
 
     return (

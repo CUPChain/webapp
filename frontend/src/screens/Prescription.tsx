@@ -41,7 +41,7 @@ const Prescription = () => {
             setPrescription({ id: id, type: categoryName});
 
             // Get available appointments from database
-            const appointmentsResponse = await fetch(`${BACKEND_URL}/api/v1/available_appointments/${category}`)
+            const appointmentsResponse = await fetch(`${BACKEND_URL}/api/v1/appointments?categoria=${category}`)
             if (!appointmentsResponse.ok) {
                 console.log("error:", appointmentsResponse);
                 return

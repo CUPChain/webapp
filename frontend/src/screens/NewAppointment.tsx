@@ -14,11 +14,12 @@ import { ethers, keccak256 } from 'ethers';
 const NewAppointment = () => {
     const [apptTypes, setApptTypes] = useState<{ value: number, label: string; }[]>([]);
     const [selectedType, setSelectedType] = useState(0);
-    const [apptDate, setApptDate] = useState<Date>();
+    const [apptDate, setApptDate] = useState<string>();
+    const [apptTime, setApptTime] = useState<string>();
 
     useEffect(() => {
         // Retrieve list of possible medical exams
-        const fetchPrescrTypes = async () => {
+        const fetchExamTypes = async () => {
             const response = await fetch(`${BACKEND_URL}/api/v1/medical_exams`);
             if (!response.ok) {
                 // TODO: handle error
@@ -34,11 +35,11 @@ const NewAppointment = () => {
                 };
             }));
             if (data.medical_exams.length > 0) {
-                setSelectedType(data.medical_exams[1].code);
+                setSelectedType(data.medical_exams[0].code);
             }
         };
 
-        fetchPrescrTypes();
+        fetchExamTypes();
     }, []);
 
     // Save prescription to DB, get its token id in return, mint token with received id
@@ -49,7 +50,7 @@ const NewAppointment = () => {
 
         let formData = new FormData();
         formData.append('code_medical_examination', selectedType.toString());
-        //formData.append('date', apptDate?.getDate.toString());
+        formData.append('date', `${apptDate} ${apptTime}`);
 
         // Send prescription to backend
         const requestOptions = {
@@ -59,8 +60,9 @@ const NewAppointment = () => {
             },
             body: formData
         };
+        console.log(requestOptions)
         const response = await fetch(
-            `${BACKEND_URL}/api/v1/prescriptions/create`,
+            `${BACKEND_URL}/api/v1/appointments/create`,
             requestOptions
         );
         if (!response.ok) {
@@ -70,7 +72,7 @@ const NewAppointment = () => {
         }
         const tokenId = (await response.json()).id as number;
 
-        const hashableData = {
+        const hashableData = { //TODO: should we hash hospital id as well?
             id: tokenId,
             category: selectedType,
             date: apptDate
@@ -83,8 +85,11 @@ const NewAppointment = () => {
             hashableString += `${key}:${value};`;
         });
         const hash = keccak256(ethers.toUtf8Bytes(hashableString));
-
-        await mintAppointment(tokenId, hash, selectedType);
+        try{
+            await mintAppointment(tokenId, hash, selectedType);
+        } catch(e) {
+            console.log(e); // should rollback db
+        }
     };
 
     const Placeholder = (props: PlaceholderProps<{ value: number, label: string; }>) => {
@@ -101,7 +106,26 @@ const NewAppointment = () => {
                         </CardTitle>
 
                         <Input
-                            //TODO: date
+                            type='date'
+                            label='Datepicker'
+                            className='active'
+                            placeholder='gg/mm/aaaa'
+                            //value={value}
+                            onChange={(ev) => {
+                                setApptDate(ev.target.value);
+                                console.log(ev.target.value)
+                            }}
+                        />
+
+                        <Input
+                            type='time'
+                            label='Hourpicker'
+                            className='active'
+                            //value={value}
+                            onChange={(ev) => {
+                                setApptTime(ev.target.value);
+                                console.log(ev.target.value)
+                            }}
                         />
 
                         <Select
