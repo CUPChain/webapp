@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import 'bootstrap-italia/dist/css/bootstrap-italia.min.css';
 import 'typeface-titillium-web';
 import 'typeface-roboto-mono';
@@ -20,7 +20,7 @@ const Appointment = () => {
     // How do we know what was the id of the prescription that got exchanged for the appointment?
     const id = window.location.pathname.split('/')[2];
     
-    const [appointment, setAppointment] = React.useState<AppointmentType>({
+    const [appointment, setAppointment] = useState<AppointmentType>({
         id: 0,
         type: '',
         name: '',
@@ -34,7 +34,7 @@ const Appointment = () => {
         longitude: 0,
         valid: false
     });
-    const [prescription, setPrescription] = React.useState<PrescriptionType>({id: 0, type: "Invalid"});
+    const [prescription, setPrescription] = useState<PrescriptionType>({id: 0, type: "Invalid"});
 
     useEffect(() => {
         const getAppointmentData = async (id: number) => {

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import 'bootstrap-italia/dist/css/bootstrap-italia.min.css';
 import 'typeface-titillium-web';
 import 'typeface-roboto-mono';
@@ -13,10 +13,10 @@ import { ethers } from 'ethers';
 
 
 const NewPrescription = () => {
-    const [prescrTypes, setPrescrTypes] = React.useState<{ value: number, label: string; }[]>([]);
-    const [selectedType, setSelectedType] = React.useState(0);
-    const [patientAddr, setPatientAddr] = React.useState<string>();
-    const [patientCF, setPatientCF] = React.useState<string>();
+    const [prescrTypes, setPrescrTypes] = useState<{ value: number, label: string; }[]>([]);
+    const [selectedType, setSelectedType] = useState(0);
+    const [patientAddr, setPatientAddr] = useState<string>();
+    const [patientCF, setPatientCF] = useState<string>();
 
     useEffect(() => {
         // Retrieve list of possible medical exams

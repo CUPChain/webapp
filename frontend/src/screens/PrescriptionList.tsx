@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import 'bootstrap-italia/dist/css/bootstrap-italia.min.css';
 import 'typeface-titillium-web';
 import 'typeface-roboto-mono';
@@ -12,8 +12,8 @@ import RowTable from '../components/RowTable';
 
 const PrescriptionList = () => {
     const navigate = useNavigate();
-    const [prescrList, setPrescrList] = React.useState<{ patient: string, id: number, type: string; }[]>([]);
-    const [filter, setFilter] = React.useState<string>("");
+    const [prescrList, setPrescrList] = useState<{ patient: string, id: number, type: string; }[]>([]);
+    const [filter, setFilter] = useState<string>("");
 
     const fetchPrescrList = async () => {
         const response = await fetch(
@@ -38,7 +38,7 @@ const PrescriptionList = () => {
 
     const onNewPrescription = async () => {
         navigate('/doctor/new-prescription');
-    }
+    };
 
     const onFilter = async () => {
         // Retrieve list of prescriptions
