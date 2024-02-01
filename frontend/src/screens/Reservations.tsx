@@ -20,7 +20,7 @@ const Reservations = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            let medical_exams = []
+            let medical_exams = [];
 
             const response = await fetch(`${BACKEND_URL}/api/v1/medical_exams`);
             if (!response.ok) {
@@ -47,8 +47,8 @@ const Reservations = () => {
                 const category = prescriptionsData[2][i];
 
                 receivedPrescriptions[i] = {
-                        id: id,
-                        type: medical_exams.find(x => x.value == category)?.label!
+                    id: id,
+                    type: medical_exams.find(x => x.value == category)?.label!
                 };
             }
 
@@ -68,13 +68,13 @@ const Reservations = () => {
                 if (!response.ok) {
                     console.log(response.statusText);
                     // TODO: error handling
-                    continue
+                    continue;
                 }
-                const data = await response.json() as { appointment: AppointmentType };
+                const data = await response.json() as { appointment: AppointmentType; };
                 const appointment = data.appointment;
-                appointment.type = medical_exams.find(x => x.value == category)?.label!
-                const dataToCheck = { id: appointment.id, hospital: appointment.id_hospital, date: appointment.date, type: appointment.type }
-                console.log(appointment)
+                appointment.type = medical_exams.find(x => x.value == category)?.label!;
+                const dataToCheck = { id: appointment.id, hospital: appointment.id_hospital, date: appointment.date, type: appointment.type };
+                console.log(appointment);
 
                 // Verify that the appointment is valid
                 if (await verifyHash(hash, dataToCheck)) {
@@ -91,7 +91,7 @@ const Reservations = () => {
         };
         fetchData();
     }, []);
-    console.log(appointments)
+    console.log(appointments);
 
     return (
         <Layout>

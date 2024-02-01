@@ -8,9 +8,12 @@ import { Section, Button } from 'design-react-kit';
 import metamask from '../images/metamask.svg';
 import { BACKEND_URL } from '../constants';
 import { loginMetamask, signString } from '../utils';
+import { useNavigate } from 'react-router-dom';
 
 
 const Login = () => {
+    const navigate = useNavigate();
+
     const metamaskLoginReq = async () => {
         // Request account access if needed
         const [, signer] = await loginMetamask();
@@ -46,6 +49,10 @@ const Login = () => {
         
         // Store token
         localStorage.setItem('token', loginData.token);
+        window.dispatchEvent(new Event('storage'))
+
+        // Redirect to reservations page
+        navigate('/reservations');
     };
 
     return (

@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import React, { useState } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 import 'bootstrap-italia/dist/css/bootstrap-italia.min.css';
 import 'typeface-titillium-web';
@@ -15,19 +15,18 @@ import Appointment from './screens/Appointment';
 import ConfirmAppointment from './screens/ConfirmAppointment';
 import NewPrescription from './screens/NewPrescription';
 import PrescriptionList from './screens/PrescriptionList';
-import { useState } from 'react';
 import { ethers, keccak256 } from "ethers";
 import PrescriptionTokens from './artifacts/contracts/PrescriptionTokens.sol/PrescriptionTokens.json';
 import AppointmentTokens from './artifacts/contracts/AppointmentTokens.sol/AppointmentTokens.json';
 import { APPOINTMENTS_CONTRACT, PRESCRIPTIONS_CONTRACT } from './constants';
 import NewAppointment from './screens/NewAppointment';
+import { isLoggedIn } from './utils';
+import NotFound from './screens/NotFound';
 
 const App = () => {
   async function requestAccount() {
     await window.ethereum.request({ method: 'eth_requestAccounts' });
   }
-
-  // NFT
 
   const [prescrID, setPrescrID] = useState<string>();
 
@@ -118,6 +117,25 @@ const App = () => {
     }
   }
 
+  const PrivateRoute = ({ element, inverse }: { element: JSX.Element; inverse?: boolean; } = { element: <></>, inverse: false }) => {
+    if (!inverse) {
+      // if logged in, return element, else redirect to login
+      if (isLoggedIn()) {
+        return element;
+      } else {
+        return <Navigate to="/login" />;
+      }
+    } else {
+      // if not logged in, return element, else redirect to reservations
+      if (!isLoggedIn()) {
+        return element;
+      } else {
+        return <Navigate to="/reservations" />;
+      }
+    }
+  };
+
+
   return (
     <div className='d-flex flex-column vh-100'>
       <CustomHeader />
@@ -135,14 +153,15 @@ const App = () => {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/reservations" element={<Reservations />} />
-            <Route path="/prescriptions/:id" element={<Prescription />} />
-            <Route path="/prescriptions/:id/confirm-appointment" element={<ConfirmAppointment />} />
-            <Route path="/appointments/:id" element={<Appointment />} />
-            <Route path="/doctor" element={<PrescriptionList />} />
-            <Route path="/doctor/new-prescription" element={<NewPrescription />} />
-            <Route path="/hospital/new-appointment" element={<NewAppointment />} />
+            <Route path="/login" element={<PrivateRoute element={<Login />} inverse />} />
+            <Route path="/reservations" element={<PrivateRoute element={<Reservations />} />} />
+            <Route path="/prescriptions/:id" element={<PrivateRoute element={<Prescription />} />} />
+            <Route path="/prescriptions/:id/confirm-appointment" element={<PrivateRoute element={<ConfirmAppointment />} />} />
+            <Route path="/appointments/:id" element={<PrivateRoute element={<Appointment />} />} />
+            <Route path="/doctor" element={<PrivateRoute element={<PrescriptionList />} />} />
+            <Route path="/doctor/new-prescription" element={<PrivateRoute element={<NewPrescription />} />} />
+            <Route path="/hospital/new-appointment" element={<PrivateRoute element={<NewAppointment />} />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
       </main>

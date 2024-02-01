@@ -189,9 +189,34 @@ const isOwned = async (tokenID: number, tokenType: Token): Promise<boolean> => {
  * @param {ethers.Signer} signer - Signer to use
  * @returns {ethers.BytesLike} - Signature of the string
 **/
-const signString = async (s: string, signer: ethers.Signer): Promise<ethers.BytesLike> => {    
+const signString = async (s: string, signer: ethers.Signer): Promise<ethers.BytesLike> => {
     const signature = await signer.signMessage(ethers.toUtf8Bytes(s));
     return signature;
 };
 
-export { getTokenData, getOwnedTokens, exchangePrescriptionAppointment, verifyHash, mintPrescription, isOwned, loginMetamask, signString, mintAppointment};
+/** Check if user is logged in
+ * @returns {boolean} - True if user is logged in, false otherwise
+**/
+const isLoggedIn = (): boolean => {
+    if (localStorage.getItem('token')) {
+        return true;
+    }
+    return false;
+};
+
+
+/** Redirect to login page if user is not logged in **/
+const requireLogin = () => {
+    // If jwt is not present, redirect to login
+    if (!isLoggedIn()) {
+        window.location.href = '/login';
+    }
+};
+
+/** Logout user **/
+const logout = () => {
+    localStorage.removeItem('token');
+    window.location.href = '/login';
+};
+
+export { getTokenData, getOwnedTokens, exchangePrescriptionAppointment, verifyHash, mintPrescription, isOwned, loginMetamask, signString, mintAppointment, requireLogin, isLoggedIn, logout };
