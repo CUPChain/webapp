@@ -1,6 +1,8 @@
 from flask import jsonify
 import datetime
 
+from backend.hospitals.model import Hospital
+
 from .. import db
 from .model import *
 from ..hospitals.model import Hospital
@@ -81,7 +83,7 @@ def create_appointment(request_form):
     # TODO: only authenticated hospital can create an appointment
 
     new_appointment = Appointment(
-        id_hospital=request_form["id_hospital"],
+        id_hospital=int(request_form["id_hospital"]),
         date=request_form["date"],
         code_medical_examination=request_form["code_medical_examination"],
         # cf_doctor=request_form["cf_doctor"],

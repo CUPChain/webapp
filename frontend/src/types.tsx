@@ -16,7 +16,8 @@ type AppointmentType = {
     distance?: string, // Distance from user (optional)
     id_hospital: number,
     latitude: number,
-    longitude: number
+    longitude: number,
+    valid: boolean
 };
 
 type PrescriptionType = {

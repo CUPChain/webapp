@@ -20,6 +20,23 @@ const Reservations = () => {
 
     useEffect(() => {
         const fetchData = async () => {
+            let medical_exams = []
+
+            const response = await fetch(`${BACKEND_URL}/api/v1/medical_exams`);
+            if (!response.ok) {
+                // TODO: handle error
+                console.log(response.statusText);
+                return;
+            }
+
+            const data = await response.json() as { medical_exams: { code: number, name: string; }[]; };
+            medical_exams = data.medical_exams.map((v) => {
+                return {
+                    value: v.code,
+                    label: v.name
+                };
+            });
+
             // Get prescriptions from blockchain
             const prescriptionsData = await getOwnedTokens(Token.Prescription);
             let receivedPrescriptions: PrescriptionType[] = [];
@@ -29,13 +46,9 @@ const Reservations = () => {
                 const hash = prescriptionsData[1][i];
                 const category = prescriptionsData[2][i];
 
-                const categoryName = await fetch(`${BACKEND_URL}/api/v1/medical_exams/${category}`)
-                                            .then(response => response.json()) //TODO: http errors
-                                            .then(data => data.name);
-
                 receivedPrescriptions[i] = {
                         id: id,
-                        type: categoryName
+                        type: medical_exams.find(x => x.value == category)?.label!
                 };
             }
 
@@ -59,15 +72,19 @@ const Reservations = () => {
                 }
                 const data = await response.json() as { appointment: AppointmentType };
                 const appointment = data.appointment;
+                appointment.type = medical_exams.find(x => x.value == category)?.label!
                 const dataToCheck = { id: appointment.id, hospital: appointment.id_hospital, date: appointment.date, type: appointment.type }
                 console.log(appointment)
 
                 // Verify that the appointment is valid
                 if (await verifyHash(hash, dataToCheck)) {
-                    receivedAppointments[i] = data.appointment;
+                    data.appointment.valid = true;
                 } else {
+                    data.appointment.valid = false;
                     console.log(`ERROR: Token ${id} metadata is not valid`);
                 }
+
+                receivedAppointments[i] = data.appointment;
             }
 
             setAppointments(receivedAppointments);
@@ -120,7 +137,7 @@ const Reservations = () => {
                             {appointments.map((appointment) => (
                                 <Row key={appointment.id}>
                                     <CardButton
-                                        title={appointment.type}
+                                        title={appointment.type + (!appointment.valid ? " METADATA INVALIDI" : "")}
                                         date={appointment.date}
                                         description={appointment.address + '\n' + "Token id: " + appointment.id}
                                         href={`/appointments/${appointment.id}`}

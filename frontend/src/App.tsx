@@ -20,6 +20,7 @@ import { ethers, keccak256 } from "ethers";
 import PrescriptionTokens from './artifacts/contracts/PrescriptionTokens.sol/PrescriptionTokens.json';
 import AppointmentTokens from './artifacts/contracts/AppointmentTokens.sol/AppointmentTokens.json';
 import { APPOINTMENTS_CONTRACT, PRESCRIPTIONS_CONTRACT } from './constants';
+import NewAppointment from './screens/NewAppointment';
 
 const App = () => {
   async function requestAccount() {
@@ -141,6 +142,7 @@ const App = () => {
             <Route path="/appointments/:id" element={<Appointment />} />
             <Route path="/doctor" element={<PrescriptionList />} />
             <Route path="/doctor/new-prescription" element={<NewPrescription />} />
+            <Route path="/hospital/new-appointment" element={<NewAppointment />} />
           </Routes>
         </BrowserRouter>
       </main>

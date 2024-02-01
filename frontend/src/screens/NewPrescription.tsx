@@ -5,20 +5,22 @@ import 'typeface-roboto-mono';
 import 'typeface-lora';
 import Layout from '../components/Layout';
 import BackButton from '../components/BackButton';
-import Select, { components, PlaceholderProps } from 'react-select';
+import Select, { components, PlaceholderProps, SingleValue } from 'react-select';
 import { Section, Card, CardBody, CardTitle, Input, Button } from 'design-react-kit';
 import { BACKEND_URL } from '../constants';
 import { mintPrescription } from '../utils';
+import { ethers } from 'ethers';
 
 
 const NewPrescription = () => {
     const [prescrTypes, setPrescrTypes] = React.useState<{ value: number, label: string; }[]>([]);
     const [selectedType, setSelectedType] = React.useState(0);
     const [patientAddr, setPatientAddr] = React.useState<string>();
+    const [patientCF, setPatientCF] = React.useState<string>();
 
     useEffect(() => {
         // Retrieve list of possible medical exams
-        const fetchPrescrTypes = async () => {
+        const fetchExamTypes = async () => {
             const response = await fetch(`${BACKEND_URL}/api/v1/medical_exams`);
             if (!response.ok) {
                 // TODO: handle error
@@ -34,23 +36,28 @@ const NewPrescription = () => {
                 };
             }));
             if (data.medical_exams.length > 0) {
-                setSelectedType(data.medical_exams[1].code);
+                setSelectedType(data.medical_exams[0].code);
             }
         };
 
-        fetchPrescrTypes();
+        fetchExamTypes();
     }, []);
 
     // Save prescription to DB, get its token id in return, mint token with received id
     const saveAndMintPrescription = async () => {
-        if (patientAddr === "") { return; }
+        if (patientAddr === "" || patientAddr === undefined ||
+            patientCF === "" || patientCF === undefined) {
+                return;
+        }
 
         // Load token from local storage
         const token = localStorage.getItem('token');
 
         let formData = new FormData();
+        console.log(selectedType)
         formData.append('code_medical_examination', selectedType.toString());
         formData.append('patient_address', patientAddr!);
+        formData.append('cf_patient', patientCF!);
         // cf doctor should be taken from db with login
 
         // Send prescription to backend
@@ -72,12 +79,14 @@ const NewPrescription = () => {
         }
         const tokenId = (await response.json()).id as number;
 
-        await mintPrescription(patientAddr!, tokenId, "NO",selectedType);
+        try {
+            await mintPrescription(patientAddr!, tokenId, ethers.keccak256(ethers.toUtf8Bytes("NO")),selectedType);
+        } catch(e) {
+            console.log(e); // should rollback db
+        }
     };
 
-    const Placeholder = (props: PlaceholderProps<{ value: number, label: string; }>) => {
-        return <components.Placeholder {...props} />;
-    };
+
 
     return (
         <Layout>
@@ -92,14 +101,20 @@ const NewPrescription = () => {
                         <Input
                             type='text'
                             label='Codice fiscale del paziente'
+                            onChange={(v) => { setPatientCF(v.target.value); }}
+                        />
+
+                        <Input
+                            type='text'
+                            label='Indirizzo del paziente'
                             onChange={(v) => { setPatientAddr(v.target.value); }}
                         />
 
                         <Select
                             name='prescrType'
-                            components={{ Placeholder }}
                             placeholder={'Seleziona tipo di visita'}
                             isSearchable={true}
+                            onChange={(v) => {setSelectedType(v!.value)}}
                             options={prescrTypes}
                         />
 

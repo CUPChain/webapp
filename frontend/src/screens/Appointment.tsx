@@ -31,7 +31,8 @@ const Appointment = () => {
         time: '',
         id_hospital: 0,
         latitude: 0,
-        longitude: 0
+        longitude: 0,
+        valid: false
     });
     const [prescription, setPrescription] = React.useState<PrescriptionType>({id: 0, type: "Invalid"});
 
