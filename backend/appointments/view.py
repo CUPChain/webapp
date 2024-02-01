@@ -7,7 +7,11 @@ from ..auth import get_account
 from ..prescriptions.model import Prescription
 
 
-@app.route(f"/{BASE_ROOT}/{VERSION}/appointments", methods=["GET"])
+@app.route(
+    f"/{BASE_ROOT}/{VERSION}/appointments",
+    methods=["GET"]
+    # Auth not required for this endpoint
+)
 def get_appointments():
     """
     Retrieve all appointments
@@ -25,7 +29,35 @@ def get_appointments():
     return list_all_appointments(category, date)
 
 
-@app.route(f"/{BASE_ROOT}/{VERSION}/appointments/create", methods=["POST"])
+@app.route(
+    f"/{BASE_ROOT}/{VERSION}/appointments/<id>",
+    methods=["GET"],
+    # Auth not required for this endpoint
+)
+def get_appointment(id):
+    """
+    Retrieve appointment details by ID
+    ---
+    tags:
+      - Appointments
+    parameters:
+      - name: id
+        in: path
+        type: string
+        required: true
+    responses:
+      200:
+        description: Appointment details retrieved successfully
+    """
+
+    return retrieve_appointment(id)
+
+
+@app.route(
+    f"/{BASE_ROOT}/{VERSION}/appointments/create",
+    methods=["POST"]
+    # Auth required for this endpoint
+)
 def make_appointment():
     """
     Create a new appointment
@@ -56,13 +88,30 @@ def make_appointment():
       200:
         description: Appointment created successfully
     """
-    # - POST /appointments/create: categoria, ospedale (preso da login), data, dottore, id_prescription=null. Restituisci id token, creato random, univoco
+    # Get the account from the JWT token
+    account = get_account()
+    if account == None:
+        return (
+            jsonify({"error": f"Login required."}),
+            302,
+        )
+
+    # Check if the account is an hospital
+    if account.id_hospital == None:
+        return (
+            jsonify({"error": f"Account {account.pkey} is not an hospital."}),
+            403,
+        )
+
+    # Create the appointment
     request_form = request.form.to_dict()
     return create_appointment(request_form)
 
 
 @app.route(
-    f"/{BASE_ROOT}/{VERSION}/appointments/reserve/<id_prescription>", methods=["POST"]
+    f"/{BASE_ROOT}/{VERSION}/appointments/reserve/<id_prescription>",
+    methods=["POST"]
+    # Auth required for this endpoint
 )
 def reserve_appointment(id_prescription):
     """
@@ -120,7 +169,9 @@ def reserve_appointment(id_prescription):
 
 
 @app.route(
-    f"/{BASE_ROOT}/{VERSION}/appointments/cancel/<id_prescription>", methods=["POST"]
+    f"/{BASE_ROOT}/{VERSION}/appointments/cancel/<id_prescription>",
+    methods=["POST"]
+    # Auth required for this endpoint
 )
 def cancel_appointment(id_prescription):
     """
@@ -150,7 +201,8 @@ def cancel_appointment(id_prescription):
         )
 
     # Check if the account is owner of the prescription
-    prescription = Prescription.query.filter_by(id=id_prescription).first()
+    prescription: Prescription = Prescription.query.filter_by(
+        id=id_prescription).first()
     if prescription.cf_patient != account.cf_patient:
         return (
             jsonify(
@@ -163,26 +215,3 @@ def cancel_appointment(id_prescription):
 
     # Cancel the appointment
     return cancel_booked_appointment(id_prescription)
-
-
-@app.route(
-    f"/{BASE_ROOT}/{VERSION}/appointments/<id>",
-    methods=["GET"],
-)
-def get_appointment(id):
-    """
-    Retrieve appointment details by ID
-    ---
-    tags:
-      - Appointments
-    parameters:
-      - name: id
-        in: path
-        type: string
-        required: true
-    responses:
-      200:
-        description: Appointment details retrieved successfully
-    """
-
-    return retrieve_appointment(id)
