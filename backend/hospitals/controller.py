@@ -25,8 +25,7 @@ def retrieve_all_hospital_is_able_to_do(id_is_able_to_do):
         db.select(IsAbleToDo).where(IsAbleToDo.id_hospital == id_is_able_to_do)
     )
     if result:
-        is_able_to_do_data = [is_able_to_do[0].toDict()
-                              for is_able_to_do in result]
+        is_able_to_do_data = [is_able_to_do[0].toDict() for is_able_to_do in result]
         return jsonify({"is_able_to_do": is_able_to_do_data})
     else:
         return (
@@ -37,19 +36,16 @@ def retrieve_all_hospital_is_able_to_do(id_is_able_to_do):
 
 def list_all_is_able_to_do():
     result = db.session.execute(db.select(IsAbleToDo))
-    is_able_to_do_list = [is_able_to_do[0].toDict()
-                          for is_able_to_do in result]
+    is_able_to_do_list = [is_able_to_do[0].toDict() for is_able_to_do in result]
     return jsonify({"is_able_to_do": is_able_to_do_list})
 
 
 def retrieve_all_is_able_to_do_code(code):
     result = db.session.execute(
-        db.select(IsAbleToDo).where(
-            IsAbleToDo.code_medical_examination == code)
+        db.select(IsAbleToDo).where(IsAbleToDo.code_medical_examination == code)
     )
     if result:
-        is_able_to_do_data = [is_able_to_do[0].toDict()
-                              for is_able_to_do in result]
+        is_able_to_do_data = [is_able_to_do[0].toDict() for is_able_to_do in result]
         return jsonify({"is_able_to_do": is_able_to_do_data})
     else:
         return (

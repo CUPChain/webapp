@@ -12,9 +12,11 @@ class Appointment(db.Model):
     date = db.Column(db.DateTime, nullable=False)
     # cf_doctor = db.Column(db.String(16), db.ForeignKey("doctor.cf"))
     code_medical_examination = db.Column(
-        db.Integer, db.ForeignKey("medical_exam.code"), nullable=False)
+        db.Integer, db.ForeignKey("medical_exam.code"), nullable=False
+    )
     id_prescription = db.Column(
-        db.Integer, db.ForeignKey("prescription.id"), nullable=True)
+        db.Integer, db.ForeignKey("prescription.id"), nullable=True
+    )
 
     # validate that this is correct since the dates can be interpreted weirdly from db to python to json and viceversa
     def toDict(self):

@@ -18,9 +18,7 @@ def get_nonce(pkey: str) -> str:
         str: The nonce of the account.
     """
     # Get nonce from database
-    nonce = db.session.execute(
-        db.select(Account).filter_by(pkey=pkey)
-    ).one_or_none()
+    nonce = db.session.execute(db.select(Account).filter_by(pkey=pkey)).one_or_none()
     if nonce:
         return nonce[0].nonce
     else:
@@ -50,7 +48,9 @@ def create_jwt_token(pkey: str) -> str:
     db.session.execute(
         db.update(Account)
         .where(Account.pkey == pkey)
-        .values(jwt=token, jwt_exp=datetime.datetime.utcnow() + datetime.timedelta(days=1))
+        .values(
+            jwt=token, jwt_exp=datetime.datetime.utcnow() + datetime.timedelta(days=1)
+        )
     )
     db.session.commit()
     return token

@@ -5,6 +5,10 @@ from web3.auto import w3
 from eth_account.messages import encode_defunct
 
 
+# - POST /login_challenge: (richiede address) mandare random number, salvare number+address richiesto da qualche parte
+# - POST /login: (richiede address) Implementare jwt, check signature e' corretta, check number era salvato
+
+
 @app.route("/api/v1/challenge/<pkey>", methods=["GET"])
 def get_challenge(pkey: str):
     """
@@ -30,7 +34,7 @@ def get_challenge(pkey: str):
 def login():
     """
     Client sends the signed nonce and the address to the server.
-    Server verifies the signature and the address.    
+    Server verifies the signature and the address.
     """
     # Get the signed nonce and the address from the request body
     signed_nonce = request.json.get("signature")
@@ -60,9 +64,7 @@ def login():
         token = create_jwt_token(pkey)
 
         # Return the token
-        return jsonify({
-            "token": token
-        })
+        return jsonify({"token": token})
     else:
         return (
             jsonify(

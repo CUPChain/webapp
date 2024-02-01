@@ -1,8 +1,7 @@
-
-from flask import request
-from ..config import BASE_ROOT, VERSION 
+from ..config import BASE_ROOT, VERSION
 from ..app import app
 from .controller import *
+
 
 @app.route(f"/{BASE_ROOT}/{VERSION}/patients", methods=["GET"])
 def get_patients():

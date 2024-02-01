@@ -1,6 +1,7 @@
-from flask import request, jsonify
+from flask import jsonify
 from .. import db
 from .model import *
+
 
 def list_all_medical_exams():
     result = db.session.execute(db.select(MedicalExam))
@@ -20,6 +21,3 @@ def retrieve_medical_exam(code):
 
 # Controllare che esistano chiamate API:
 # - /categories/id: codice?, nome categoria
-
-# - POST /login_challenge: (richiede address) mandare random number, salvare number+address richiesto da qualche parte
-# - POST /login: (richiede address) Implementare jwt, check signature e' corretta, check number era salvato

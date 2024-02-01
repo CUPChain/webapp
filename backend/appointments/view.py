@@ -3,6 +3,8 @@ from ..app import app
 from ..config import BASE_ROOT, VERSION
 from .controller import *
 from .model import *
+from ..auth import get_account
+from ..prescriptions.model import Prescription
 
 
 @app.route(f"/{BASE_ROOT}/{VERSION}/appointments", methods=["GET"])
@@ -96,11 +98,7 @@ def reserve_appointment(id_prescription):
     account = get_account()
     if account == None:
         return (
-            jsonify(
-                {
-                    "error": f"Login required."
-                }
-            ),
+            jsonify({"error": f"Login required."}),
             302,
         )
 
@@ -147,11 +145,7 @@ def cancel_appointment(id_prescription):
     account = get_account()
     if account == None:
         return (
-            jsonify(
-                {
-                    "error": f"Login required."
-                }
-            ),
+            jsonify({"error": f"Login required."}),
             302,
         )
 

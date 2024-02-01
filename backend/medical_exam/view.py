@@ -1,4 +1,3 @@
-from flask import request
 from ..config import BASE_ROOT, VERSION
 from ..app import app
 from .controller import *

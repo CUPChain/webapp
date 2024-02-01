@@ -17,8 +17,7 @@ def validate_jwt_token(token: str) -> bool:
     """
     try:
         print(token)
-        jwt.decode(token, key=os.getenv(
-            "JWT_SECRET_KEY"), algorithms=["HS256"])
+        jwt.decode(token, key=os.getenv("JWT_SECRET_KEY"), algorithms=["HS256"])
         return True
     except:
         return False
@@ -37,9 +36,7 @@ def get_account() -> Account:
         return None
 
     # Get the account from the database
-    account = db.session.execute(
-        db.select(Account).filter_by(jwt=jwt)
-    ).one_or_none()
+    account = db.session.execute(db.select(Account).filter_by(jwt=jwt)).one_or_none()
     if account:
         return account[0]
     else:

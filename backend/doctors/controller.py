@@ -1,7 +1,8 @@
-from flask import request, jsonify
+from flask import jsonify
 
 from .. import db
 from .model import *
+
 
 def list_all_doctors():
     result = db.session.execute(db.select(Doctor))
@@ -10,8 +11,7 @@ def list_all_doctors():
 
 
 def retrieve_doctor(cf):
-    doctor = db.session.execute(
-        db.select(Doctor).filter_by(cf=cf)).one_or_none()
+    doctor = db.session.execute(db.select(Doctor).filter_by(cf=cf)).one_or_none()
     if doctor:
         return jsonify({"doctor": doctor[0].toDict()})
     else:

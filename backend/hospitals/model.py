@@ -24,8 +24,7 @@ class Hospital(db.Model):
 
 class IsAbleToDo(db.Model):
     __tablename__ = "is_able_to_do"
-    id_hospital = db.Column(db.Integer, db.ForeignKey(
-        "hospital.id"), primary_key=True)
+    id_hospital = db.Column(db.Integer, db.ForeignKey("hospital.id"), primary_key=True)
     code_medical_examination = db.Column(
         db.Integer, db.ForeignKey("medical_exam.code"), primary_key=True
     )

@@ -3,6 +3,7 @@ import datetime
 
 from .. import db
 from .model import *
+from ..hospitals.model import Hospital
 
 
 def list_all_appointments(category=None, date=None):
@@ -12,23 +13,29 @@ def list_all_appointments(category=None, date=None):
     if category and date:
         result = db.session.execute(
             db.select(Appointment)
-            .where(Appointment.date >= date
-                   ).where(Appointment.code_medical_examination == category
-                           ).where(Appointment.id_prescription == None)
+            .where(Appointment.date >= date)
+            .where(Appointment.code_medical_examination == category)
+            .where(Appointment.id_prescription == None)
         )
     elif category:
         result = db.session.execute(
-            db.select(Appointment).where(
-                Appointment.code_medical_examination == category
-            ).where(Appointment.date >= now).where(Appointment.id_prescription == None)
+            db.select(Appointment)
+            .where(Appointment.code_medical_examination == category)
+            .where(Appointment.date >= now)
+            .where(Appointment.id_prescription == None)
         )
     elif date:
         result = db.session.execute(
-            db.select(Appointment).where(Appointment.date >= date
-                                         ).where(Appointment.id_prescription == None))
+            db.select(Appointment)
+            .where(Appointment.date >= date)
+            .where(Appointment.id_prescription == None)
+        )
     else:
-        result = db.session.execute(db.select(Appointment).where(Appointment.date >= now).where(
-            Appointment.id_prescription == None))
+        result = db.session.execute(
+            db.select(Appointment)
+            .where(Appointment.date >= now)
+            .where(Appointment.id_prescription == None)
+        )
     appointments_list = [appointment[0].toDict() for appointment in result]
     return jsonify({"appointments": appointments_list})
 
@@ -36,8 +43,12 @@ def list_all_appointments(category=None, date=None):
 def retrieve_appointment(id):
     # - /appointments/id: id, ospedale, categoria, id dottore che fa la visita, nome dottore
 
-    appointment = db.session.query(Appointment, Hospital).join(
-        Appointment, Appointment.id_hospital == Hospital.id).filter(Appointment.id == id).one_or_none()
+    appointment = (
+        db.session.query(Appointment, Hospital)
+        .join(Appointment, Appointment.id_hospital == Hospital.id)
+        .filter(Appointment.id == id)
+        .one_or_none()
+    )
     # .execute(
     #     db.select(Appointment).filter_by(id=id).join(
     #         Hospital, Appointment.id_hospital == Hospital.id),
@@ -48,7 +59,12 @@ def retrieve_appointment(id):
     # )
 
     if appointment:
-        return jsonify({"appointment": appointment[0].toDict(), "hospital": appointment[1].toDict()})
+        return jsonify(
+            {
+                "appointment": appointment[0].toDict(),
+                "hospital": appointment[1].toDict(),
+            }
+        )
     else:
         return (
             jsonify(

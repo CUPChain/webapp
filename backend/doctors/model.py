@@ -1,8 +1,8 @@
 from sqlalchemy import inspect
 from flask_validator import *
-from sqlalchemy.orm import validates
 
 from .. import db  # from __init__.py
+
 
 class Doctor(db.Model):
     __tablename__ = "doctor"

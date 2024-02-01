@@ -3,6 +3,7 @@ from ..config import BASE_ROOT, VERSION
 from ..app import app
 from .controller import *
 
+
 @app.route(f"/{BASE_ROOT}/{VERSION}/hospitals", methods=["GET"])
 def get_hospitals():
     """
@@ -56,6 +57,7 @@ def get_hospital_is_able_to_do(id_is_able_to_do):
     """
     return retrieve_all_hospital_is_able_to_do(id_is_able_to_do)
 
+
 @app.route(f"/{BASE_ROOT}/{VERSION}/is_able_to_do", methods=["GET"])
 def get_is_able_to_do():
     """
@@ -68,7 +70,6 @@ def get_is_able_to_do():
         description: A list of abilities
     """
     return list_all_is_able_to_do()
-
 
 
 @app.route(f"/{BASE_ROOT}/{VERSION}/is_able_to_do_code/<code>", methods=["GET"])

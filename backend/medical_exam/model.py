@@ -11,5 +11,3 @@ class MedicalExam(db.Model):
 
     def toDict(self):
         return {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
-
-
