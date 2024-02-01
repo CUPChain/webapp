@@ -1,0 +1,53 @@
+@startuml
+title Login
+autonumber
+
+actor User
+participant Metamask
+boundary LoginPage
+control LoginController
+database Database
+
+
+User -> LoginPage : I want to login with this public address
+LoginPage -> LoginController : I want to login with this public address
+LoginController -> Database : Is this public address valid?
+
+alt #LightGreen Valid Public Address
+
+Database -> LoginController : Yes, this public address is valid
+LoginController -> Database : Generate Random Nonce
+Database -> LoginController : Current Nonce
+LoginController -> LoginPage : Current Nonce
+LoginPage -> User : Sign this Nonce with Metamask
+
+else #Pink Invalid Public Address
+
+Database -> LoginController : No, this public address is not valid
+LoginController -> LoginPage : Invalid public address 
+LoginPage -> User !! : Invalid public address
+
+end
+
+User -> Metamask : Sign this Nonce with my private key
+Metamask -> LoginPage : Signed Nonce
+LoginPage -> LoginController : Signed Nonce
+LoginController -> LoginController : Verify Signature
+
+alt #LightGreen Valid Signature
+
+LoginController -> Database : Get Session JWT
+LoginController -> Database : Change Nonce
+Database -> LoginController : Session JWT
+LoginController -> LoginPage : Session JWT
+LoginPage -> User : Authenticated
+
+else #Pink Invalid Signature
+
+LoginController -> LoginPage : Invalid Signature
+LoginPage -> User !! : Invalid Signature
+
+end
+
+
+@enduml
