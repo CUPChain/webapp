@@ -117,22 +117,23 @@ const App = () => {
     }
   }
 
-  const PrivateRoute = ({ element, inverse }: { element: JSX.Element; inverse?: boolean; } = { element: <></>, inverse: false }) => {
-    if (!inverse) {
-      // if logged in, return element, else redirect to login
-      if (isLoggedIn()) {
-        return element;
-      } else {
-        return <Navigate to="/login" />;
-      }
-    } else {
-      // if not logged in, return element, else redirect to reservations
-      if (!isLoggedIn()) {
-        return element;
-      } else {
-        return <Navigate to="/reservations" />;
-      }
+  const LoginRoute = () => {
+    // if logged in, redirect to reservations
+    if (isLoggedIn()) {
+      return <Navigate to="/reservations" />;
     }
+    return <Login />;
+  };
+
+  const PrivateRoute = ({ element, requiredRole }: { element: JSX.Element; requiredRole: string; } = { element: <></>, requiredRole: 'patient' }) => {
+    // if not logged in, redirect to login
+    if (!isLoggedIn()) {
+      return <Navigate to="/login" />;
+    }
+    if (localStorage.getItem('role') !== requiredRole) {
+      return <Navigate to="/" />;
+    }
+    return element;
   };
 
 
@@ -153,14 +154,14 @@ const App = () => {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/login" element={<PrivateRoute element={<Login />} inverse />} />
-            <Route path="/reservations" element={<PrivateRoute element={<Reservations />} />} />
-            <Route path="/prescriptions/:id" element={<PrivateRoute element={<Prescription />} />} />
-            <Route path="/prescriptions/:id/confirm-appointment" element={<PrivateRoute element={<ConfirmAppointment />} />} />
-            <Route path="/appointments/:id" element={<PrivateRoute element={<Appointment />} />} />
-            <Route path="/doctor" element={<PrivateRoute element={<PrescriptionList />} />} />
-            <Route path="/doctor/new-prescription" element={<PrivateRoute element={<NewPrescription />} />} />
-            <Route path="/hospital/new-appointment" element={<PrivateRoute element={<NewAppointment />} />} />
+            <Route path="/login" element={<LoginRoute />} />
+            <Route path="/reservations" element={<PrivateRoute element={<Reservations />} requiredRole="patient" />} />
+            <Route path="/prescriptions/:id" element={<PrivateRoute element={<Prescription />} requiredRole="patient" />} />
+            <Route path="/prescriptions/:id/confirm-appointment" element={<PrivateRoute element={<ConfirmAppointment />} requiredRole="patient" />} />
+            <Route path="/appointments/:id" element={<PrivateRoute element={<Appointment />} requiredRole="patient" />} />
+            <Route path="/doctor" element={<PrivateRoute element={<PrescriptionList />} requiredRole="doctor" />} />
+            <Route path="/doctor/new-prescription" element={<PrivateRoute element={<NewPrescription />} requiredRole="doctor" />} />
+            <Route path="/hospital/new-appointment" element={<PrivateRoute element={<NewAppointment />} requiredRole="hospital" />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

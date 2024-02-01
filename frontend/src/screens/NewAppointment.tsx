@@ -44,10 +44,6 @@ const NewAppointment = () => {
 
     // Save prescription to DB, get its token id in return, mint token with received id
     const saveAndMintAppointment = async () => {
-
-        // Load token from local storage
-        const token = localStorage.getItem('token');
-
         let formData = new FormData();
         formData.append('code_medical_examination', selectedType.toString());
         formData.append('date', `${apptDate} ${apptTime}`);
@@ -56,7 +52,7 @@ const NewAppointment = () => {
         const requestOptions = {
             method: 'POST',
             headhers: {
-                token: token!
+                auth: localStorage.getItem('auth')!
             },
             body: formData
         };

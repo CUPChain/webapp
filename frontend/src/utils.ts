@@ -1,7 +1,7 @@
 import { BytesLike, ethers, keccak256 } from "ethers";
 import PrescriptionTokens from './artifacts/contracts/PrescriptionTokens.sol/PrescriptionTokens.json';
 import AppointmentTokens from './artifacts/contracts/AppointmentTokens.sol/AppointmentTokens.json';
-import { APPOINTMENTS_CONTRACT, PRESCRIPTIONS_CONTRACT, Token } from './constants';
+import { APPOINTMENTS_CONTRACT, BACKEND_URL, PRESCRIPTIONS_CONTRACT, Token } from './constants';
 
 
 /** Log in to metamask and return provider and signer
@@ -198,7 +198,7 @@ const signString = async (s: string, signer: ethers.Signer): Promise<ethers.Byte
  * @returns {boolean} - True if user is logged in, false otherwise
 **/
 const isLoggedIn = (): boolean => {
-    if (localStorage.getItem('token')) {
+    if (localStorage.getItem('auth')) {
         return true;
     }
     return false;
@@ -214,8 +214,17 @@ const requireLogin = () => {
 };
 
 /** Logout user **/
-const logout = () => {
-    localStorage.removeItem('token');
+const logout = async () => {
+    const response = await fetch(`${BACKEND_URL}/api/v1/logout`, {
+        method: 'GET',
+        headers: {
+            auth: localStorage.getItem('auth')!
+        }
+    });
+    if (!response.ok) {
+        console.log("Could not log out");
+    }
+    localStorage.removeItem('auth');
     window.location.href = '/login';
 };
 

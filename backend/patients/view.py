@@ -1,3 +1,4 @@
+from flask import jsonify
 from ..config import BASE_ROOT, VERSION
 from ..app import app
 from .controller import *
@@ -18,6 +19,10 @@ def get_patient(cf):
     parameters:
       - name: cf
         in: path
+        type: string
+        required: true
+      - name: auth
+        in: header
         type: string
         required: true
     responses:

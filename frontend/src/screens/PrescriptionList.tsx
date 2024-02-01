@@ -21,8 +21,7 @@ const PrescriptionList = () => {
             {
                 method: 'GET',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'token': localStorage.getItem('token')!
+                    auth: localStorage.getItem('auth')!
                 }
             }
         );

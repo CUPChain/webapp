@@ -48,7 +48,7 @@ const Reservations = () => {
 
                 receivedPrescriptions[i] = {
                     id: id,
-                    type: medical_exams.find(x => x.value == category)?.label!
+                    type: medical_exams.find(x => x.value === category)?.label!
                 };
             }
 
@@ -72,7 +72,7 @@ const Reservations = () => {
                 }
                 const data = await response.json() as { appointment: AppointmentType; };
                 const appointment = data.appointment;
-                appointment.type = medical_exams.find(x => x.value == category)?.label!;
+                appointment.type = medical_exams.find(x => x.value === category)?.label!;
                 const dataToCheck = { id: appointment.id, hospital: appointment.id_hospital, date: appointment.date, type: appointment.type };
                 console.log(appointment);
 
@@ -109,6 +109,9 @@ const Reservations = () => {
                             Seleziona una prescrizione per effettuare una prenotazione.
                         </p>
                         <>
+                            {prescriptions.length === 0 &&
+                                <b>Attualmente non risultano prescrizioni disponibili</b>
+                            }
                             {prescriptions.map((prescription) => (
                                 <Row key={prescription.id}>
                                     <CardButton
@@ -134,6 +137,9 @@ const Reservations = () => {
                             Seleziona un appuntamento per visualizzare i dettagli.
                         </p>
                         <>
+                            {appointments.length === 0 &&
+                                <b>Attualmente non risultano appuntamenti prenotati</b>
+                            }
                             {appointments.map((appointment) => (
                                 <Row key={appointment.id}>
                                     <CardButton

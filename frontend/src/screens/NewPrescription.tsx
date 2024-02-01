@@ -5,7 +5,7 @@ import 'typeface-roboto-mono';
 import 'typeface-lora';
 import Layout from '../components/Layout';
 import BackButton from '../components/BackButton';
-import Select, { components, PlaceholderProps, SingleValue } from 'react-select';
+import Select from 'react-select';
 import { Section, Card, CardBody, CardTitle, Input, Button } from 'design-react-kit';
 import { BACKEND_URL } from '../constants';
 import { mintPrescription } from '../utils';
@@ -47,14 +47,11 @@ const NewPrescription = () => {
     const saveAndMintPrescription = async () => {
         if (patientAddr === "" || patientAddr === undefined ||
             patientCF === "" || patientCF === undefined) {
-                return;
+            return;
         }
 
-        // Load token from local storage
-        const token = localStorage.getItem('token');
-
         let formData = new FormData();
-        console.log(selectedType)
+        console.log(selectedType);
         formData.append('code_medical_examination', selectedType.toString());
         formData.append('patient_address', patientAddr!);
         formData.append('cf_patient', patientCF!);
@@ -64,7 +61,7 @@ const NewPrescription = () => {
         const requestOptions = {
             method: 'POST',
             headhers: {
-                token: token!
+                auth: localStorage.getItem('auth')!
             },
             body: formData
         };
@@ -80,8 +77,8 @@ const NewPrescription = () => {
         const tokenId = (await response.json()).id as number;
 
         try {
-            await mintPrescription(patientAddr!, tokenId, ethers.keccak256(ethers.toUtf8Bytes("NO")),selectedType);
-        } catch(e) {
+            await mintPrescription(patientAddr!, tokenId, ethers.keccak256(ethers.toUtf8Bytes("NO")), selectedType);
+        } catch (e) {
             console.log(e); // should rollback db
         }
     };
@@ -114,7 +111,7 @@ const NewPrescription = () => {
                             name='prescrType'
                             placeholder={'Seleziona tipo di visita'}
                             isSearchable={true}
-                            onChange={(v) => {setSelectedType(v!.value)}}
+                            onChange={(v) => { setSelectedType(v!.value); }}
                             options={prescrTypes}
                         />
 

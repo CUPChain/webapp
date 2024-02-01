@@ -16,7 +16,6 @@ def validate_jwt_token(token: str) -> bool:
         bool: True if the token is valid, False otherwise.
     """
     try:
-        print(token)
         jwt.decode(token, key=os.getenv("JWT_SECRET_KEY"), algorithms=["HS256"])
         return True
     except:
@@ -32,10 +31,9 @@ def get_account() -> Account:
     """
     # Get the JWT token from the request header
     jwt = request.headers.get("auth")
-    print(jwt)
     if not validate_jwt_token(jwt):
         return None
-
+    
     # Get the account from the database
     account = db.session.execute(db.select(Account).filter_by(jwt=jwt)).one_or_none()
     if account:

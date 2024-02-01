@@ -45,10 +45,11 @@ const Login = () => {
             console.log("error:", loginResponse);
             return;
         }
-        const loginData = await loginResponse.json() as { token: string; };
+        const loginData = await loginResponse.json() as { auth: string; role: string; };
         
         // Store token
-        localStorage.setItem('token', loginData.token);
+        localStorage.setItem('auth', loginData.auth);
+        localStorage.setItem('role', loginData.role);
         window.dispatchEvent(new Event('storage'))
 
         // Redirect to reservations page
