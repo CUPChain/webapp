@@ -4,21 +4,10 @@ import 'typeface-titillium-web';
 import 'typeface-roboto-mono';
 import 'typeface-lora';
 import { Header, HeaderContent, HeaderRightZone, Button, Icon } from 'design-react-kit';
-import { isLoggedIn, logout } from '../utils';
+import { getPersonalArea, isLoggedIn, logout } from '../utils';
 
 
 const CustomHeader = () => {
-    const getPersonalArea = (role: string) => {
-        if (role === 'patient') {
-            return '/reservations';
-        } else if (role === 'doctor') {
-            return '/doctor';
-        } else if (role === 'hospital') {
-            return '/hospital';
-        }
-        return '/';
-    };
-
     const getIcon = (role: string) => {
         if (role === 'patient') {
             return 'it-inbox';

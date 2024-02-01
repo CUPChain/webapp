@@ -228,4 +228,19 @@ const logout = async () => {
     window.location.href = '/login';
 };
 
-export { getTokenData, getOwnedTokens, exchangePrescriptionAppointment, verifyHash, mintPrescription, isOwned, loginMetamask, signString, mintAppointment, requireLogin, isLoggedIn, logout };
+/** Get personal area path based on user role
+ * @param {string} role - User role
+ * @returns {string} - Path to personal area
+**/
+const getPersonalArea = (role: string) => {
+    if (role === 'patient') {
+        return '/reservations';
+    } else if (role === 'doctor') {
+        return '/doctor';
+    } else if (role === 'hospital') {
+        return '/hospital';
+    }
+    return '/';
+};
+
+export { getTokenData, getOwnedTokens, exchangePrescriptionAppointment, verifyHash, mintPrescription, isOwned, loginMetamask, signString, mintAppointment, requireLogin, isLoggedIn, logout, getPersonalArea };
