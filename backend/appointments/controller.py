@@ -78,15 +78,11 @@ def retrieve_appointment(id):
         )
 
 
-def create_appointment(request_form):
-    # - POST /appointments/create: id_ospedale (preso da login), categoria, data, dottore, id_prescription=null. Restituisci id token, creato random, univoco
-    # TODO: only authenticated hospital can create an appointment
-
+def create_appointment(request_form, id_hospital):
     new_appointment = Appointment(
-        id_hospital=int(request_form["id_hospital"]),
+        id_hospital=int(id_hospital),
         date=request_form["date"],
         code_medical_examination=request_form["code_medical_examination"],
-        # cf_doctor=request_form["cf_doctor"],
     )
 
     db.session.add(new_appointment)

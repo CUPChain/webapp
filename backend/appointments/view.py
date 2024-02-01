@@ -69,11 +69,7 @@ def make_appointment():
         in: formData
         type: string
         required: true
-      - name: id_hospital
-        in: formData
-        type: integer
-        required: true
-      - name: data
+      - name: date
         in: formData
         type: datetime
         required: true
@@ -105,7 +101,7 @@ def make_appointment():
 
     # Create the appointment
     request_form = request.form.to_dict()
-    return create_appointment(request_form)
+    return create_appointment(request_form, account.id_hospital)
 
 
 @app.route(
@@ -132,7 +128,7 @@ def reserve_appointment(id_prescription):
         in: formData
         type: integer
         required: true
-      - name: data
+      - name: date
         in: formData
         type: datetime
         required: true
