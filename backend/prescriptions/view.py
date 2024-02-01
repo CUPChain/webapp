@@ -61,28 +61,10 @@ def make_prescription():
         in: formData
         type: string
         required: true
-      - name: cf_patient
+      - name: pkey_patient
         in: formData
         type: string
         required: true
-      - name: categoria
-        in: formData
-        type: string
-        required: true
-      - name: id_doctor
-        in: formData
-        type: string
-        required: true
-      - name: doctor_name
-        in: formData
-        type: string
-        required: true
-      - name: note
-        in: formData
-        type: string
-      - name: data
-        in: formData
-        type: string
     responses:
       200:
         description: Prescription created successfully
@@ -108,7 +90,7 @@ def make_prescription():
     # Check all required fields are present
     if (
         request_form.get("code_medical_examination") == None
-        or request_form.get("cf_patient") == None
+        or request_form.get("pkey_patient") == None
     ):
         return (
             jsonify({"message": "Missing required field(s)",
@@ -117,7 +99,7 @@ def make_prescription():
         )
 
     # Create the prescription
-    return create_prescription(request_form)
+    return create_prescription(request_form, account.cf_doctor)
 
 
 @app.route(

@@ -2,6 +2,7 @@ from flask import jsonify
 from .. import db
 from .model import *
 from ..medical_exam.model import MedicalExam
+from ..login.model import Account
 
 
 def retrieve_prescription(id):
@@ -28,17 +29,23 @@ def retrieve_prescription(id):
         return jsonify({"message": f"No Prescription found with id: '{id}'"}), 404
 
 
-def create_prescription(request_form):
-    # - POST /prescriptions/create: categoria, CF/address utente, dottore (preso da login), data, note. Restituisci id token, creato random, univoco
+def create_prescription(request_form, cf_doctor):
+    # Get the patient from the pkey
+    account = db.session.execute(
+        db.select(Account).filter_by(pkey=request_form["pkey_patient"])
+    ).one_or_none()
+    if account == None:
+        return (
+            jsonify(
+                {"error": f"Patient with pkey '{request_form['pkey_patient']}' not found."}),
+            404,
+        )
 
-    # id = str(uuid.uuid4())
+    # Create the prescription using the request form and the patient
     new_prescription = Prescription(
-        # id=id,
         code_medical_examination=request_form["code_medical_examination"],
-        cf_patient=request_form["cf_patient"],
-        cf_doctor=request_form["cf_doctor"],
-        # date=request_form["date"], maybe a date of issue can be interesting?
-        # note=request_form["note"], maybe a field for some note can be interesting?
+        cf_patient=account[0].cf_patient,
+        cf_doctor=cf_doctor,
     )
     db.session.add(new_prescription)
     db.session.commit()
