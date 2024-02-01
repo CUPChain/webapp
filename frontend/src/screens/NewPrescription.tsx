@@ -10,13 +10,14 @@ import { Section, Card, CardBody, CardTitle, Input, Button } from 'design-react-
 import { BACKEND_URL } from '../constants';
 import { mintPrescription } from '../utils';
 import { ethers } from 'ethers';
+import { useNavigate } from 'react-router-dom';
 
 
 const NewPrescription = () => {
+    const navigate = useNavigate();
     const [prescrTypes, setPrescrTypes] = useState<{ value: number, label: string; }[]>([]);
     const [selectedType, setSelectedType] = useState(0);
     const [patientAddr, setPatientAddr] = useState<string>();
-    const [patientCF, setPatientCF] = useState<string>();
 
     useEffect(() => {
         // Retrieve list of possible medical exams
@@ -45,29 +46,26 @@ const NewPrescription = () => {
 
     // Save prescription to DB, get its token id in return, mint token with received id
     const saveAndMintPrescription = async () => {
-        if (patientAddr === "" || patientAddr === undefined ||
-            patientCF === "" || patientCF === undefined) {
+        if (patientAddr === "" || patientAddr === undefined) {
             return;
         }
 
         let formData = new FormData();
         console.log(selectedType);
         formData.append('code_medical_examination', selectedType.toString());
-        formData.append('patient_address', patientAddr!);
-        formData.append('cf_patient', patientCF!);
+        formData.append('pkey_patient', patientAddr!);
         // cf doctor should be taken from db with login
 
         // Send prescription to backend
-        const requestOptions = {
-            method: 'POST',
-            headhers: {
-                auth: localStorage.getItem('auth')!
-            },
-            body: formData
-        };
         const response = await fetch(
             `${BACKEND_URL}/api/v1/prescriptions/create`,
-            requestOptions
+            {
+                method: 'POST',
+                headers: {
+                    auth: localStorage.getItem('auth')!
+                },
+                body: formData
+            }
         );
         if (!response.ok) {
             console.log(response.statusText);
@@ -78,6 +76,7 @@ const NewPrescription = () => {
 
         try {
             await mintPrescription(patientAddr!, tokenId, ethers.keccak256(ethers.toUtf8Bytes("NO")), selectedType);
+            navigate('/doctor');
         } catch (e) {
             console.log(e); // should rollback db
         }
@@ -97,13 +96,7 @@ const NewPrescription = () => {
 
                         <Input
                             type='text'
-                            label='Codice fiscale del paziente'
-                            onChange={(v) => { setPatientCF(v.target.value); }}
-                        />
-
-                        <Input
-                            type='text'
-                            label='Indirizzo del paziente'
+                            label='Public address del paziente'
                             onChange={(v) => { setPatientAddr(v.target.value); }}
                         />
 

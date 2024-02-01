@@ -238,7 +238,7 @@ const getPersonalArea = (role: string) => {
     } else if (role === 'doctor') {
         return '/doctor';
     } else if (role === 'hospital') {
-        return '/hospital';
+        return '/hospital/new-appointment';
     }
     return '/';
 };

@@ -45,9 +45,8 @@ def create_jwt_token(pkey: str) -> str:
     db.session.execute(
         db.update(Account)
         .where(Account.pkey == pkey)
-        .values(nonce=random.randint(0, NONCE_LIMIT))
+        .values(nonce=random.randint(0, NONCE_LIMIT), jwt=token)
     )
-
     db.session.commit()
     return token
 

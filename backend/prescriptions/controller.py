@@ -72,7 +72,7 @@ def retrieve_all_prescriptions_by_patient(cf):
     if prescriptions:
         return jsonify(
             {
-                "prescription": [
+                "prescriptions": [
                     prescription[0].toDict() for prescription in prescriptions
                 ]
             }
@@ -91,7 +91,7 @@ def retrieve_all_prescriptions_by_doctor(cf):
     if prescriptions:
         return jsonify(
             {
-                "prescription": [
+                "prescriptions": [
                     prescription[0].toDict() for prescription in prescriptions
                 ]
             }

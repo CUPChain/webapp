@@ -17,7 +17,7 @@ const PrescriptionList = () => {
 
     const fetchPrescrList = async () => {
         const response = await fetch(
-            `${BACKEND_URL}/api/v1/prescriptions_for_doctor`,
+            `${BACKEND_URL}/api/v1/prescriptions`,
             {
                 method: 'GET',
                 headers: {
@@ -28,8 +28,9 @@ const PrescriptionList = () => {
         if (!response.ok) {
             console.log(response.statusText);
         }
-        const data = await response.json() as { appointments: { patient: string, id: number, type: string; }[]; };
-        setPrescrList(data.appointments);
+        const data = await response.json() as { prescriptions: { patient: string, id: number, type: string; }[]; };
+        console.log(data);
+        setPrescrList(data.prescriptions);
     };
 
     const onSelection = async (id: number) => {

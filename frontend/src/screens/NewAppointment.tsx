@@ -49,17 +49,15 @@ const NewAppointment = () => {
         formData.append('date', `${apptDate} ${apptTime}`);
 
         // Send prescription to backend
-        const requestOptions = {
-            method: 'POST',
-            headhers: {
-                auth: localStorage.getItem('auth')!
-            },
-            body: formData
-        };
-        console.log(requestOptions)
         const response = await fetch(
             `${BACKEND_URL}/api/v1/appointments/create`,
-            requestOptions
+            {
+                method: 'POST',
+                headers: {
+                    auth: localStorage.getItem('auth')!
+                },
+                body: formData
+            }
         );
         if (!response.ok) {
             console.log(response.statusText);
@@ -88,10 +86,6 @@ const NewAppointment = () => {
         }
     };
 
-    const Placeholder = (props: PlaceholderProps<{ value: number, label: string; }>) => {
-        return <components.Placeholder {...props} />;
-    };
-
     return (
         <Layout>
             <Section color='muted' className='mt-1'>
@@ -103,7 +97,7 @@ const NewAppointment = () => {
 
                         <Input
                             type='date'
-                            label='Datepicker'
+                            label='Giorno della visita'
                             className='active'
                             placeholder='gg/mm/aaaa'
                             //value={value}
@@ -115,7 +109,7 @@ const NewAppointment = () => {
 
                         <Input
                             type='time'
-                            label='Hourpicker'
+                            label='Orario della visita'
                             className='active'
                             //value={value}
                             onChange={(ev) => {
@@ -126,8 +120,8 @@ const NewAppointment = () => {
 
                         <Select
                             name='apptType'
-                            components={{ Placeholder }}
                             placeholder={'Seleziona tipo di visita'}
+                            onChange={(v) => { setSelectedType(v!.value);}}
                             isSearchable={true}
                             options={apptTypes}
                         />

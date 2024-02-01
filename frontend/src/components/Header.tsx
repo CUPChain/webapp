@@ -21,14 +21,11 @@ const CustomHeader = () => {
 
     const [isLogged, setIsLogged] = useState<boolean>(isLoggedIn());
     const [role, setRole] = useState<string>(localStorage.getItem('role') || '');
-    const [personalArea, setPersonalArea] = useState<string>(getPersonalArea(role));
 
     useEffect(() => {
         const handleStorage = () => {
             setIsLogged(isLoggedIn());
-            let role = localStorage.getItem('role') || '';
-            setRole(role);
-            setPersonalArea(getPersonalArea(role));
+            setRole(localStorage.getItem('role') || '');
         };
 
         window.addEventListener('storage', handleStorage);
@@ -52,7 +49,7 @@ const CustomHeader = () => {
                                     <Button
                                         outline color='primary'
                                         size='lg' icon
-                                        href={personalArea}
+                                        href={getPersonalArea(role)}
                                         style={{ marginRight: '1rem' }}
                                     >
                                         <Icon color='white' icon={getIcon(role)} style={{ marginRight: '0.5rem' }} />

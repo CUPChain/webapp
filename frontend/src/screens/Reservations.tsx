@@ -51,7 +51,6 @@ const Reservations = () => {
                     type: medical_exams.find(x => x.value === category)?.label!
                 };
             }
-
             setPrescriptions(receivedPrescriptions);
 
             // Get appointments from blockchain
@@ -86,12 +85,10 @@ const Reservations = () => {
 
                 receivedAppointments[i] = data.appointment;
             }
-
             setAppointments(receivedAppointments);
         };
         fetchData();
     }, []);
-    console.log(appointments);
 
     return (
         <Layout>

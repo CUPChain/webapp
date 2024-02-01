@@ -41,6 +41,7 @@ const Prescription = () => {
             setPrescription({ id: id, type: categoryName });
 
             // Get available appointments from database
+            console.log(category)
             const appointmentsResponse = await fetch(`${BACKEND_URL}/api/v1/appointments?category=${category}`)
             if (!appointmentsResponse.ok) {
                 console.log("error:", appointmentsResponse);
@@ -121,7 +122,7 @@ const Prescription = () => {
                                 <Row>
                                     <Input
                                         type='text'
-                                        label='Città'
+                                        label='Indirizzo'
                                         id='formCitta'
                                         wrapperClassName='col'
                                         readOnly
