@@ -9,7 +9,7 @@ from ..prescriptions.model import Prescription
 
 @app.route(
     f"/{BASE_ROOT}/{VERSION}/appointments",
-    methods=["GET"]
+    methods=["GET"],
     # Auth not required for this endpoint
 )
 def get_appointments():
@@ -55,7 +55,7 @@ def get_appointment(id):
 
 @app.route(
     f"/{BASE_ROOT}/{VERSION}/appointments/create",
-    methods=["POST"]
+    methods=["POST"],
     # Auth required for this endpoint
 )
 def make_appointment():
@@ -105,24 +105,28 @@ def make_appointment():
 
 
 @app.route(
-    f"/{BASE_ROOT}/{VERSION}/appointments/reserve/<id_prescription>",
-    methods=["POST"]
+    f"/{BASE_ROOT}/{VERSION}/appointments/reserve/<id_appointment>",
+    methods=["POST"],
     # Auth required for this endpoint
 )
-def reserve_appointment(id_prescription):
+def reserve_appointment(id_appointment):
     """
     Reserve an appointment
     ---
     tags:
       - Appointments
     parameters:
-      - name: id_prescription
+      - name: id_appointment
         in: path
         type: string
         required: true
-      - name: id
+      - name: id_prescription
         in: formData
         type: string
+      - name: auth
+        in: header
+        type: string
+        required: true
     responses:
       200:
         description: Appointment reserved successfully
@@ -136,7 +140,9 @@ def reserve_appointment(id_prescription):
         )
 
     # Check if the account is owner of the prescription
-    prescription = Prescription.query.filter_by(id=id_prescription).first()
+    request_form = request.form.to_dict()
+    id_prescription = request_form["id_prescription"]
+    prescription = Prescription.query.get(id_prescription)
     if prescription.cf_patient != account.cf_patient:
         return (
             jsonify(
@@ -148,13 +154,12 @@ def reserve_appointment(id_prescription):
         )
 
     # Book the appointment
-    request_form = request.form.to_dict()
-    return book_appointment(id_prescription, request_form)
+    return book_appointment(id_prescription, id_appointment)
 
 
 @app.route(
     f"/{BASE_ROOT}/{VERSION}/appointments/cancel/<id_prescription>",
-    methods=["POST"]
+    methods=["POST"],
     # Auth required for this endpoint
 )
 def cancel_appointment(id_prescription):
@@ -186,7 +191,8 @@ def cancel_appointment(id_prescription):
 
     # Check if the account is owner of the prescription
     prescription: Prescription = Prescription.query.filter_by(
-        id=id_prescription).first()
+        id=id_prescription
+    ).first()
     if prescription.cf_patient != account.cf_patient:
         return (
             jsonify(

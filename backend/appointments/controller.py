@@ -112,24 +112,41 @@ def create_appointment(request_form, id_hospital):
     return jsonify(response)
 
 
-def book_appointment(id_prescription, request_form):
+def book_appointment(id_prescription, id_appointment):
     """
-    Books an appointment by updating the prescription ID of the available appointment.
+    Books an appointment by associating it with a prescription.
 
     Args:
-        id_prescription (int): The ID of the prescription.
-        request_form (dict): The form data containing the appointment ID.
+        id_prescription (int): The ID of the prescription to associate with the appointment.
+        id_appointment (int): The ID of the appointment to book.
 
     Returns:
-        dict: The response containing the details of the booked appointment.
+        tuple: A tuple containing the JSON response and the HTTP status code.
+            The JSON response contains the appointment details if the booking is successful,
+            otherwise it contains an error message.
     """
-    available_appointment = Appointment.query.get(request_form["id"])
+    available_appointment = Appointment.query.filter_by(id=id_appointment).one_or_none()
+    if available_appointment == None:
+        return (
+            jsonify({"error": f"No appointment found with ID '{id_appointment}'."}),
+            404,
+        )
 
-    available_appointment.id_prescription = id_prescription
-    db.session.commit()
+    if available_appointment.id_prescription != None:
+        return (
+            jsonify(
+                {
+                    "error": f"The appointment with ID '{id_appointment}' is already booked."
+                }
+            ),
+            400,
+        )
+    else:
+        available_appointment.id_prescription = int(id_prescription)
+        db.session.commit()
 
-    response = Appointment.query.get(request_form["id"]).toDict()
-    return jsonify(response)
+        response = Appointment.query.get(id_appointment).toDict()
+        return jsonify(response)
 
 
 def cancel_booked_appointment(id_prescription):
