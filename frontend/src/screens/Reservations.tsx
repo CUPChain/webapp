@@ -8,7 +8,7 @@ import Layout from '../components/Layout';
 import CardButton from '../components/CardButton';
 import { Section, Row, Col, Icon } from 'design-react-kit';
 import { Token } from '../constants';
-import { getHospitalInfo, getOwnedTokens } from '../utils';
+import { getHospitalInfo, getOwnedAppointmentTokens, getOwnedPrescriptionTokens } from '../utils';
 import { AppointmentType, PrescriptionType } from '../types';
 import { BACKEND_URL } from '../constants';
 import { verifyHash } from '../utils';
@@ -38,13 +38,11 @@ const Reservations = () => {
             });
 
             // Get prescriptions from blockchain
-            const prescriptionsData = await getOwnedTokens(Token.Prescription);
+            const prescriptionsData = await getOwnedPrescriptionTokens();
             let receivedPrescriptions: PrescriptionType[] = [];
             for (let i = 0; i < prescriptionsData[0].length; i++) {
                 const id = prescriptionsData[0][i];
-                // not needed?
-                const hash = prescriptionsData[1][i];
-                const category = prescriptionsData[2][i];
+                const category = prescriptionsData[1][i];
 
                 receivedPrescriptions[i] = {
                     id: id,
@@ -54,7 +52,7 @@ const Reservations = () => {
             setPrescriptions(receivedPrescriptions);
 
             // Get appointments from blockchain
-            const appointmentData = await getOwnedTokens(Token.Appointment);
+            const appointmentData = await getOwnedAppointmentTokens();
             let receivedAppointments: AppointmentType[] = [];
             for (let i = 0; i < appointmentData[0].length; i++) {
                 const id = appointmentData[0][i];

@@ -25,99 +25,6 @@ import NewAppointment from './screens/NewAppointment';
 import { isLoggedIn } from './utils';
 
 const App = () => {
-  async function requestAccount() {
-    await window.ethereum.request({ method: 'eth_requestAccounts' });
-  }
-
-  const [prescrID, setPrescrID] = useState<string>();
-
-  async function mintPrescription() {
-    if (!prescrID) return;
-    if (typeof window.ethereum !== 'undefined') {
-      await requestAccount();
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-      const contract = new ethers.Contract(PRESCRIPTIONS_CONTRACT, PrescriptionTokens.abi, signer);
-      // for now give token to caller
-      const transaction = await contract.safeMint(signer.address, prescrID, keccak256(ethers.randomBytes(32)), 1);
-      await transaction.wait();
-    }
-  }
-
-  async function getOwnedPrescriptions() {
-    if (typeof window.ethereum !== 'undefined') {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-      const contract = new ethers.Contract(PRESCRIPTIONS_CONTRACT, PrescriptionTokens.abi, signer);
-      try {
-        const data = await contract.getMyTokens();
-        console.log("data: ", data);
-        console.log("Token name:", await contract.name());
-        console.log("Token symbol:", await contract.symbol());
-        for (var i = 0; i < data[0].length; i++) {
-          console.log(data[0][i], data[1][i]);
-        }
-      } catch (err) {
-        console.log("Error: ", err);
-      }
-    }
-  }
-
-  const [apptID, setApptID] = useState<string>();
-
-  async function mintAppointment() {
-    if (!apptID) return;
-    if (typeof window.ethereum !== 'undefined') {
-      await requestAccount();
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-      const contract = new ethers.Contract(APPOINTMENTS_CONTRACT, AppointmentTokens.abi, signer);
-      const transaction = await contract.safeMint(apptID, keccak256(ethers.randomBytes(32)), 1);
-      await transaction.wait();
-    }
-  }
-
-  // just to try
-  async function exchangePreAppt() {
-    if (!apptID || !prescrID) return;
-    if (typeof window.ethereum !== 'undefined') {
-      await requestAccount();
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-      const contract = new ethers.Contract(PRESCRIPTIONS_CONTRACT, PrescriptionTokens.abi, signer);
-      console.log("ciao");
-      try {
-        const transaction = await contract.makeAppointment(prescrID, APPOINTMENTS_CONTRACT, apptID, "0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc");
-        console.log(transaction);
-        await transaction.wait();
-        console.log(transaction);
-      } catch (e) {
-        console.log(e);
-      }
-    }
-  }
-
-  async function grantRoleAppt() {
-    if (typeof window.ethereum !== 'undefined') {
-      await requestAccount();
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-      const contract = new ethers.Contract(APPOINTMENTS_CONTRACT, AppointmentTokens.abi, signer);
-      const transaction = await contract.grantRole(signer.address);
-      await transaction.wait();
-    }
-  }
-  async function grantRolePre() {
-    if (typeof window.ethereum !== 'undefined') {
-      await requestAccount();
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-      const contract = new ethers.Contract(PRESCRIPTIONS_CONTRACT, PrescriptionTokens.abi, signer);
-      const transaction = await contract.grantRole(signer.address);
-      await transaction.wait();
-    }
-  }
-
   const LoginRoute = () => {
     // if logged in, redirect to reservations
     if (isLoggedIn()) {
@@ -142,16 +49,6 @@ const App = () => {
   return (
     <div className='d-flex flex-column vh-100'>
       <CustomHeader />
-      <div className='d-flex flex-row'>
-        <button onClick={mintPrescription}>Mint prescription</button>
-        <input onChange={e => setPrescrID(e.target.value)} placeholder="Set prescription token id" />
-        <button onClick={getOwnedPrescriptions}>Get Prescriptions</button>
-        <button onClick={mintAppointment}>Mint appointment</button>
-        <input onChange={e => setApptID(e.target.value)} placeholder="Set appointment token id" />
-        <button onClick={exchangePreAppt}>Exchange prescr appt</button>
-        <button onClick={grantRoleAppt}>Grant role appt</button>
-        <button onClick={grantRolePre}>Grant role prescr</button>
-      </div>
       <main className='flex-grow-1'>
         <BrowserRouter>
           <Routes>

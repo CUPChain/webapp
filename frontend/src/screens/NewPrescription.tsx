@@ -75,7 +75,7 @@ const NewPrescription = () => {
         const tokenId = (await response.json()).id as number;
 
         try {
-            await mintPrescription(patientAddr!, tokenId, ethers.keccak256(ethers.toUtf8Bytes("NO")), selectedType);
+            await mintPrescription(patientAddr!, tokenId, selectedType);
             navigate('/doctor');
         } catch (e) {
             console.log(e); // should rollback db

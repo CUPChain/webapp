@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
-import "./IAppointment.sol";
+import "./AppointmentTokens.sol";
 
 
 /**
@@ -20,7 +20,6 @@ import "./IAppointment.sol";
  */
 contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, AccessControl {
     mapping (uint256 => uint16) private tokenIdToCategory;
-    mapping (uint256 => bytes32) private tokenIdToHash;
 
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
@@ -32,7 +31,7 @@ contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, AccessC
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
-//TODO: change name to something more expressive?
+    //TODO: change name to something more expressive?
     /**
      * @dev Grants the MINTER_ROLE to a specified doctor.
      * Only the admin can call this function.
@@ -60,46 +59,41 @@ contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, AccessC
      * 
      * @param to The address to which the token will be assigned.
      * @param tokenId The unique identifier of the token.
-     * @param metadataHash The hash of the metadata associated with the token.
      * @param category The category of the token.
      */
-    function safeMint(address to, uint256 tokenId, bytes32 metadataHash, uint16 category) public {
+    function safeMint(address to, uint256 tokenId, uint16 category) public {
         require(hasRole(MINTER_ROLE, msg.sender), "Caller is not a minter");
         _safeMint(to, tokenId);
         tokenIdToCategory[tokenId] = category;
-        tokenIdToHash[tokenId] = metadataHash;
     }
 
     // Get list of token ids owned by function caller
      /**
      * @dev Retrieves the tokens owned by the caller.
      * @return ids An array of token IDs owned by the caller.
-     * @return hashes An array of token hashes corresponding to the token IDs.
      * @return categories An array of token categories corresponding to the token IDs.
      */
-    function getMyTokens() public view returns (uint[] memory ids, bytes32[] memory hashes, uint16[] memory categories) {
+    function getMyTokens() public view returns (uint[] memory ids, uint16[] memory categories) {
         uint balance = balanceOf(msg.sender);
         ids = new uint[](balance);
-        hashes = new bytes32[](balance);
         categories = new uint16[](balance);
 
         for (uint i = 0; i < balanceOf(msg.sender); i++) {
             ids[i] = tokenOfOwnerByIndex(msg.sender, i);
-            hashes[i] = tokenIdToHash[ids[i]];
             categories[i] = tokenIdToCategory[ids[i]];
         }
 
-        return (ids, hashes, categories);
+        return (ids, categories);
     }
 
-    // Get category and metadata hash of prescription (type of medical visit needed)
+    // Get category of prescription (type of medical visit needed)
     /**
      * @dev Retrieves the token information for a given tokenId.
      * @param tokenId The ID of the token to retrieve.
-     * @return The category and hash associated with the token.
+     * @return The category associated with the token.
      */
-    function getToken(uint256 tokenId) public view returns (uint16, bytes32) {
-        return (tokenIdToCategory[tokenId], tokenIdToHash[tokenId]);
+    function getCategory(uint256 tokenId) public view returns (uint16) {
+        return tokenIdToCategory[tokenId];
     }
 
     // Exchange for appointment token
@@ -111,9 +105,9 @@ contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, AccessC
      * @param hospital The address of the hospital.
      */
     function makeAppointment(uint256 prescriptionToken, address appointmentsContract, uint256 appointmentToken, address hospital) public {
-        require(tokenIdToCategory[prescriptionToken] == AppointmentContract(appointmentsContract).getCategory(appointmentToken), "Categories don't match");
+        require(tokenIdToCategory[prescriptionToken] == AppointmentTokens(appointmentsContract).getCategory(appointmentToken), "Categories don't match");
         safeTransferFrom(msg.sender, hospital, prescriptionToken);
-        AppointmentContract(appointmentsContract).safeTransferFrom(hospital, msg.sender, appointmentToken);
+        AppointmentTokens(appointmentsContract).safeTransferFrom(hospital, msg.sender, appointmentToken);
     }
 
     // The following functions are overrides required by Solidity.

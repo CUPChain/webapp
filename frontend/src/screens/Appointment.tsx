@@ -10,7 +10,7 @@ import QRCode from 'react-qr-code';
 import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
 import { type LatLngExpression } from 'leaflet';
 import { AppointmentType, PrescriptionType } from '../types';
-import { getHospitalInfo, getTokenData, isOwned, verifyHash } from '../utils';
+import { getAppointmentToken, getHospitalInfo, isOwned, verifyHash } from '../utils';
 import { BACKEND_URL, Token } from '../constants';
 
 const MAP_ENABLED = true;
@@ -43,7 +43,7 @@ const Appointment = () => {
                 return
             }
 
-            const [, hash] = await getTokenData(id, Token.Appointment);
+            const [, hash] = await getAppointmentToken(id);
 
             // Retrieve from backend the additional data
             const response = await fetch(`${BACKEND_URL}/api/v1/appointments/${id}`);

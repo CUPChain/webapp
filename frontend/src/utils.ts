@@ -30,16 +30,14 @@ const loginMetamask = async (): Promise<[ethers.Provider, ethers.Signer]> => {
 /** Retrieve token metadata URI and metadata hash
  * @param {number} tokenID - ID of the token
  * @param {Token} tokenType - Token.Prescription or Token.Appointment
- * @returns {[string, string]} - [tokenURI, tokenHash]
+ * @returns {[number, BytesLike]} - [category, tokenHash]
  * @throws {Error} - If metamask is not installed or user is not logged in
  * @throws {Error} - If user is not logged in
 **/
-const getTokenData = async (tokenID: number, tokenType: Token): Promise<[number, BytesLike]> => {
+const getAppointmentToken = async (tokenID: number): Promise<[number, BytesLike]> => {
     const [, signer] = await loginMetamask();
 
-    const contract = (tokenType === Token.Prescription)
-        ? new ethers.Contract(PRESCRIPTIONS_CONTRACT, PrescriptionTokens.abi, signer)
-        : new ethers.Contract(APPOINTMENTS_CONTRACT, AppointmentTokens.abi, signer);
+    const contract = new ethers.Contract(APPOINTMENTS_CONTRACT, AppointmentTokens.abi, signer);
 
     let category;
     let hash;
@@ -54,36 +52,74 @@ const getTokenData = async (tokenID: number, tokenType: Token): Promise<[number,
     return [category, hash];
 };
 
-
-/** Retrieve all tokens (prescriptions or appointments) owned by the user,
- * along with their metadata hashes and visit categories
- * @parm {Token} tokenType - Token.Prescription or Token.Appointment
- * @returns {[number[], string[], number[]]} - [tokenIDs, metadata hashes, category ids]
+/** Retrieve token category (what type of medical exam it references)
+ * @param {number} tokenID - ID of the token
+ * @param {Token} tokenType - Token.Prescription or Token.Appointment
+ * @returns {number} - medical exam category
  * @throws {Error} - If metamask is not installed or user is not logged in
  * @throws {Error} - If user is not logged in
 **/
-const getOwnedTokens = async (tokenType: Token): Promise<[number[], string[], number[]]> => {
+const getTokenCategory = async (tokenID: number, tokenType: Token): Promise<number> => {
     const [, signer] = await loginMetamask();
 
     const contract = (tokenType === Token.Prescription)
         ? new ethers.Contract(PRESCRIPTIONS_CONTRACT, PrescriptionTokens.abi, signer)
         : new ethers.Contract(APPOINTMENTS_CONTRACT, AppointmentTokens.abi, signer);
 
+    let category;
+    let hash;
+
+    try {
+        [category, hash] = await contract.getCategory(tokenID);
+    } catch (err) {
+        console.log(`Could not fetch token ${tokenID}: `, err);
+        return 0;
+    }
+
+    return category;
+};
+
+
+/** Retrieve all appointment tokens owned by the user,
+ * along with their metadata hashes and visit categories
+ * @returns {[number[], string[], number[]]} - [tokenIDs, metadata hashes, category ids]
+ * @throws {Error} - If metamask is not installed or user is not logged in
+ * @throws {Error} - If user is not logged in
+**/
+const getOwnedAppointmentTokens = async (): Promise<[number[], string[], number[]]> => {
+    const [, signer] = await loginMetamask();
+
+    const contract = new ethers.Contract(APPOINTMENTS_CONTRACT, AppointmentTokens.abi, signer);
+
     try {
         const data = await contract.getMyTokens();
         console.log("data: ", data);
         return data;
     } catch (err) {
-        console.log(`Could not fetch ${tokenType.toString()} tokens: `, err);
+        console.log(`Could not fetch appointment tokens: `, err);
         return [[], [], []];
     }
 };
 
-/** Request user to connect to metamask
+/** Retrieve all prescription tokens owned by the user,
+ * along with their visit categories
+ * @returns {[number[], number[]]} - [tokenIDs, category ids]
+ * @throws {Error} - If metamask is not installed or user is not logged in
+ * @throws {Error} - If user is not logged in
 **/
-const requestAccount = async () => {
-    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-    console.log(accounts);
+const getOwnedPrescriptionTokens = async (): Promise<[number[], number[]]> => {
+    const [, signer] = await loginMetamask();
+
+    const contract = new ethers.Contract(PRESCRIPTIONS_CONTRACT, PrescriptionTokens.abi, signer)
+
+    try {
+        const data = await contract.getMyTokens();
+        console.log("data: ", data);
+        return data;
+    } catch (err) {
+        console.log(`Could not fetch prescription tokens: `, err);
+        return [[], []];
+    }
 };
 
 /** Exchange a prescription for an appointment
@@ -122,11 +158,11 @@ const exchangePrescriptionAppointment = async (prescrID: number, apptID: number)
  * @throws {Error} - If metamask is not installed or user is not logged in
  * @throws {Error} - If user is not logged in
 **/
-const mintPrescription = async (patientAddr: string, tokenID: number, hash: BytesLike, category: number) => {
+const mintPrescription = async (patientAddr: string, tokenID: number, category: number) => {
     const [, signer] = await loginMetamask();
 
     const contract = new ethers.Contract(PRESCRIPTIONS_CONTRACT, PrescriptionTokens.abi, signer);
-    const transaction = await contract.safeMint(patientAddr, tokenID, hash, category);
+    const transaction = await contract.safeMint(patientAddr, tokenID, category);
     await transaction.wait();
 };
 
@@ -287,4 +323,22 @@ const getHospitalInfo = async (appointment: AppointmentType) => {
     appointment.longitude = hospital.longitude;
 }
 
-export { getTokenData, getOwnedTokens, exchangePrescriptionAppointment, verifyHash, mintPrescription, isOwned, loginMetamask, signString, mintAppointment, requireLogin, isLoggedIn, logout, getPersonalArea, getDistanceFromLatLonInKm, getHospitalInfo };
+export {
+    getAppointmentToken,
+    getTokenCategory,
+    getOwnedAppointmentTokens,
+    getOwnedPrescriptionTokens,
+    exchangePrescriptionAppointment,
+    verifyHash,
+    mintPrescription,
+    isOwned,
+    loginMetamask,
+    signString,
+    mintAppointment,
+    requireLogin,
+    isLoggedIn,
+    logout,
+    getPersonalArea,
+    getDistanceFromLatLonInKm,
+    getHospitalInfo
+};

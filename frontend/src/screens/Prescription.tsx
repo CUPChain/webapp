@@ -10,7 +10,7 @@ import { Section, Col, Row, Card, CardBody, CardTitle, Input, Table, CardText, S
 import { PrescriptionType, AccountType, AppointmentType } from '../types';
 import { useNavigate } from 'react-router-dom';
 import { BACKEND_URL, Token } from '../constants';
-import { getDistanceFromLatLonInKm, getHospitalInfo, getTokenData, isOwned } from '../utils';
+import { getDistanceFromLatLonInKm, getHospitalInfo, getTokenCategory, isOwned } from '../utils';
 
 
 const Prescription = () => {
@@ -38,7 +38,7 @@ const Prescription = () => {
                 return;
             }
 
-            const [category,] = await getTokenData(id, Token.Prescription);
+            const category = await getTokenCategory(id, Token.Prescription);
 
 
             // Get profile data

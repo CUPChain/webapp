@@ -51,10 +51,10 @@ const ConfirmAppointment = () => {
 
         // Book appointment in db
         let formData = new FormData();
-        formData.append('id', appointment.id.toString());
+        formData.append('id_prescription', prescription.id.toString());
 
         const response = fetch(
-            `${BACKEND_URL}/api/v1/appointments/reserve/${prescription.id}`,
+            `${BACKEND_URL}/api/v1/appointments/reserve/${appointment.id}`,
             {
                 method: 'POST',
                 headers: {
