@@ -10,7 +10,6 @@ import { BACKEND_URL } from '../constants';
 
 
 const Profile = () => {
-    //TODO: remove
     const [account, setAccount] = useState<AccountType>({
         name: "",
         surname: "",
@@ -22,6 +21,7 @@ const Profile = () => {
 
     useEffect(() => {
         const fetchData = async () => {
+            // Get profile data
             const response = await fetch(
                 `${BACKEND_URL}/api/v1/profile`, {
                 method: "GET",

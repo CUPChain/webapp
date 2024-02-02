@@ -6,7 +6,7 @@ import 'typeface-lora';
 import Layout from '../components/Layout';
 import RowTable from '../components/RowTable';
 import BackButton from '../components/BackButton';
-import { Section, Col, Row, Card, CardBody, CardTitle, Input, Table, CardText } from 'design-react-kit';
+import { Section, Col, Row, Card, CardBody, CardTitle, Input, Table, CardText, Spinner } from 'design-react-kit';
 import { PrescriptionType, AccountType, AppointmentType } from '../types';
 import { useNavigate } from 'react-router-dom';
 import { BACKEND_URL, Token } from '../constants';
@@ -14,26 +14,54 @@ import { getTokenData, isOwned } from '../utils';
 
 
 const Prescription = () => {
+    const navigate = useNavigate();
     const id = window.location.pathname.split('/')[2];
 
+    const [account, setAccount] = useState<AccountType>({
+        name: "",
+        surname: "",
+        address: "",
+        city: "",
+        cap: ""
+    });
     const [prescription, setPrescription] = useState<PrescriptionType>({ id: 0, type: "Invalid" });
     const [appointments, setAppointments] = useState<AppointmentType[]>([]);
+    const [loaded, setLoaded] = useState(false);
 
     useEffect(() => {
         const fetchData = async (id: number) => {
             // Check that token is owned by user
             if (!await isOwned(id, Token.Prescription)) {
                 // TODO:
-                return
+                return;
             }
 
             const [category,] = await getTokenData(id, Token.Prescription);
 
+
+            // Get profile data
+            const response = await fetch(
+                `${BACKEND_URL}/api/v1/profile`, {
+                method: "GET",
+                headers: {
+                    auth: localStorage.getItem('auth')!
+                }
+            }
+            );
+            if (!response.ok) {
+                // TODO: handle error
+                console.log(response.statusText);
+                return;
+            }
+
+            const data = await response.json() as AccountType;
+            setAccount(data);
+
             // Get category name from database
-            const categoryResponse = await fetch(`${BACKEND_URL}/api/v1/medical_exams/${category}`)
+            const categoryResponse = await fetch(`${BACKEND_URL}/api/v1/medical_exams/${category}`);
             if (!categoryResponse.ok) {
                 console.log("error:", categoryResponse);
-                return
+                return;
             }
             const categoryName = await categoryResponse.json()
                 .then(data => data.medical_exam.name);
@@ -41,32 +69,24 @@ const Prescription = () => {
             setPrescription({ id: id, type: categoryName });
 
             // Get available appointments from database
-            console.log(category)
-            const appointmentsResponse = await fetch(`${BACKEND_URL}/api/v1/appointments?category=${category}`)
+            console.log(category);
+            const appointmentsResponse = await fetch(`${BACKEND_URL}/api/v1/appointments?category=${category}`);
             if (!appointmentsResponse.ok) {
                 console.log("error:", appointmentsResponse);
-                return
+                return;
             }
             const availableAppointments = await appointmentsResponse.json()
                 .then(data => data.appointments as AppointmentType[]);
 
             availableAppointments.sort();
             setAppointments(availableAppointments); //TODO: sort by what?
+
+            setLoaded(true);
         };
 
         fetchData(Number.parseInt(id));
-    }, []);
+    }, [id]);
 
-    const navigate = useNavigate();
-
-    //TODO: remove
-    const account: AccountType = {
-        name: 'Mario',
-        surname: 'Rossi',
-        address: 'Via Olgettina 50',
-        city: 'Milano',
-        cap: '20100',
-    };
 
 
     const onSelection = (id: number) => {
@@ -98,9 +118,17 @@ const Prescription = () => {
                         </Card>
                         <Card noWrapper className='card-bg card-big'>
                             <CardBody>
-                                <CardTitle tag='h5'>
-                                    Dettagli Account
-                                </CardTitle>
+                                <Row style={{ alignItems: 'center' }}>
+                                    <Col>
+                                        Dettagli Account
+                                    </Col>
+                                    {
+                                        !loaded &&
+                                        <Col className='col-1'>
+                                            <Spinner small active />
+                                        </Col>
+                                    }
+                                </Row>
                                 <Row style={{ marginTop: '3rem' }}>
                                     <Input
                                         type='text'
