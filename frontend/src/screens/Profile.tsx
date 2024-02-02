@@ -4,24 +4,44 @@ import 'typeface-titillium-web';
 import 'typeface-roboto-mono';
 import 'typeface-lora';
 import Layout from '../components/Layout';
-import RowTable from '../components/RowTable';
-import BackButton from '../components/BackButton';
-import { Section, Col, Row, Card, CardBody, CardTitle, Input, Table, CardText } from 'design-react-kit';
-import { PrescriptionType, AccountType, AppointmentType } from '../types';
-import { useNavigate } from 'react-router-dom';
-import { BACKEND_URL, Token } from '../constants';
-import { getTokenData, isOwned } from '../utils';
+import { Section, Row, Card, CardBody, CardTitle, Input, Spinner, Col } from 'design-react-kit';
+import { AccountType } from '../types';
+import { BACKEND_URL } from '../constants';
 
 
 const Profile = () => {
     //TODO: remove
-    const account: AccountType = {
-        name: 'Mario',
-        surname: 'Rossi',
-        address: 'Via Olgettina 50',
-        city: 'Milano',
-        cap: '20100',
-    };
+    const [account, setAccount] = useState<AccountType>({
+        name: "",
+        surname: "",
+        address: "",
+        city: "",
+        cap: ""
+    });
+    const [loaded, setLoaded] = useState(false);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            const response = await fetch(
+                `${BACKEND_URL}/api/v1/profile`, {
+                method: "GET",
+                headers: {
+                    auth: localStorage.getItem('auth')!
+                }
+            }
+            );
+            if (!response.ok) {
+                // TODO: handle error
+                console.log(response.statusText);
+                return;
+            }
+
+            const data = await response.json() as AccountType;
+            setAccount(data);
+            setLoaded(true);
+        };
+        fetchData();
+    }, []);
 
     return (
         <Layout>
@@ -29,7 +49,17 @@ const Profile = () => {
                 <Card noWrapper className='card-bg card-big'>
                     <CardBody>
                         <CardTitle tag='h5'>
-                            Dettagli Account
+                            <Row style={{ alignItems: 'center' }}>
+                                <Col>
+                                    Dettagli Account
+                                </Col>
+                                {
+                                    !loaded &&
+                                    <Col className='col-1'>
+                                        <Spinner small active />
+                                    </Col>
+                                }
+                            </Row>
                         </CardTitle>
                         <Row style={{ marginTop: '3rem' }}>
                             <Input

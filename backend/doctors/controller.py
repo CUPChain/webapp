@@ -10,9 +10,10 @@ from .model import *
 #     return jsonify({"doctors": doctors_list})
 
 
-# def retrieve_doctor(cf):
-#     doctor = db.session.execute(db.select(Doctor).filter_by(cf=cf)).one_or_none()
-#     if doctor:
-#         return jsonify({"doctor": doctor[0].toDict()})
-#     else:
-#         return jsonify({"message": f"No Doctor found with cf: '{cf}'"}), 404
+def retrieve_doctor(cf):
+    doctor = db.session.execute(
+        db.select(Doctor).filter_by(cf=cf)).one_or_none()
+    if doctor:
+        return doctor[0]
+    else:
+        return None

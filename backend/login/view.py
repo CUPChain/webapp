@@ -1,4 +1,12 @@
 from flask import request, jsonify
+
+from backend.auth import get_account
+from backend.doctors.controller import retrieve_doctor
+from backend.doctors.model import Doctor
+from backend.hospitals.controller import retrieve_hospital
+from backend.hospitals.model import Hospital
+from backend.patients.controller import retrieve_patient
+from backend.patients.model import Patient
 from ..app import app
 from .controller import *
 from web3.auto import w3
@@ -7,6 +15,82 @@ from eth_account.messages import encode_defunct
 
 # - POST /login_challenge: (richiede address) mandare random number, salvare number+address richiesto da qualche parte
 # - POST /login: (richiede address) Implementare jwt, check signature e' corretta, check number era salvato
+
+@app.route(
+    "/api/v1/profile",
+    methods=["GET"]
+    # Auth required for this endpoint
+)
+def get_profile():
+    """
+    Retrieve the profile of the account
+    ---
+    tags:
+      - Authentication
+    parameters:
+      - name: auth
+        in: header
+        type: string
+        required: true
+    responses:
+      200:
+        description: The profile of the account
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pkey:
+                  type: string
+                  description: The public key of the account
+                role:
+                  type: string
+                  description: The role of the account
+    """
+    # Get the account from the JWT token
+    account = get_account()
+    if account == None:
+        return (
+            jsonify({"error": f"Login required."}),
+            302,
+        )
+
+    # Get the role of the account from the database
+    role = get_role_account(account.pkey)
+
+    # Return usefull information
+    if role == "patient":
+        patient: Patient = retrieve_patient(account.cf_patient)
+        return jsonify({
+            "name": patient.name,
+            "surname": patient.surname,
+            "address": patient.address,
+            "city": patient.city,
+            "cap": patient.cap
+        })
+    elif role == "doctor":
+        doctor: Doctor = retrieve_doctor(account.cf_doctor)
+        return jsonify({
+            "name": doctor.name,
+            "surname": doctor.surname,
+            "address": doctor.address,
+            "city": doctor.city,
+            "cap": doctor.cap
+        })
+    elif role == "hospital":
+        hospital: Hospital = retrieve_hospital(account.id_hospital)
+        doctor: Doctor = retrieve_doctor(account.cf_doctor)
+        return jsonify({
+            "name": hospital.name,
+            "address": hospital.address,
+            "city": hospital.city,
+            "cap": hospital.cap
+        })
+    else:
+        return jsonify({
+            "error": f"No role for account {account}",
+            "nonce": None
+        }, 500)
 
 
 @app.route(
