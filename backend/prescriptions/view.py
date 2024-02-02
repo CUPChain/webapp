@@ -7,7 +7,7 @@ from ..auth import get_account
 
 @app.route(
     f"/{BASE_ROOT}/{VERSION}/prescriptions",
-    methods=["GET"]
+    methods=["GET"],
     # Auth required for this endpoint
 )
 def get_prescriptions():
@@ -17,6 +17,11 @@ def get_prescriptions():
     ---
     tags:
       - Prescriptions
+    parameters:
+      - name: auth
+        in: header
+        type: string
+        required: true
     responses:
       200:
         description: A list of prescriptions
@@ -40,14 +45,15 @@ def get_prescriptions():
     else:
         return (
             jsonify(
-                {"error": f"Only doctors and patients can retrieve prescriptions."}),
+                {"error": f"Only doctors and patients can retrieve prescriptions."}
+            ),
             403,
         )
 
 
 @app.route(
     f"/{BASE_ROOT}/{VERSION}/prescriptions/create",
-    methods=["POST"]
+    methods=["POST"],
     # Auth required for this endpoint
 )
 def make_prescription():
@@ -63,6 +69,10 @@ def make_prescription():
         required: true
       - name: pkey_patient
         in: formData
+        type: string
+        required: true
+      - name: auth
+        in: header
         type: string
         required: true
     responses:
@@ -93,8 +103,7 @@ def make_prescription():
         or request_form.get("pkey_patient") == None
     ):
         return (
-            jsonify({"message": "Missing required field(s)",
-                    "request": request_form}),
+            jsonify({"message": "Missing required field(s)", "request": request_form}),
             400,
         )
 
@@ -104,7 +113,7 @@ def make_prescription():
 
 @app.route(
     f"/{BASE_ROOT}/{VERSION}/prescriptions/<id>",
-    methods=["GET", "DELETE"]
+    methods=["GET", "DELETE"],
     # Auth required for this endpoint
 )
 def get_prescription(id):
@@ -116,6 +125,10 @@ def get_prescription(id):
     parameters:
       - name: id
         in: path
+        type: string
+        required: true
+      - name: auth
+        in: header
         type: string
         required: true
     responses:
@@ -132,17 +145,11 @@ def get_prescription(id):
             302,
         )
 
-    # Check if the account is a doctor or if he requested his own prescription
     prescription: Prescription = Prescription.query.get(id)
-    if prescription == None:
-        # TODO: better to return a different error because we don't want to leak
-        return (
-            jsonify({"error": f"Prescription not found."}),
-            404,
-        )
-
     # Check if the account is a doctor or if he requested his own prescription
-    if account.cf_doctor == None and account.cf_patient != prescription.cf_patient:
+    if (prescription == None) or (
+        account.cf_doctor == None and account.cf_patient != prescription.cf_patient
+    ):
         return (
             jsonify({"error": f"Not authorized to retrieve this prescription."}),
             403,

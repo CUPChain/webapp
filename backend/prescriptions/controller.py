@@ -16,9 +16,6 @@ def retrieve_prescription(id):
         flask.Response: The JSON response containing the prescription and associated medical exam data,
         or a message indicating that no prescription was found with the given ID.
     """
-    # - /prescriptions/id: id, categoria, id dottore, nome dottore, note, data (SE AUTORIZZATO)
-    # [TODO: autorization]
-
     prescription = (
         db.session.query(Prescription, MedicalExam)
         .filter(Prescription.id == id)
@@ -79,9 +76,7 @@ def create_prescription(request_form, cf_doctor):
 
     # no need of storing hash since we can query and recalculate the hash
 
-    response = Prescription.query.get(
-        new_prescription.id  # TODO: test if new_prescription.id works
-    ).toDict()
+    response = Prescription.query.get(new_prescription.id).toDict()
     return jsonify(response)
 
 

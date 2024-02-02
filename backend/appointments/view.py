@@ -22,8 +22,6 @@ def get_appointments():
       200:
         description: A list of appointments
     """
-    # here I can manage GET PUT etc...
-    # - /available_appointments?categoria&data: (categoria, data > today, id_prescription=null) [TODO: filter for category and data]
     category = request.args.get("category")
     date = request.args.get("date")
     return list_all_appointments(category, date)
@@ -65,17 +63,14 @@ def make_appointment():
     tags:
       - Appointments
     parameters:
-      - name: category
+      - name: code_medical_examination
         in: formData
         type: string
         required: true
       - name: date
         in: formData
-        type: datetime
-        required: true
-      - name: id_prescription
-        in: formData
         type: string
+        required: true
       - name: auth
         in: header
         type: string
@@ -101,7 +96,9 @@ def make_appointment():
 
     # Create the appointment
     request_form = request.form.to_dict()
-    return create_appointment(request_form, account.id_hospital)
+    date = request_form["date"]
+    code_medical_examination = request_form["code_medical_examination"]
+    return create_appointment(date, code_medical_examination, account.id_hospital)
 
 
 @app.route(
@@ -158,7 +155,7 @@ def reserve_appointment(id_appointment):
 
 
 @app.route(
-    f"/{BASE_ROOT}/{VERSION}/appointments/cancel/<id_prescription>",
+    f"/{BASE_ROOT}/{VERSION}/appointments/cancel/<int:id_prescription>",
     methods=["POST"],
     # Auth required for this endpoint
 )
@@ -180,6 +177,12 @@ def cancel_appointment(id_prescription):
     responses:
       200:
         description: Appointment cancelled successfully
+      302:
+        description: Login required
+      403:
+        description: Forbidden, not owwner of the prescription
+      405:
+        description: Method Not Allowed
     """
     # Get the account from the JWT token
     account = get_account()
@@ -197,7 +200,7 @@ def cancel_appointment(id_prescription):
         return (
             jsonify(
                 {
-                    "error": f"Account {account.cf_patient} is not owner of the prescription {id_prescription}."
+                    "error": f"Account {account.pkey} is not owner of the prescription {id_prescription}."
                 }
             ),
             403,

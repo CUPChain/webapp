@@ -10,7 +10,7 @@ from ..hospitals.model import Hospital
 
 def list_all_appointments(category=None, date=None):
     """
-    Retrieve a list of all appointments based on the given category and date.
+    Retrieve a list of all available appointments based on the given category and date.
 
     Args:
         category (str): The category of the medical examination.
@@ -21,6 +21,8 @@ def list_all_appointments(category=None, date=None):
 
     """
     now = datetime.datetime.now()
+    if not date or date < now:
+        date = now
 
     if category and date:
         result = db.session.execute(
@@ -36,18 +38,18 @@ def list_all_appointments(category=None, date=None):
             .where(Appointment.date >= now)
             .where(Appointment.id_prescription == None)
         )
-    elif date:
+    else:
         result = db.session.execute(
             db.select(Appointment)
             .where(Appointment.date >= date)
             .where(Appointment.id_prescription == None)
         )
-    else:
-        result = db.session.execute(
-            db.select(Appointment)
-            .where(Appointment.date >= now)
-            .where(Appointment.id_prescription == None)
-        )
+    # else:
+    #     result = db.session.execute(
+    #         db.select(Appointment)
+    #         .where(Appointment.date >= now)
+    #         .where(Appointment.id_prescription == None)
+    #     )
     appointments_list = [appointment[0].toDict() for appointment in result]
     return jsonify({"appointments": appointments_list})
 
@@ -81,19 +83,20 @@ def retrieve_appointment(id):
         return (
             jsonify(
                 {
-                    "message": f"No appointments associated with the id of the prescription: '{id}'"
+                    "message": f"No appointments associated with the id of the appointment: '{id}'"
                 }
             ),
             404,
         )
 
 
-def create_appointment(request_form, id_hospital):
+def create_appointment(date: datetime, code_medical_examination: int, id_hospital: int):
     """
     Create a new appointment.
 
     Args:
-        request_form (dict): The form data containing the appointment details.
+        date: The date and time of the appointment
+        code_medical_examination: the type of medical examination asociated to the appointment
         id_hospital (int): The ID of the hospital.
 
     Returns:
@@ -101,8 +104,8 @@ def create_appointment(request_form, id_hospital):
     """
     new_appointment = Appointment(
         id_hospital=int(id_hospital),
-        date=request_form["date"],
-        code_medical_examination=request_form["code_medical_examination"],
+        date=date,
+        code_medical_examination=int(code_medical_examination),
     )
 
     db.session.add(new_appointment)
@@ -160,9 +163,7 @@ def cancel_booked_appointment(id_prescription):
         dict: A JSON response containing the details of the cancelled appointment.
     """
     booked_appointment = Appointment.query.get(id_prescription)
-    booked_appointment.id_prescription = (
-        None  # TODO: check if this is correct or sqlalchemy.sql.null() is needed
-    )
+    booked_appointment.id_prescription = None
     db.session.commit()
 
     response = Appointment.query.get(id_prescription).toDict()
