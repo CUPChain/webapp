@@ -8,7 +8,7 @@ import Layout from '../components/Layout';
 import CardButton from '../components/CardButton';
 import { Section, Row, Col, Icon } from 'design-react-kit';
 import { Token } from '../constants';
-import { getOwnedTokens } from '../utils';
+import { getHospitalInfo, getOwnedTokens } from '../utils';
 import { AppointmentType, PrescriptionType } from '../types';
 import { BACKEND_URL } from '../constants';
 import { verifyHash } from '../utils';
@@ -48,7 +48,7 @@ const Reservations = () => {
 
                 receivedPrescriptions[i] = {
                     id: id,
-                    type: medical_exams.find(x => x.value === category)?.label!
+                    type: medical_exams.find(x => x.value == category)?.label!
                 };
             }
             setPrescriptions(receivedPrescriptions);
@@ -70,9 +70,17 @@ const Reservations = () => {
                 }
                 const data = await response.json() as { appointment: AppointmentType; };
                 const appointment = data.appointment;
-                appointment.type = medical_exams.find(x => x.value === category)?.label!;
-                const dataToCheck = { id: appointment.id, hospital: appointment.id_hospital, date: appointment.date, type: appointment.type };
-                console.log(appointment);
+                
+                appointment.date = new Date(appointment.date)
+                appointment.type = medical_exams.find(x => x.value == category)?.label!;
+
+                const dataToCheck = {
+                    id: appointment.id,
+                    id_hospital: appointment.id_hospital,
+                    date: appointment.date.toUTCString(),
+                    category: appointment.code_medical_examination
+                };
+                console.log(dataToCheck)
 
                 // Verify that the appointment is valid
                 if (await verifyHash(hash, dataToCheck)) {
@@ -81,6 +89,8 @@ const Reservations = () => {
                     data.appointment.valid = false;
                     console.log(`ERROR: Token ${id} metadata is not valid`);
                 }
+
+                await getHospitalInfo(data.appointment);
 
                 receivedAppointments[i] = data.appointment;
             }
@@ -140,8 +150,8 @@ const Reservations = () => {
                                 <Row key={appointment.id}>
                                     <CardButton
                                         title={appointment.type + (!appointment.valid ? " METADATA INVALIDI" : "")}
-                                        date={appointment.date}
-                                        description={appointment.address + '\n' + "Token id: " + appointment.id}
+                                        date={appointment.date.toString().split("GMT")[0]}
+                                        description={`Token id: ${appointment.id}, ${appointment.name}`}
                                         href={`/appointments/${appointment.id}`}
                                     />
                                 </Row>

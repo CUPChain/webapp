@@ -10,7 +10,7 @@ import QRCode from 'react-qr-code';
 import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
 import { type LatLngExpression } from 'leaflet';
 import { AppointmentType, PrescriptionType } from '../types';
-import { getTokenData, isOwned, verifyHash } from '../utils';
+import { getHospitalInfo, getTokenData, isOwned, verifyHash } from '../utils';
 import { BACKEND_URL, Token } from '../constants';
 
 const MAP_ENABLED = true;
@@ -21,13 +21,13 @@ const Appointment = () => {
     
     const [appointment, setAppointment] = useState<AppointmentType>({
         id: 0,
+        code_medical_examination: 0,
         type: '',
         name: '',
         city: '',
         cap: '',
         address: '',
-        date: '',
-        time: '',
+        date: new Date(),
         id_hospital: 0,
         latitude: 0,
         longitude: 0,
@@ -54,8 +54,16 @@ const Appointment = () => {
             }
             const data = await response.json() as { appointment: AppointmentType };
             const appointment = data.appointment;
-            const dataToCheck = { id: appointment.id, hospital: appointment.id_hospital, date: appointment.date, type: appointment.type }
-            console.log(appointment)
+
+            appointment.date = new Date(appointment.date)
+            const dataToCheck = {
+                    id: appointment.id,
+                    id_hospital: appointment.id_hospital,
+                    date: appointment.date.toUTCString(),
+                    category: appointment.code_medical_examination
+            };
+            
+            await getHospitalInfo(data.appointment);
 
             // Verify that the appointment is valid
             if (await verifyHash(hash as string, dataToCheck)) {
@@ -97,7 +105,7 @@ const Appointment = () => {
                         <Card className='card-bg flex-grow-1' teaser noWrapper style={{ marginBottom: '1rem', overflow: 'hidden' }} >
                             <CardBody>
                                 {
-                                    MAP_ENABLED ?
+                                    MAP_ENABLED && appointment.latitude ?
                                         <MapContainer center={[appointment.latitude, appointment.longitude]} zoom={13} scrollWheelZoom={false}>
                                             <TileLayer
                                                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -131,10 +139,10 @@ const Appointment = () => {
                                         <b>Indirizzo:</b> {appointment.address}
                                     </li>
                                     <li>
-                                        <b>Data:</b> {appointment.date}
+                                        <b>Data:</b> {appointment.date.toDateString()}
                                     </li>
                                     <li>
-                                        <b>Ora:</b> {appointment.time}
+                                        <b>Ora:</b> {appointment.date.toTimeString()}
                                     </li>
                                 </ul>
 

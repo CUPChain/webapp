@@ -64,13 +64,18 @@ const NewAppointment = () => {
             // TODO: error handling
             return;
         }
-        const tokenId = (await response.json()).id as number;
+        const createdAppointment = (await response.json());
+        const tokenId = createdAppointment.id;
+        const hospitalId = createdAppointment.id_hospital;
+        const dateTime = new Date(createdAppointment.date);
 
         const hashableData = { //TODO: should we hash hospital id as well?
             id: tokenId,
             category: selectedType,
-            date: apptDate
+            date: dateTime.toUTCString(),
+            id_hospital: hospitalId
         };
+        console.log(hashableData)
 
         let hashableString = "";
         Object.keys(hashableData).sort().forEach((key: string) => {

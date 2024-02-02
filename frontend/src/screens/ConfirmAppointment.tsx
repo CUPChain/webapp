@@ -83,7 +83,7 @@ const ConfirmAppointment = () => {
                                     {prescription.type}
                                 </CardTitle>
                                 <CardText>
-                                    {"Token id: " + prescription.id}
+                                    {"Prescription id: " + prescription.id}
                                 </CardText>
                             </CardBody>
                         </Card>
@@ -124,10 +124,10 @@ const ConfirmAppointment = () => {
                                         <b>Indirizzo:</b> {appointment.address}
                                     </li>
                                     <li>
-                                        <b>Data:</b> {appointment.date}
+                                        <b>Data:</b> {appointment.date.toDateString()}
                                     </li>
                                     <li>
-                                        <b>Ora:</b> {appointment.time}
+                                        <b>Ora:</b> {appointment.date.toTimeString()}
                                     </li>
                                 </ul>
 

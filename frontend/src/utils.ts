@@ -2,6 +2,7 @@ import { BytesLike, ethers, keccak256 } from "ethers";
 import PrescriptionTokens from './artifacts/contracts/PrescriptionTokens.sol/PrescriptionTokens.json';
 import AppointmentTokens from './artifacts/contracts/AppointmentTokens.sol/AppointmentTokens.json';
 import { APPOINTMENTS_CONTRACT, BACKEND_URL, PRESCRIPTIONS_CONTRACT, Token } from './constants';
+import { AppointmentType } from "./types";
 
 
 /** Log in to metamask and return provider and signer
@@ -261,4 +262,29 @@ const deg2rad = (deg: number): number => {
     return deg * (Math.PI/180)
 }
 
-export { getTokenData, getOwnedTokens, exchangePrescriptionAppointment, verifyHash, mintPrescription, isOwned, loginMetamask, signString, mintAppointment, requireLogin, isLoggedIn, logout, getPersonalArea, getDistanceFromLatLonInKm };
+const getHospitalInfo = async (appointment: AppointmentType) => {
+    const hospitalResp = await fetch(`${BACKEND_URL}/api/v1/hospitals/${appointment.id_hospital}`);
+    if (!hospitalResp.ok) {
+        console.log("error:", hospitalResp);
+        return;
+    }
+    const hospital = await hospitalResp.json()
+        .then(data => data.hospital as {
+            id:number,
+            address: string,
+            name: string,
+            cap: string,
+            city: string,
+            latitude: number,
+            longitude: number
+        });
+
+    appointment.address = hospital.address;
+    appointment.name = hospital.name;
+    appointment.cap = hospital.cap;
+    appointment.city = hospital.city;
+    appointment.latitude = hospital.latitude;
+    appointment.longitude = hospital.longitude;
+}
+
+export { getTokenData, getOwnedTokens, exchangePrescriptionAppointment, verifyHash, mintPrescription, isOwned, loginMetamask, signString, mintAppointment, requireLogin, isLoggedIn, logout, getPersonalArea, getDistanceFromLatLonInKm, getHospitalInfo };

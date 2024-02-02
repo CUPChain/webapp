@@ -10,7 +10,7 @@ import { Section, Col, Row, Card, CardBody, CardTitle, Input, Table, CardText, S
 import { PrescriptionType, AccountType, AppointmentType } from '../types';
 import { useNavigate } from 'react-router-dom';
 import { BACKEND_URL, Token } from '../constants';
-import { getDistanceFromLatLonInKm, getTokenData, isOwned } from '../utils';
+import { getDistanceFromLatLonInKm, getHospitalInfo, getTokenData, isOwned } from '../utils';
 
 
 const Prescription = () => {
@@ -82,34 +82,9 @@ const Prescription = () => {
             
             // Get hospital info for each available appointment
             for (let i=0; i< availableAppointments.length; i++) {
-                // Set date and time for appointment
-                availableAppointments[i].time = availableAppointments[i].date.slice(11);
-                availableAppointments[i].date = availableAppointments[i].date.slice(0,11);
-
-                const hospitalResp = await fetch(`${BACKEND_URL}/api/v1/hospitals/${availableAppointments[i].id_hospital}`);
-                if (!hospitalResp.ok) {
-                    console.log("error:", appointmentsResponse);
-                    continue;
-                }
-                const hospital = await hospitalResp.json()
-                    .then(data => data.hospital as {
-                        id:number,
-                        address: string,
-                        name: string,
-                        cap: string,
-                        city: string,
-                        latitude: number,
-                        longitude: number
-                    });
-
-                availableAppointments[i].address = hospital.address;
-                availableAppointments[i].name = hospital.name;
-                availableAppointments[i].cap = hospital.cap;
-                availableAppointments[i].city = hospital.city;
-                availableAppointments[i].latitude = hospital.latitude;
-                availableAppointments[i].longitude = hospital.longitude;
+                availableAppointments[i].date = new Date(availableAppointments[i].date);
+                await getHospitalInfo(availableAppointments[i]);
             }
-
             availableAppointments.sort();
             setAppointments(availableAppointments); //TODO: sort by what?
 
@@ -257,7 +232,7 @@ const Prescription = () => {
                                                     key={appointment.id}
                                                     where={appointment.name}
                                                     distance={appointment.distance}
-                                                    when={appointment.date + ' ' + appointment.time}
+                                                    when={appointment.date.toString().split("GMT")[0]}
                                                     action={onSelection.bind(this, appointment.id)}
                                                 />
                                             ))

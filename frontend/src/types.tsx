@@ -5,14 +5,14 @@ type location = {
 
 type AppointmentType = {
     id: number,
+    code_medical_examination: number,
     type: string, // Neurologist, Cardiologist, etc.
     name: string, // Hospital name
     city: string, // City
     cap: string, // CAP
     address: string, // Street address
     // location: location, // Location
-    date: string, // Date of appointment
-    time: string, // Time of appointment
+    date: Date, // Date of appointment
     distance?: string, // Distance from user (optional)
     id_hospital: number,
     latitude: number,
