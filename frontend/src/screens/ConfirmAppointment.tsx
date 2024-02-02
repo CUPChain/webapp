@@ -27,7 +27,6 @@ type ConfirmAppointmentProps = {
 const ConfirmAppointment = () => {
     const location = useLocation();
     const { appointment, prescription } = location.state as ConfirmAppointmentProps;
-    const position: LatLngExpression = [12.492373, 41.890251]; //TODO: take it from appointment info
     console.log("appt", appointment.id, " presc", prescription.id);
 
     // Initialize event listeners, they need contracts with provider as runner, instead of signer
@@ -71,12 +70,12 @@ const ConfirmAppointment = () => {
                             <CardBody>
                                 {
                                     MAP_ENABLED ?
-                                        <MapContainer center={position} zoom={13} scrollWheelZoom={false}>
+                                        <MapContainer center={[appointment.latitude, appointment.longitude]} zoom={13} scrollWheelZoom={false}>
                                             <TileLayer
                                                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                                                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                             />
-                                            <Marker position={position}>
+                                            <Marker position={[appointment.latitude, appointment.longitude]}>
                                                 <Popup>
                                                     A pretty CSS3 popup. <br /> Easily customizable.
                                                 </Popup>

@@ -6,7 +6,6 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
-// import "./Oracle.sol"; //TODO: check correctness
 
 interface AppointmentContract {
     function safeTransferFrom(address from, address to, uint256 tokenId) external;
@@ -17,28 +16,21 @@ contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, AccessC
     mapping (uint256 => uint16) private tokenIdToCategory;
     mapping (uint256 => bytes32) private tokenIdToHash;
 
-    // Oracle private oracle; //TODO: check correctness
-
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
     constructor() ERC721("Prescription", "PRE"){
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
+//TODO: change name to something more expressive?
     function grantRole(address doctor) public {
-        //TODO: check tramite l'oracolo per verificare che l'indirizzo sia realmente di un medico
-        // bool isADoctor = oracle.checkDoctor()  //TODO: check correctness
+        require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "Caller is not admin");
         _grantRole(MINTER_ROLE, doctor);
     }
     
     function revokeRole(address doctor) public {
-        //TODO: check anche qui per verificare che il medico non eserciti più la professione ????
+        require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "Caller is not admin");
         _revokeRole(MINTER_ROLE, doctor);
-    }
-
-    function _baseURI() internal view override(ERC721) virtual returns (string memory) {
-        //TODO: possiamo mettere url ai metadata qui senza sprecare memoria, supponendo che sia uguale per tutti
-        return "https://cupchain.com/prescriptions/";
     }
 
     function safeMint(address to, uint256 tokenId, bytes32 metadataHash, uint16 category) public {

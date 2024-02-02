@@ -62,7 +62,6 @@ const Reservations = () => {
                 const category = appointmentData[2][i];
 
                 // Retrieve from backend the additional data
-                //TODO: should find appointment by appointmentID, not prescriptionID
                 const response = await fetch(`${BACKEND_URL}/api/v1/appointments/${id}`);
                 if (!response.ok) {
                     console.log(response.statusText);

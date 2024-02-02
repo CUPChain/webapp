@@ -21,20 +21,14 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
         prescriptionsContract = _prescriptionsContract;
     }
 
-    // should anyone be able to call this method?
     function grantRole(address hospital) public {
-        //TODO: check tramite l'oracolo per verificare che l'indirizzo sia realmente di un medico
+        require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "Caller is not admin");
         _grantRole(MINTER_ROLE, hospital);
     }
     
     function revokeRole(address hospital) public {
-        //TODO: check anche qui per verificare che il medico non eserciti più la professione ????
+        require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "Caller is not admin");
         _revokeRole(MINTER_ROLE, hospital);
-    }
-
-    function _baseURI() internal view override(ERC721) virtual returns (string memory) {
-        //TODO: possiamo mettere url ai metadata qui senza sprecare memoria, supponendo che sia uguale per tutti
-        return "https://cupchain.com/appointments/";
     }
 
     function safeMint(uint256 tokenId, bytes32 metadataHash, uint16 category)

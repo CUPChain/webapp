@@ -16,7 +16,6 @@ import { BACKEND_URL, Token } from '../constants';
 const MAP_ENABLED = true;
 
 const Appointment = () => {
-    // TODO: id of prescription will be different from id of appointment
     // How do we know what was the id of the prescription that got exchanged for the appointment?
     const id = window.location.pathname.split('/')[2];
     
@@ -47,7 +46,6 @@ const Appointment = () => {
             const [, hash] = await getTokenData(id, Token.Appointment);
 
             // Retrieve from backend the additional data
-            //TODO: should find appointment by appointmentID, not prescriptionID
             const response = await fetch(`${BACKEND_URL}/api/v1/appointments/${id}`);
             if (!response.ok) {
                 console.log(response.statusText);
