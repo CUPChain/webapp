@@ -8,13 +8,24 @@ import { getPersonalArea, isLoggedIn, logout } from '../utils';
 
 
 const CustomHeader = () => {
-    const getIcon = (role: string) => {
+    const getPersonalAreaIcon = (role: string) => {
         if (role === 'patient') {
             return 'it-inbox';
         } else if (role === 'doctor') {
             return 'it-note';
         } else if (role === 'hospital') {
             return 'it-folder';
+        }
+        return '/';
+    };
+
+    const getMyAccountIcon = (role: string) => {
+        if (role === 'patient') {
+            return 'it-user';
+        } else if (role === 'doctor') {
+            return 'it-android';
+        } else if (role === 'hospital') {
+            return 'it-pa';
         }
         return '/';
     };
@@ -52,8 +63,17 @@ const CustomHeader = () => {
                                         href={getPersonalArea(role)}
                                         style={{ marginRight: '1rem' }}
                                     >
-                                        <Icon color='white' icon={getIcon(role)} style={{ marginRight: '0.5rem' }} />
+                                        <Icon color='white' icon={getPersonalAreaIcon(role)} style={{ marginRight: '0.5rem' }} />
                                         Area Personale
+                                    </Button>
+                                    <Button
+                                        outline color='primary'
+                                        size='lg' icon
+                                        href='/profile'
+                                        style={{ marginRight: '1rem' }}
+                                    >
+                                        <Icon color='white' icon={getMyAccountIcon(role)} style={{ marginRight: '0.5rem' }} />
+                                        Profilo
                                     </Button>
                                     <Button outline color='primary' size='lg' icon onClick={logout}>
                                         <Icon color='white' icon='it-logout' style={{ marginRight: '0.5rem' }} />

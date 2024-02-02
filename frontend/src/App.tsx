@@ -15,13 +15,14 @@ import Appointment from './screens/Appointment';
 import ConfirmAppointment from './screens/ConfirmAppointment';
 import NewPrescription from './screens/NewPrescription';
 import PrescriptionList from './screens/PrescriptionList';
+import Profile from './screens/Profile';
+import NotFound from './screens/NotFound';
 import { ethers, keccak256 } from "ethers";
 import PrescriptionTokens from './artifacts/contracts/PrescriptionTokens.sol/PrescriptionTokens.json';
 import AppointmentTokens from './artifacts/contracts/AppointmentTokens.sol/AppointmentTokens.json';
 import { APPOINTMENTS_CONTRACT, PRESCRIPTIONS_CONTRACT } from './constants';
 import NewAppointment from './screens/NewAppointment';
 import { isLoggedIn } from './utils';
-import NotFound from './screens/NotFound';
 
 const App = () => {
   async function requestAccount() {
@@ -125,12 +126,13 @@ const App = () => {
     return <Login />;
   };
 
-  const PrivateRoute = ({ element, requiredRole }: { element: JSX.Element; requiredRole: string; } = { element: <></>, requiredRole: 'patient' }) => {
+  const PrivateRoute = ({ element, requiredRole }: { element: JSX.Element; requiredRole?: string; }) => {
     // if not logged in, redirect to login
     if (!isLoggedIn()) {
       return <Navigate to="/login" />;
     }
-    if (localStorage.getItem('role') !== requiredRole) {
+    console.log("requiredRole: ", requiredRole, "localStorage.getItem('role'): ", localStorage.getItem('role'));
+    if (requiredRole !== undefined && localStorage.getItem('role') !== requiredRole) {
       return <Navigate to="/" />;
     }
     return element;
@@ -155,6 +157,7 @@ const App = () => {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<LoginRoute />} />
+            <Route path="/profile" element={<PrivateRoute element={<Profile />} />} />
             <Route path="/reservations" element={<PrivateRoute element={<Reservations />} requiredRole="patient" />} />
             <Route path="/prescriptions/:id" element={<PrivateRoute element={<Prescription />} requiredRole="patient" />} />
             <Route path="/prescriptions/:id/confirm-appointment" element={<PrivateRoute element={<ConfirmAppointment />} requiredRole="patient" />} />
