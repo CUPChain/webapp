@@ -9,12 +9,13 @@ import Select from 'react-select';
 import { Section, Card, CardBody, CardTitle, Input, Button } from 'design-react-kit';
 import { BACKEND_URL } from '../constants';
 import { mintPrescription } from '../utils';
-import { ethers } from 'ethers';
 import { useNavigate } from 'react-router-dom';
+import { useAlert } from '../components/Alert';
 
 
 const NewPrescription = () => {
     const navigate = useNavigate();
+    const { addMessage } = useAlert();
     const [prescrTypes, setPrescrTypes] = useState<{ value: number, label: string; }[]>([]);
     const [selectedType, setSelectedType] = useState(0);
     const [patientAddr, setPatientAddr] = useState<string>();
@@ -80,6 +81,9 @@ const NewPrescription = () => {
         } catch (e) {
             console.log(e); // should rollback db
         }
+
+        // Show success message
+        addMessage({ text: 'Prescrizione creata con successo', type: 'success' });
     };
 
 
