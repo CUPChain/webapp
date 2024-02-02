@@ -79,7 +79,6 @@ def get_profile():
         })
     elif role == "hospital":
         hospital: Hospital = retrieve_hospital(account.id_hospital)
-        doctor: Doctor = retrieve_doctor(account.cf_doctor)
         return jsonify({
             "name": hospital.name,
             "address": hospital.address,

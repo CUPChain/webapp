@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import 'bootstrap-italia/dist/css/bootstrap-italia.min.css';
 import 'typeface-titillium-web';
 import 'typeface-roboto-mono';
@@ -15,6 +15,7 @@ import { APPOINTMENTS_CONTRACT, BACKEND_URL, PRESCRIPTIONS_CONTRACT } from '../c
 import { ethers } from 'ethers';
 import PrescriptionTokens from '../artifacts/contracts/PrescriptionTokens.sol/PrescriptionTokens.json';
 import AppointmentTokens from '../artifacts/contracts/AppointmentTokens.sol/AppointmentTokens.json';
+import CardTitleLoad from '../components/CardTitleLoad';
 
 const MAP_ENABLED = false;
 
@@ -33,6 +34,7 @@ const ConfirmAppointment = () => {
     const provider = new ethers.BrowserProvider(window.ethereum);
     const prescrContract = new ethers.Contract(PRESCRIPTIONS_CONTRACT, PrescriptionTokens.abi, provider);
     const apptContract = new ethers.Contract(APPOINTMENTS_CONTRACT, AppointmentTokens.abi, provider);
+    const [loaded, setLoaded] = useState(false);
 
     prescrContract.on("Transfer", (from, to, tokenID, event) => {
         console.log(event);
@@ -69,6 +71,7 @@ const ConfirmAppointment = () => {
             return;
             }
         })
+        setLoaded(true);
     };
 
     return (
@@ -112,10 +115,8 @@ const ConfirmAppointment = () => {
                     </Col>
                     <Col>
                         <Card spacing className='card-bg card-big no-after'>
-                            <CardBody>
-                                <CardTitle tag='h5'>
-                                    Dettagli
-                                </CardTitle>
+                            <CardBody>                                
+                                <CardTitleLoad title='Dettagli Appuntamento' loaded={loaded} />
                                 <ul>
                                     <li>
                                         <b>Luogo:</b> {appointment.name}

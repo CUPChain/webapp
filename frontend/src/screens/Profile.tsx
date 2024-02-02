@@ -4,9 +4,10 @@ import 'typeface-titillium-web';
 import 'typeface-roboto-mono';
 import 'typeface-lora';
 import Layout from '../components/Layout';
-import { Section, Row, Card, CardBody, CardTitle, Input, Spinner, Col } from 'design-react-kit';
+import { Section, Row, Card, CardBody, Input } from 'design-react-kit';
 import { AccountType } from '../types';
 import { BACKEND_URL } from '../constants';
+import CardTitleLoad from '../components/CardTitleLoad';
 
 
 const Profile = () => {
@@ -48,19 +49,7 @@ const Profile = () => {
             <Section color='muted' className='mt-1'>
                 <Card noWrapper className='card-bg card-big'>
                     <CardBody>
-                        <CardTitle tag='h5'>
-                            <Row style={{ alignItems: 'center' }}>
-                                <Col>
-                                    Dettagli Account
-                                </Col>
-                                {
-                                    !loaded &&
-                                    <Col className='col-1'>
-                                        <Spinner small active />
-                                    </Col>
-                                }
-                            </Row>
-                        </CardTitle>
+                        <CardTitleLoad title='Dettagli Account' loaded={loaded} />
                         <Row style={{ marginTop: '3rem' }}>
                             <Input
                                 type='text'

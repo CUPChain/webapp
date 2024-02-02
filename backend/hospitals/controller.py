@@ -15,7 +15,7 @@ def list_all_hospitals():
     return jsonify({"hospitals": hospitals_list})
 
 
-def retrieve_hospital(id_hospital):
+def retrieve_hospital(id_hospital: int) -> Hospital:
     """
     Retrieve a hospital by its ID.
 
@@ -23,16 +23,15 @@ def retrieve_hospital(id_hospital):
         id_hospital (int): The ID of the hospital.
 
     Returns:
-        JSON response: A JSON response containing the hospital information if found,
-        or a message indicating that the hospital was not found.
+        Hospital: The hospital with the given ID.
     """
     hospital = db.session.execute(
         db.select(Hospital).filter_by(id=id_hospital)
     ).one_or_none()
     if hospital:
-        return jsonify({"hospital": hospital[0].toDict()})
+        return hospital[0]
     else:
-        return jsonify({"message": "Hospital not found"}), 404
+        return None
 
 
 def retrieve_all_hospital_is_able_to_do(id_is_able_to_do):

@@ -43,7 +43,11 @@ def get_hospital(id_hospital):
       200:
         description: Hospital details retrieved successfully
     """
-    return retrieve_hospital(id_hospital)
+    hospital = retrieve_hospital(id_hospital)
+    if hospital:
+        return jsonify(hospital.toDict())
+    else:
+        return jsonify({"message": "Hospital not found"}), 404
 
 
 @app.route(

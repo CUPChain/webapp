@@ -12,6 +12,7 @@ import { type LatLngExpression } from 'leaflet';
 import { AppointmentType, PrescriptionType } from '../types';
 import { getAppointmentToken, getHospitalInfo, isOwned, verifyHash } from '../utils';
 import { BACKEND_URL, Token } from '../constants';
+import CardTitleLoad from '../components/CardTitleLoad';
 
 const MAP_ENABLED = true;
 
@@ -34,6 +35,7 @@ const Appointment = () => {
         valid: false
     });
     const [prescription, setPrescription] = useState<PrescriptionType>({id: 0, type: "Invalid"});
+    const [loaded, setLoaded] = useState(false);
 
     useEffect(() => {
         const getAppointmentData = async (id: number) => {
@@ -71,10 +73,13 @@ const Appointment = () => {
             } else {
                 console.log(`ERROR: Token ${id} metadata is not valid`);
             }
+
+            // Set loaded to true
+            setLoaded(true);
         }
 
         getAppointmentData(Number.parseInt(id));
-    }, []);
+    }, [id]);
 
     const deleteAppointment = () => {
         // TODO: implementare cancellazione prenotazione
@@ -128,9 +133,7 @@ const Appointment = () => {
                     <Col>
                         <Card className='card-bg' teaser noWrapper style={{ marginBottom: '1rem' }} >
                             <CardBody>
-                                <CardTitle tag='h5'>
-                                    Dettagli
-                                </CardTitle>
+                                <CardTitleLoad title='Dettagli' loaded={loaded} />
                                 <ul>
                                     <li>
                                         <b>Luogo:</b> {appointment.name}

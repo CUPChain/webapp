@@ -6,11 +6,12 @@ import 'typeface-lora';
 import Layout from '../components/Layout';
 import RowTable from '../components/RowTable';
 import BackButton from '../components/BackButton';
-import { Section, Col, Row, Card, CardBody, CardTitle, Input, Table, CardText, Spinner } from 'design-react-kit';
+import { Section, Col, Row, Card, CardBody, CardTitle, Input, Table, CardText } from 'design-react-kit';
 import { PrescriptionType, AccountType, AppointmentType } from '../types';
 import { useNavigate } from 'react-router-dom';
 import { BACKEND_URL, Token } from '../constants';
 import { getDistanceFromLatLonInKm, getHospitalInfo, getTokenCategory, isOwned } from '../utils';
+import CardTitleLoad from '../components/CardTitleLoad';
 
 
 const Prescription = () => {
@@ -150,17 +151,7 @@ const Prescription = () => {
                         </Card>
                         <Card noWrapper className='card-bg card-big'>
                             <CardBody>
-                                <Row style={{ alignItems: 'center' }}>
-                                    <Col>
-                                        Dettagli Account
-                                    </Col>
-                                    {
-                                        !loaded &&
-                                        <Col className='col-1'>
-                                            <Spinner small active />
-                                        </Col>
-                                    }
-                                </Row>
+                                <CardTitleLoad title='Dettagli Account' loaded={loaded} />
                                 <Row style={{ marginTop: '3rem' }}>
                                     <Input
                                         type='text'
