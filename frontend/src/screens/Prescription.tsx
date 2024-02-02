@@ -10,7 +10,7 @@ import { Section, Col, Row, Card, CardBody, CardTitle, Input, Table, CardText, S
 import { PrescriptionType, AccountType, AppointmentType } from '../types';
 import { useNavigate } from 'react-router-dom';
 import { BACKEND_URL, Token } from '../constants';
-import { getTokenData, isOwned } from '../utils';
+import { getDistanceFromLatLonInKm, getTokenData, isOwned } from '../utils';
 
 
 const Prescription = () => {
@@ -27,6 +27,8 @@ const Prescription = () => {
     const [prescription, setPrescription] = useState<PrescriptionType>({ id: 0, type: "Invalid" });
     const [appointments, setAppointments] = useState<AppointmentType[]>([]);
     const [loaded, setLoaded] = useState(false);
+
+    const [myPosition, setMyPosition] = useState<{latitude: number, longitude: number}>()
 
     useEffect(() => {
         const fetchData = async (id: number) => {
@@ -77,9 +79,52 @@ const Prescription = () => {
             }
             const availableAppointments = await appointmentsResponse.json()
                 .then(data => data.appointments as AppointmentType[]);
+            
+            // Get hospital info for each available appointment
+            for (let i=0; i< availableAppointments.length; i++) {
+                // Set date and time for appointment
+                availableAppointments[i].time = availableAppointments[i].date.slice(11);
+                availableAppointments[i].date = availableAppointments[i].date.slice(0,11);
+
+                const hospitalResp = await fetch(`${BACKEND_URL}/api/v1/hospitals/${availableAppointments[i].id_hospital}`);
+                if (!hospitalResp.ok) {
+                    console.log("error:", appointmentsResponse);
+                    continue;
+                }
+                const hospital = await hospitalResp.json()
+                    .then(data => data.hospital as {
+                        id:number,
+                        address: string,
+                        name: string,
+                        cap: string,
+                        city: string,
+                        latitude: number,
+                        longitude: number
+                    });
+
+                availableAppointments[i].address = hospital.address;
+                availableAppointments[i].name = hospital.name;
+                availableAppointments[i].cap = hospital.cap;
+                availableAppointments[i].city = hospital.city;
+                availableAppointments[i].latitude = hospital.latitude;
+                availableAppointments[i].longitude = hospital.longitude;
+            }
 
             availableAppointments.sort();
             setAppointments(availableAppointments); //TODO: sort by what?
+
+            
+            // Get current location
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    setMyPosition({
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude
+                    });
+                });
+            } else {
+                console.log("Geolocation is not available in your browser.");
+            }
 
             setLoaded(true);
         };
@@ -87,6 +132,18 @@ const Prescription = () => {
         fetchData(Number.parseInt(id));
     }, [id]);
 
+    // Update distances after receiving position
+    useEffect(() => {
+        if (myPosition !== undefined) {
+            setAppointments(appointments.map(appt => {
+                appt.distance = getDistanceFromLatLonInKm(
+                    myPosition.latitude, myPosition.longitude,
+                    appt.latitude, appt.longitude
+                ).toFixed(1).toString() + "Km";
+                return appt;
+            }));
+        }
+    }, [myPosition]);
 
 
     const onSelection = (id: number) => {

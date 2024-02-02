@@ -11,7 +11,7 @@ import { type LatLngExpression } from 'leaflet';
 import { AppointmentType, PrescriptionType, AccountType } from '../types';
 import { useLocation } from 'react-router-dom';
 import { exchangePrescriptionAppointment } from '../utils';
-import { APPOINTMENTS_CONTRACT, PRESCRIPTIONS_CONTRACT } from '../constants';
+import { APPOINTMENTS_CONTRACT, BACKEND_URL, PRESCRIPTIONS_CONTRACT } from '../constants';
 import { ethers } from 'ethers';
 import PrescriptionTokens from '../artifacts/contracts/PrescriptionTokens.sol/PrescriptionTokens.json';
 import AppointmentTokens from '../artifacts/contracts/AppointmentTokens.sol/AppointmentTokens.json';
@@ -44,10 +44,31 @@ const ConfirmAppointment = () => {
     });
 
     const confirmAppointment = () => {
+        // Exchange tokens
         exchangePrescriptionAppointment(prescription.id, appointment.id);
         // TODO: check for errors?
         //alert('Prenotazione confermata');
-        //TODO: save in db
+
+        // Book appointment in db
+        let formData = new FormData();
+        formData.append('id', appointment.id.toString());
+
+        const response = fetch(
+            `${BACKEND_URL}/api/v1/appointments/reserve/${prescription.id}`,
+            {
+                method: 'POST',
+                headers: {
+                    auth: localStorage.getItem('auth')!
+                },
+                body: formData
+            }
+        ).then(response => {
+            if (!response.ok) {
+            console.log(response.statusText);
+            // TODO: error handling
+            return;
+            }
+        })
     };
 
     return (

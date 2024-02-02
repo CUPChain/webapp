@@ -9,6 +9,6 @@ def retrieve_patient(cf):
         db.select(Patient).filter_by(cf=cf)
     ).one_or_none()
     if patient:
-        return jsonify({"patient": patient[0].toDict()})
+        return patient[0]
     else:
-        return jsonify({"message": f"No Patient found with cf: '{cf}'"}), 404
+        return None

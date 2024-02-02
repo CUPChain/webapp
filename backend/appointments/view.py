@@ -120,19 +120,7 @@ def reserve_appointment(id_prescription):
         in: path
         type: string
         required: true
-      - name: category
-        in: formData
-        type: string
-        required: true
-      - name: id_hospital
-        in: formData
-        type: integer
-        required: true
-      - name: date
-        in: formData
-        type: datetime
-        required: true
-      - name: id_prescription
+      - name: id
         in: formData
         type: string
     responses:

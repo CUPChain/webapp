@@ -23,7 +23,7 @@ async function main() {
     `contract AppointmentTokens successfully deployed to ${appTokens.target}`
   );
   // Give hospital role to default hospital
-  await prescrTokens.grantRole(DEFAULT_HOSPITAL);
+  await appTokens.grantRole(DEFAULT_HOSPITAL);
   console.log(`Granted hospital role to ${DEFAULT_HOSPITAL}`)
 }
 
