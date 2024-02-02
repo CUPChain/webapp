@@ -5,6 +5,10 @@ from .. import db  # from __init__.py
 
 
 class MedicalExam(db.Model):
+    """
+    A Medical Exam in the database.
+    """
+
     __tablename__ = "medical_exam"
     code = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)

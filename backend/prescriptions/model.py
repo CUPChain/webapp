@@ -3,6 +3,10 @@ from sqlalchemy import inspect
 
 
 class Prescription(db.Model):
+    """
+    A Prescription in the database.
+    """
+
     __tablename__ = "prescription"
     id = db.Column(db.Integer, primary_key=True)
     cf_doctor = db.Column(db.String(16), db.ForeignKey("doctor.cf"))

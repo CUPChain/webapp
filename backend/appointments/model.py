@@ -5,6 +5,10 @@ from .. import db  # from __init__.py
 
 
 class Appointment(db.Model):
+    """
+    The Appointment model is used to create, book, and cancel appointments.
+    """
+
     __tablename__ = "appointment"
     id = db.Column(db.Integer, primary_key=True)
     id_hospital = db.Column(db.Integer, db.ForeignKey("hospital.id"))

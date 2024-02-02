@@ -5,6 +5,10 @@ from ..config import NONCE_LIMIT
 
 
 class Account(db.Model):
+    """
+    The Account model is used to store the user's account information.
+    """
+
     # Login with MetaMask Fields:
     pkey = db.Column(db.String(42), nullable=False, unique=True, primary_key=True)
     nonce = db.Column(

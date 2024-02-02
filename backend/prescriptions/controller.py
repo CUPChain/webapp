@@ -6,6 +6,16 @@ from ..login.model import Account
 
 
 def retrieve_prescription(id):
+    """
+    Retrieve a prescription by its ID.
+
+    Args:
+        id (int): The ID of the prescription to retrieve.
+
+    Returns:
+        flask.Response: The JSON response containing the prescription and associated medical exam data,
+        or a message indicating that no prescription was found with the given ID.
+    """
     # - /prescriptions/id: id, categoria, id dottore, nome dottore, note, data (SE AUTORIZZATO)
     # [TODO: autorization]
 
@@ -30,6 +40,20 @@ def retrieve_prescription(id):
 
 
 def create_prescription(request_form, cf_doctor):
+    """
+    Create a prescription for a patient.
+
+    Args:
+        request_form (dict): The form data containing the prescription details.
+        cf_doctor (str): The CF (Codice Fiscale) of the doctor creating the prescription.
+
+    Returns:
+        dict: The JSON response containing the created prescription details.
+    """
+    # Rest of the code...
+
+
+def create_prescription(request_form, cf_doctor):
     # Get the patient from the pkey
     account = db.session.execute(
         db.select(Account).filter_by(pkey=request_form["pkey_patient"])
@@ -37,7 +61,10 @@ def create_prescription(request_form, cf_doctor):
     if account == None:
         return (
             jsonify(
-                {"error": f"Patient with pkey '{request_form['pkey_patient']}' not found."}),
+                {
+                    "error": f"Patient with pkey '{request_form['pkey_patient']}' not found."
+                }
+            ),
             404,
         )
 
@@ -59,6 +86,15 @@ def create_prescription(request_form, cf_doctor):
 
 
 def delete_prescription(id):
+    """
+    Delete a prescription with the given ID from the database.
+
+    Args:
+        id (int): The ID of the prescription to be deleted.
+
+    Returns:
+        str: A success message indicating that the prescription has been deleted.
+    """
     Prescription.query.filter_by(id=id).delete()
     db.session.commit()
 
@@ -66,6 +102,16 @@ def delete_prescription(id):
 
 
 def retrieve_all_prescriptions_by_patient(cf):
+    """
+    Retrieve all prescriptions for a given patient.
+
+    Args:
+        cf (str): The patient's fiscal code.
+
+    Returns:
+        A JSON response containing the prescriptions for the patient,
+        or a JSON response with an error message if no prescriptions are found.
+    """
     prescriptions = db.session.execute(
         db.select(Prescription).where(Prescription.cf_patient == cf)
     )
@@ -79,12 +125,22 @@ def retrieve_all_prescriptions_by_patient(cf):
         )
     else:
         return (
-            jsonify({"message": "No Prescriptions found for patinet: '{cf}'"}),
+            jsonify({"message": f"No Prescriptions found for patient: '{cf}'"}),
             404,
         )  # not reachable since output an empty list
 
 
 def retrieve_all_prescriptions_by_doctor(cf):
+    """
+    Retrieve all prescriptions for a given doctor.
+
+    Args:
+        cf (str): The doctor's CF (Codice Fiscale).
+
+    Returns:
+        A JSON response containing the list of prescriptions for the doctor.
+        If no prescriptions are found, a JSON response with an error message is returned.
+    """
     prescriptions = db.session.execute(
         db.select(Prescription).where(Prescription.cf_doctor == cf)
     )
@@ -98,6 +154,6 @@ def retrieve_all_prescriptions_by_doctor(cf):
         )
     else:
         return (
-            jsonify({"message": "No Prescriptions found for doctor: '{cf}'"}),
+            jsonify({"message": f"No Prescriptions found for doctor: '{cf}'"}),
             404,
         )  # not reachable since output an empty list
