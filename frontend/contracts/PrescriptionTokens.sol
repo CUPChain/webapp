@@ -13,15 +13,34 @@ import "./AppointmentTokens.sol";
  * @title PrescriptionTokens
  * @dev This contract represents a collection of prescription tokens.
  * It extends the ERC721, ERC721Enumerable, ERC721Burnable, and AccessControl contracts.
- * Prescription tokens can be minted, transferred, and burned.
+ * Prescription tokens can be minted, transferred.
  * The contract also provides functions to grant and revoke the MINTER_ROLE to doctors.
- * Additionally, it allows users to get a list of their owned tokens and retrieve the category and metadata hash of a token.
+ * Additionally, it allows users to get a list of their owned tokens and retrieve 
+ * the category and metadata hash of a token.
  * Users can also exchange prescription tokens for appointment tokens.
+ * Users can get back a prescription token if they have an appointment token, they do not want anymore.
+ * @notice This contract is used by doctor to mint prescription tokens and transfer them to patients.
+ * It also allows patient to exchange prescription tokens for appointment tokens.
  */
 contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, AccessControl {
     mapping (uint256 => uint16) private tokenIdToCategory;
 
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+
+    /**
+     * @dev Throws if the caller of the function has not the DEFAULT_ADMIN_ROLE.
+     */
+    error CallerNotAdmin();
+
+    /**
+     * @dev Throws if the caller of the function has not the MINTER_ROLE.
+     */
+    error CallerNotMinter();
+
+    /**
+     * @dev Throws if the categories of the prescription and appointment tokens do not match.
+     */
+    error CategoriesDontMatch();
 
     /**
      * @dev Constructor function that initializes the PrescriptionTokens contract.
@@ -39,17 +58,18 @@ contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, AccessC
      * @param doctor The address of the doctor to grant the MINTER_ROLE to.
      */
     function grantRole(address doctor) public {
-        require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "Caller is not admin");
+        if (!hasRole(DEFAULT_ADMIN_ROLE, msg.sender)) revert CallerNotAdmin();
         _grantRole(MINTER_ROLE, doctor);
     }
 
     /**
-     * @dev Revokes the role of a doctor.
+     * @dev Revokes the MINTER_ROLE of a doctor.
      * Only the admin can call this function.
+     * 
      * @param doctor The address of the doctor whose role is being revoked.
      */
     function revokeRole(address doctor) public {
-        require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "Caller is not admin");
+        if (!hasRole(DEFAULT_ADMIN_ROLE, msg.sender)) revert CallerNotAdmin();
         _revokeRole(MINTER_ROLE, doctor);
     }
 
@@ -62,7 +82,7 @@ contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, AccessC
      * @param category The category of the token.
      */
     function safeMint(address to, uint256 tokenId, uint16 category) public {
-        require(hasRole(MINTER_ROLE, msg.sender), "Caller is not a minter");
+        if (!hasRole(MINTER_ROLE, msg.sender)) revert CallerNotMinter();
         _safeMint(to, tokenId);
         tokenIdToCategory[tokenId] = category;
     }
@@ -70,6 +90,7 @@ contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, AccessC
     // Get list of token ids owned by function caller
      /**
      * @dev Retrieves the tokens owned by the caller.
+     * 
      * @return ids An array of token IDs owned by the caller.
      * @return categories An array of token categories corresponding to the token IDs.
      */
@@ -86,9 +107,10 @@ contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, AccessC
         return (ids, categories);
     }
 
-    // Get category of prescription (type of medical visit needed)
+    // Get category of prescription (type of medical visit necessary for the prescription)
     /**
      * @dev Retrieves the token information for a given tokenId.
+     * 
      * @param tokenId The ID of the token to retrieve.
      * @return The category associated with the token.
      */
@@ -98,14 +120,16 @@ contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, AccessC
 
     // Exchange for appointment token
     /**
-     * @dev Makes an appointment by transferring prescription and appointment tokens between addresses.
+     * @dev Book an appointment by transferring prescription and appointment tokens between 
+     * addresses of the patient who own the prescription and of hospital which own the appointment.
+     * 
      * @param prescriptionToken The ID of the prescription token.
      * @param appointmentsContract The address of the appointments contract.
      * @param appointmentToken The ID of the appointment token.
      * @param hospital The address of the hospital.
      */
     function makeAppointment(uint256 prescriptionToken, address appointmentsContract, uint256 appointmentToken, address hospital) public {
-        require(tokenIdToCategory[prescriptionToken] == AppointmentTokens(appointmentsContract).getCategory(appointmentToken), "Categories don't match");
+        if (tokenIdToCategory[prescriptionToken] != AppointmentTokens(appointmentsContract).getCategory(appointmentToken)) revert CategoriesDontMatch();
         safeTransferFrom(msg.sender, hospital, prescriptionToken);
         AppointmentTokens(appointmentsContract).safeTransferFrom(hospital, msg.sender, appointmentToken);
     }
@@ -115,6 +139,7 @@ contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, AccessC
     /**
      * @dev Updates the ownership of a token and returns the address of the new owner.
      * This function is internal and overrides the _update function from ERC721 and ERC721Enumerable.
+     * 
      * @param to The address of the new owner.
      * @param tokenId The ID of the token being transferred.
      * @param auth The address of the authorized caller.
@@ -131,6 +156,7 @@ contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, AccessC
     /**
      * @dev Internal function to increase the balance of a specific account.
      * Overrides the _increaseBalance function from ERC721 and ERC721Enumerable contracts.
+     * 
      * @param account The address of the account to increase the balance for.
      * @param value The amount to increase the balance by.
      */
@@ -143,6 +169,7 @@ contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, AccessC
 
     /**
      * @dev Checks if the contract supports a given interface by calling the corresponding function in the parent contracts.
+     * 
      * @param interfaceId The interface identifier.
      * @return A boolean value indicating whether the contract supports the given interface.
      */

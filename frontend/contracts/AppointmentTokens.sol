@@ -15,6 +15,8 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
  * The contract allows minting appointment tokens, granting and revoking minting role to hospitals,
  * getting the list of tokens owned by an address, getting the category of an appointment token,
  * and getting the category and metadata hash of an appointment token.
+ * @notice This contract is used by hospitals to mint appointment tokens and transfer them to 
+ * patients which have the corresponding prescription token.
  */
 contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, AccessControl {
     // Appointments need to store their type (category)
@@ -24,7 +26,18 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
     /**
+     * @dev Throws if the caller of the function has not the DEFAULT_ADMIN_ROLE.
+     */
+    error CallerNotAdmin();
+
+    /**
+     * @dev Throws if the caller of the function has not the MINTER_ROLE.
+     */
+    error CallerNotMinter();
+
+    /**
      * @dev Initializes the AppointmentTokens contract.
+     * 
      * @param _prescriptionsContract The address of the Prescriptions contract.
      */
     constructor(address _prescriptionsContract)
@@ -41,7 +54,7 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
      * @param hospital The address of the hospital to grant the MINTER_ROLE to.
      */
     function grantRole(address hospital) public {
-        require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "Caller is not admin");
+        if (!hasRole(DEFAULT_ADMIN_ROLE, msg.sender)) revert CallerNotAdmin();
         _grantRole(MINTER_ROLE, hospital);
     }
     
@@ -52,7 +65,7 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
      * @param hospital The address of the hospital to revoke the role from.
      */
     function revokeRole(address hospital) public {
-        require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "Caller is not admin");
+        if (!hasRole(DEFAULT_ADMIN_ROLE, msg.sender)) revert CallerNotAdmin();
         _revokeRole(MINTER_ROLE, hospital);
     }
 
@@ -67,7 +80,7 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
     function safeMint(uint256 tokenId, bytes32 metadataHash, uint16 category)
         public
     {
-        require(hasRole(MINTER_ROLE, msg.sender), "Caller is not a minter");
+        if (!hasRole(MINTER_ROLE, msg.sender)) revert CallerNotMinter();
         _safeMint(msg.sender, tokenId);
         tokenIdToCategory[tokenId] = category;
         tokenIdToHash[tokenId] = metadataHash;
@@ -79,6 +92,7 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
     // Get list of token ids owned by function caller
     /**
      * @dev Retrieves the tokens owned by the caller.
+     * 
      * @return ids An array of token IDs owned by the caller.
      * @return hashes An array of token hashes corresponding to the token IDs.
      * @return categories An array of token categories corresponding to the token IDs.
@@ -101,6 +115,7 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
     // Get category of appointment (type of appointment)
     /**
      * @dev Returns the category of the specified token.
+     * 
      * @param tokenId The ID of the token.
      * @return The category of the token.
      */
@@ -112,6 +127,7 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
     // Get category and metadata hash of appointment (type of medical appointment)
     /**
      * @dev Retrieves the token information for a given token ID.
+     * 
      * @param tokenId The ID of the token to retrieve.
      * @return The category and hash associated with the token.
      */
@@ -123,6 +139,7 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
     /**
      * @dev Updates the ownership of a token and returns the address of the new owner.
      * This function overrides the internal _update function from ERC721 and ERC721Enumerable contracts.
+     * 
      * @param to The address to transfer the token ownership to.
      * @param tokenId The ID of the token to be transferred.
      * @param auth The address of the authorized caller.
@@ -139,6 +156,7 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
     /**
      * @dev Internal function to increase the balance of a specific account.
      * Overrides the _increaseBalance function from ERC721 and ERC721Enumerable contracts.
+     * 
      * @param account The address of the account to increase the balance for.
      * @param value The amount to increase the balance by.
      */
@@ -151,6 +169,7 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
 
     /**
      * @dev Returns the URI for a given token ID.
+     * 
      * @param tokenId The ID of the token.
      * @return A string representing the URI of the token.
      */
@@ -165,6 +184,7 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
 
     /**
      * @dev Checks if the contract supports a given interface by calling the corresponding function in the parent contracts.
+     * 
      * @param interfaceId The interface identifier.
      * @return A boolean value indicating whether the contract supports the given interface.
      */
