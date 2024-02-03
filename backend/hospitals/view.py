@@ -72,6 +72,37 @@ def get_hospital_is_able_to_do(id_is_able_to_do):
     """
     return retrieve_all_hospital_is_able_to_do(id_is_able_to_do)
 
+@app.route(
+    f"/{BASE_ROOT}/{VERSION}/am_able_to_do",
+    methods=["GET"]
+    # Auth not required for this endpoint
+)
+def get_am_able_to_do():
+    """
+    Retrieve the caller's ability details by ID
+    ---
+    tags:
+      - Hospital Abilities
+    responses:
+      200:
+        description: Hospital's ability details retrieved successfully
+    """
+    # Get the account from the JWT token
+    account = get_account()
+    if account == None:
+        return (
+            jsonify({"error": f"Login required."}),
+            302,
+        )
+
+    # Check if the account is an hospital
+    if account.id_hospital == None:
+        return (
+            jsonify({"error": f"Account {account.pkey} is not an hospital."}),
+            403,
+        )
+    return retrieve_all_hospital_is_able_to_do(account.id_hospital)
+
 
 @app.route(
     f"/{BASE_ROOT}/{VERSION}/is_able_to_do",

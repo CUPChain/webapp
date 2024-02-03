@@ -10,7 +10,7 @@ import QRCode from 'react-qr-code';
 import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
 import { type LatLngExpression } from 'leaflet';
 import { AppointmentType, PrescriptionType } from '../types';
-import { getAppointmentToken, getHospitalInfo, isOwned, verifyHash } from '../utils';
+import { getAppointmentToken, getHospitalInfo, getTokenCategory, isOwned, verifyHash } from '../utils';
 import { BACKEND_URL, Token } from '../constants';
 import CardTitleLoad from '../components/CardTitleLoad';
 
@@ -30,6 +30,7 @@ const Appointment = () => {
         address: '',
         date: new Date(),
         id_hospital: 0,
+        id_prescription: 0,
         latitude: 0,
         longitude: 0,
         valid: false
@@ -74,6 +75,19 @@ const Appointment = () => {
                 console.log(`ERROR: Token ${id} metadata is not valid`);
             }
 
+            // Get prescription info
+            const prescriptionCategory = await getTokenCategory(appointment.id_prescription, Token.Prescription);
+             // Get category name from database
+             const categoryResponse = await fetch(`${BACKEND_URL}/api/v1/medical_exams/${prescriptionCategory}`);
+             if (!categoryResponse.ok) {
+                 console.log("error:", categoryResponse);
+                 return;
+             }
+             const categoryName = await categoryResponse.json()
+                 .then(data => data.medical_exam.name);
+                 
+            setPrescription({id: appointment.id_prescription, type: categoryName});
+
             // Set loaded to true
             setLoaded(true);
         }
@@ -103,7 +117,8 @@ const Appointment = () => {
                                     {prescription.type}
                                 </CardTitle>
                                 <CardText>
-                                    {"Id:  " + prescription.id}
+                                    {"Prescription Id:  " + prescription.id}
+                                    {"\nAppointment Id:  " + appointment.id}
                                 </CardText>
                             </CardBody>
                         </Card>

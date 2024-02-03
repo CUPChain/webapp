@@ -67,10 +67,9 @@ const getTokenCategory = async (tokenID: number, tokenType: Token): Promise<numb
         : new ethers.Contract(APPOINTMENTS_CONTRACT, AppointmentTokens.abi, signer);
 
     let category;
-    let hash;
 
     try {
-        [category, hash] = await contract.getCategory(tokenID);
+        category = await contract.getCategory(tokenID);
     } catch (err) {
         console.log(`Could not fetch token ${tokenID}: `, err);
         return 0;
@@ -305,7 +304,7 @@ const getHospitalInfo = async (appointment: AppointmentType) => {
         return;
     }
     const hospital = await hospitalResp.json()
-        .then(data => data.hospital as {
+        .then(data => data as {
             id:number,
             address: string,
             name: string,

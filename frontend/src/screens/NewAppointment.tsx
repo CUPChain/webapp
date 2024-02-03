@@ -20,22 +20,44 @@ const NewAppointment = () => {
     useEffect(() => {
         // Retrieve list of possible medical exams
         const fetchExamTypes = async () => {
-            const response = await fetch(`${BACKEND_URL}/api/v1/medical_exams`);
-            if (!response.ok) {
+            // Retrieve names of all possible exams
+            const namesResponse = await fetch(`${BACKEND_URL}/api/v1/medical_exams`);
+            if (!namesResponse.ok) {
                 // TODO: handle error
-                console.log(response.statusText);
+                console.log(namesResponse.statusText);
                 return;
             }
 
-            const data = await response.json() as { medical_exams: { code: number, name: string; }[]; };
-            setApptTypes(data.medical_exams.map((v) => {
+            const namesData = await namesResponse.json() as { medical_exams: { code: number, name: string; }[]; };
+
+            // Retrieve list of medical exams the hospital is able to do
+            const examsResponse = await fetch(`${BACKEND_URL}/api/v1/am_able_to_do`,
+                {
+                    headers: {
+                        auth: localStorage.getItem('auth')!
+                    }
+                }
+            );
+            if (!examsResponse.ok) {
+                // TODO: handle error
+                console.log(examsResponse.statusText);
+                return;
+            }
+
+            const examsData = await examsResponse.json() as { is_able_to_do: number[]; };
+
+            const possibleExams = namesData.medical_exams.filter(v => {
+                return examsData.is_able_to_do.indexOf(v.code) !== -1;
+            }).map((v) => {
                 return {
                     value: v.code,
                     label: v.name
                 };
-            }));
-            if (data.medical_exams.length > 0) {
-                setSelectedType(data.medical_exams[0].code);
+            });
+
+            setApptTypes(possibleExams);
+            if (possibleExams.length > 0) {
+                setSelectedType(possibleExams[0].value);
             }
         };
 

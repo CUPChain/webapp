@@ -49,7 +49,7 @@ def retrieve_all_hospital_is_able_to_do(id_is_able_to_do):
         db.select(IsAbleToDo).where(IsAbleToDo.id_hospital == id_is_able_to_do)
     )
     if result:
-        is_able_to_do_data = [is_able_to_do[0].toDict() for is_able_to_do in result]
+        is_able_to_do_data = [is_able_to_do[0].code_medical_examination for is_able_to_do in result]
         return jsonify({"is_able_to_do": is_able_to_do_data})
     else:
         return (

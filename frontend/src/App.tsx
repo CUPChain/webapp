@@ -19,7 +19,11 @@ import Profile from './screens/Profile';
 import NotFound from './screens/NotFound';
 import NewAppointment from './screens/NewAppointment';
 import { isLoggedIn } from './utils';
-import { AlertProvider } from './components/Alert';
+import { AlertProvider, useAlert } from './components/Alert';
+import { ethers } from 'ethers';
+import { APPOINTMENTS_CONTRACT, PRESCRIPTIONS_CONTRACT } from './constants';
+import PrescriptionTokens from './artifacts/contracts/PrescriptionTokens.sol/PrescriptionTokens.json';
+import AppointmentTokens from './artifacts/contracts/AppointmentTokens.sol/AppointmentTokens.json';
 
 
 const PrivateRoute = ({ element, requiredRole }: { element: JSX.Element; requiredRole?: string; }) => {
@@ -43,6 +47,23 @@ const App = () => {
     return <Login />;
   };
 
+  const { addMessage } = useAlert();
+  // Initialize event listeners, they need contracts with provider as runner, instead of signer
+  const provider = new ethers.BrowserProvider(window.ethereum);
+  const prescrContract = new ethers.Contract(PRESCRIPTIONS_CONTRACT, PrescriptionTokens.abi, provider);
+  const apptContract = new ethers.Contract(APPOINTMENTS_CONTRACT, AppointmentTokens.abi, provider);
+
+  prescrContract.on("Transfer", (from, to, tokenID, event) => {
+      console.log(event);
+      //addMessage({text: `Token prescrizione n. ${tokenID} trasferito da ${from} a ${to}`, type:'success'});
+      alert(`Token prescrizione n. ${tokenID} trasferito da ${from} a ${to}`);
+  });
+  apptContract.on("Transfer", (from, to, tokenID, event) => {
+      console.log(event);
+      //addMessage({text: `Token appuntamento n. ${tokenID} trasferito da ${from} a ${to}`, type:'success'});
+      alert(`Token appuntamento n. ${tokenID} trasferito da ${from} a ${to}`);
+  });
+  console.log(prescrContract)
 
   return (
     <AlertProvider>

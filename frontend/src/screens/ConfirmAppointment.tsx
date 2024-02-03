@@ -7,14 +7,10 @@ import Layout from '../components/Layout';
 import BackButton from '../components/BackButton';
 import { Section, Col, Row, Card, CardBody, CardTitle, CardText, Button } from 'design-react-kit';
 import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
-import { type LatLngExpression } from 'leaflet';
 import { AppointmentType, PrescriptionType, AccountType } from '../types';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { exchangePrescriptionAppointment } from '../utils';
-import { APPOINTMENTS_CONTRACT, BACKEND_URL, PRESCRIPTIONS_CONTRACT } from '../constants';
-import { ethers } from 'ethers';
-import PrescriptionTokens from '../artifacts/contracts/PrescriptionTokens.sol/PrescriptionTokens.json';
-import AppointmentTokens from '../artifacts/contracts/AppointmentTokens.sol/AppointmentTokens.json';
+import { BACKEND_URL } from '../constants';
 import CardTitleLoad from '../components/CardTitleLoad';
 
 const MAP_ENABLED = false;
@@ -26,28 +22,14 @@ type ConfirmAppointmentProps = {
 };
 
 const ConfirmAppointment = () => {
+    const navigate = useNavigate();
     const location = useLocation();
     const { appointment, prescription } = location.state as ConfirmAppointmentProps;
     console.log("appt", appointment.id, " presc", prescription.id);
 
-    // Initialize event listeners, they need contracts with provider as runner, instead of signer
-    const provider = new ethers.BrowserProvider(window.ethereum);
-    const prescrContract = new ethers.Contract(PRESCRIPTIONS_CONTRACT, PrescriptionTokens.abi, provider);
-    const apptContract = new ethers.Contract(APPOINTMENTS_CONTRACT, AppointmentTokens.abi, provider);
-    const [loaded, setLoaded] = useState(false);
-
-    prescrContract.on("Transfer", (from, to, tokenID, event) => {
-        console.log(event);
-        alert(`Token prescrizione n. ${tokenID} trasferito da ${from} a ${to}`);
-    });
-    apptContract.on("Transfer", (from, to, tokenID, event) => {
-        console.log(event);
-        alert(`Token appuntamento n. ${tokenID} trasferito da ${from} a ${to}`);
-    });
-
-    const confirmAppointment = () => {
+    const confirmAppointment = async () => {
         // Exchange tokens
-        exchangePrescriptionAppointment(prescription.id, appointment.id);
+        await exchangePrescriptionAppointment(prescription.id, appointment.id);
         // TODO: check for errors?
         //alert('Prenotazione confermata');
 
@@ -55,7 +37,7 @@ const ConfirmAppointment = () => {
         let formData = new FormData();
         formData.append('id_prescription', prescription.id.toString());
 
-        const response = fetch(
+        const response = await fetch(
             `${BACKEND_URL}/api/v1/appointments/reserve/${appointment.id}`,
             {
                 method: 'POST',
@@ -66,12 +48,12 @@ const ConfirmAppointment = () => {
             }
         ).then(response => {
             if (!response.ok) {
-            console.log(response.statusText);
-            // TODO: error handling
-            return;
+                console.log(response.statusText);
+                // TODO: error handling
+                return;
             }
+            navigate('/reservations');
         })
-        setLoaded(true);
     };
 
     return (
@@ -116,7 +98,7 @@ const ConfirmAppointment = () => {
                     <Col>
                         <Card spacing className='card-bg card-big no-after'>
                             <CardBody>                                
-                                <CardTitleLoad title='Dettagli Appuntamento' loaded={loaded} />
+                                <CardTitleLoad title='Dettagli Appuntamento' loaded={true} />
                                 <ul>
                                     <li>
                                         <b>Luogo:</b> {appointment.name}
