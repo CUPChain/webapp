@@ -33,3 +33,6 @@ yarn-error.log*
 # solidity-coverage files
 /coverage
 /coverage.json
+
+# rollup log
+/rollup_logs.log
