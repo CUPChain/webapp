@@ -9,7 +9,11 @@ const config: HardhatUserConfig = {
   },
   networks: {
     hardhat: {
-      chainId: 1337
+      chainId: 1337,
+      mining: {
+        auto: false,
+        interval: 10000
+      }
     }
   }
 };
@@ -31,7 +35,7 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
       privKey,
       hre.ethers.formatEther(await provider.getBalance(account.address))
     )
-    
+
     index++
   }
 });

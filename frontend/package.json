@@ -29,7 +29,8 @@
     "typeface-roboto-mono": "^1.1.13",
     "typeface-titillium-web": "^1.1.13",
     "typescript": "^4.9.5",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "log4js": "^6.9.1"
   },
   "scripts": {
     "start": "react-scripts start",

@@ -11,6 +11,12 @@ cd backend
 pip install -r requirements.txt
 ```
 
+If you want to do a clean deployment of the database run:
+```python
+python backend/create_db.py
+```
+Ensure first that the url is correct in your .env file
+
 ## How to run
 
 ### Option 1: Build react app and run it with flask

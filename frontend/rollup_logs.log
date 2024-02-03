@@ -1,0 +1,28 @@
+[2024-02-03T16:25:07.787] [INFO] rollup - Rollup sent
+Public chain tx id: 0x8095aca8525acba7b646129264221afcd158bbd26d25514835442908cdd0ee71 
+Rollup hash: 0xbf1f66c16e293ab4ec9b76d131661ed000d581428630fbf4b628a045e5b5ba36 
+Starting block: 0 
+Ending block: 5
+[2024-02-03T16:25:59.751] [INFO] rollup - Rollup sent
+Public chain tx id: 0x390a26c9ab486866d71b1bf98cdaea1c7ab3223a418cec0718a5ba2550730cea 
+Rollup hash: 0x58791d99ad232d03d79eecfe6f104e7dddbc3aea9d08eef7f03265a2d6cf25c9 
+Starting block: 6 
+Ending block: 10
+[2024-02-03T16:26:47.795] [INFO] rollup - Rollup sent
+Public chain tx id: 0xe0a15c710ad5949c04f57766c1f72c06353739f6a4bb4613058052f2eac55753 
+Rollup hash: 0xf27f3fbe6172aad62a13c0daf998ee438803a4b1b1a1f18fd18169e4a01bc06e 
+Starting block: 11 
+Ending block: 15
+[2024-02-03T16:27:39.847] [INFO] rollup - Rollup sent
+Public chain tx id: 0x1310bbc07907f00cc3686b79ad7da9aaf29a5244217f27fc16691c7217ddd8bb 
+Rollup hash: 0x8c842dd63b645befd2c96a3109e33b756eae20b395ae14210e5f2fb4146fa4df 
+Starting block: 16 
+Ending block: 20
+[2024-02-03T16:27:55.691] [WARN] rollup - Connection to Ethereum node is lost: Error: connect ECONNREFUSED 127.0.0.1:8545
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1300:16) {
+  errno: -111,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 8545
+}
