@@ -34,7 +34,7 @@ const loginMetamask = async (): Promise<[ethers.Provider, ethers.Signer]> => {
  * @throws {Error} - If metamask is not installed or user is not logged in
  * @throws {Error} - If user is not logged in
 **/
-const getAppointmentToken = async (tokenID: number): Promise<[number, BytesLike]> => {
+const getAppointmentHash = async (tokenID: number): Promise<BytesLike> => {
     const [, signer] = await loginMetamask();
 
     const contract = new ethers.Contract(APPOINTMENTS_CONTRACT, AppointmentTokens.abi, signer);
@@ -43,13 +43,13 @@ const getAppointmentToken = async (tokenID: number): Promise<[number, BytesLike]
     let hash;
 
     try {
-        [category, hash] = await contract.getToken(tokenID);
+        hash = await contract.getHash(tokenID);
     } catch (err) {
         console.log(`Could not fetch token ${tokenID}: `, err);
-        return [0, ""];
+        return "";
     }
 
-    return [category, hash];
+    return hash;
 };
 
 /** Retrieve token category (what type of medical exam it references)
@@ -142,6 +142,26 @@ const exchangePrescriptionAppointment = async (prescrID: number, apptID: number)
     console.log("ciao");
     try {
         const transaction = await contract.makeAppointment(prescrID, APPOINTMENTS_CONTRACT, apptID, hospital);
+        console.log(transaction);
+        await transaction.wait();
+    } catch (e) {
+        console.log(e);
+    }
+};
+
+/** Cancel an appointment
+ * @param {number} apptID - ID of the appointment token
+ * @throws {Error} - If metamask is not installed or user is not logged in
+ * @throws {Error} - If user is not logged in
+**/
+const cancelAppointment = async (apptID: number) => {
+    const [, signer] = await loginMetamask();
+
+    const appointmentContract = new ethers.Contract(APPOINTMENTS_CONTRACT, AppointmentTokens.abi, signer);
+
+    console.log("ciao");
+    try {
+        const transaction = await appointmentContract.cancelAppointment(apptID);
         console.log(transaction);
         await transaction.wait();
     } catch (e) {
@@ -323,7 +343,7 @@ const getHospitalInfo = async (appointment: AppointmentType) => {
 }
 
 export {
-    getAppointmentToken,
+    getAppointmentHash,
     getTokenCategory,
     getOwnedAppointmentTokens,
     getOwnedPrescriptionTokens,
@@ -339,5 +359,6 @@ export {
     logout,
     getPersonalArea,
     getDistanceFromLatLonInKm,
-    getHospitalInfo
+    getHospitalInfo,
+    cancelAppointment
 };

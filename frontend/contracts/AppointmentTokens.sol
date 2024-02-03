@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
+import "./PrescriptionTokens.sol";
 
 /**
  * @title AppointmentTokens
@@ -19,10 +20,10 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
  * patients which have the corresponding prescription token.
  */
 contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, AccessControl {
-    // Appointments need to store their type (category)
+    address prescriptionsContract; // Address of Prescription Tokens that will be allowed to transfer appoinment tokens
     mapping (uint256 => uint16) private tokenIdToCategory;
-    address prescriptionsContract;
     mapping (uint256 => bytes32) private tokenIdToHash;
+    mapping (uint256 => uint256) private tokenIdToPrescriptionId; // Prescription token that was exchanged for the appointment token
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
     /**
@@ -84,9 +85,6 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
         _safeMint(msg.sender, tokenId);
         tokenIdToCategory[tokenId] = category;
         tokenIdToHash[tokenId] = metadataHash;
-        // instead of doing this on each mint, we could make it so
-        // that as soon as an hospital is created, it calls setApprovalForAll (does it work for tokens created after?)
-        approve(prescriptionsContract, tokenId);
     }
 
     // Get list of token ids owned by function caller
@@ -123,19 +121,36 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
         return tokenIdToCategory[tokenId];
     }
 
-    //TODO: redundant functions
-    // Get category and metadata hash of appointment (type of medical appointment)
+    // Get metadata hash of appointment (type of medical appointment)
     /**
      * @dev Retrieves the token information for a given token ID.
      * 
      * @param tokenId The ID of the token to retrieve.
-     * @return The category and hash associated with the token.
+     * @return The metadata hash associated with the token.
      */
-    function getToken(uint256 tokenId) public view returns (uint16, bytes32) {
-        return (tokenIdToCategory[tokenId], tokenIdToHash[tokenId]);
+    function getHash(uint256 tokenId) public view returns (bytes32) {
+        return tokenIdToHash[tokenId];
+    }
+
+    function exchangeForPrescription(address from, address to, uint256 tokenId, uint256 prescriptionId) public {
+        safeTransferFrom(from, to, tokenId);
+        tokenIdToPrescriptionId[tokenId] = prescriptionId;
+    }
+
+    function cancelAppointment(uint256 appointmentToken) public {
+        uint256 prescription = tokenIdToPrescriptionId[appointmentToken];
+        address hospital = PrescriptionTokens(prescriptionsContract).ownerOf(prescription);
+
+        safeTransferFrom(msg.sender, hospital, appointmentToken);
+        // The hospital has to have approved the AppointmentTokens contract to transfer the prescription token
+        // For this reason, when an hospital creates an account on the blockchain, it has to call setApprovalForAll in PrescriptionTokens
+        // This is the only function that allows this contract to transfer prescriptions,
+        // and it only exchanges them for the appointent that was made with them.
+        PrescriptionTokens(prescriptionsContract).safeTransferFrom(hospital, msg.sender, prescription);
     }
 
     // The following functions are overrides required by Solidity.
+
     /**
      * @dev Updates the ownership of a token and returns the address of the new owner.
      * This function overrides the internal _update function from ERC721 and ERC721Enumerable contracts.

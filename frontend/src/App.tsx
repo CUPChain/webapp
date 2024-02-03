@@ -63,7 +63,8 @@ const App = () => {
       //addMessage({text: `Token appuntamento n. ${tokenID} trasferito da ${from} a ${to}`, type:'success'});
       alert(`Token appuntamento n. ${tokenID} trasferito da ${from} a ${to}`);
   });
-  console.log(prescrContract)
+  console.log("Prescription contract", prescrContract);
+  console.log("Appointment contract", apptContract);
 
   return (
     <AlertProvider>

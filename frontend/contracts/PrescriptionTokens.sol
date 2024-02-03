@@ -131,7 +131,7 @@ contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, AccessC
     function makeAppointment(uint256 prescriptionToken, address appointmentsContract, uint256 appointmentToken, address hospital) public {
         if (tokenIdToCategory[prescriptionToken] != AppointmentTokens(appointmentsContract).getCategory(appointmentToken)) revert CategoriesDontMatch();
         safeTransferFrom(msg.sender, hospital, prescriptionToken);
-        AppointmentTokens(appointmentsContract).safeTransferFrom(hospital, msg.sender, appointmentToken);
+        AppointmentTokens(appointmentsContract).exchangeForPrescription(hospital, msg.sender, appointmentToken, prescriptionToken);
     }
 
     // The following functions are overrides required by Solidity.

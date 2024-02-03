@@ -152,19 +152,35 @@ def book_appointment(id_prescription, id_appointment):
         return jsonify(response)
 
 
-def cancel_booked_appointment(id_prescription):
+def cancel_booked_appointment(id_appointment):
     """
     Cancel a booked appointment by setting the id_prescription to None.
 
     Args:
-        id_prescription (int): The ID of the prescription associated with the appointment.
+        id_appointment (int): The ID of the appointment.
 
     Returns:
         dict: A JSON response containing the details of the cancelled appointment.
     """
-    booked_appointment = Appointment.query.get(id_prescription)
-    booked_appointment.id_prescription = None
-    db.session.commit()
+    appointment = Appointment.query.filter_by(id=id_appointment).one_or_none()
+    if appointment == None:
+        return (
+            jsonify({"error": f"No appointment found with ID '{id_appointment}'."}),
+            404,
+        )
 
-    response = Appointment.query.get(id_prescription).toDict()
-    return jsonify(response)
+    if appointment.id_prescription == None:
+        return (
+            jsonify(
+                {
+                    "error": f"The appointment with ID '{id_appointment}' is not booked."
+                }
+            ),
+            400,
+        )
+    else:
+        appointment.id_prescription = None
+        db.session.commit()
+
+        response = Appointment.query.get(id_appointment).toDict()
+        return jsonify(response)

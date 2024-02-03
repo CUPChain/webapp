@@ -8,11 +8,11 @@ import BackButton from '../components/BackButton';
 import { Section, Col, Row, Card, CardBody, CardTitle, CardText, Button } from 'design-react-kit';
 import QRCode from 'react-qr-code';
 import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
-import { type LatLngExpression } from 'leaflet';
 import { AppointmentType, PrescriptionType } from '../types';
-import { getAppointmentToken, getHospitalInfo, getTokenCategory, isOwned, verifyHash } from '../utils';
+import { cancelAppointment, getAppointmentHash, getHospitalInfo, getTokenCategory, isOwned, verifyHash } from '../utils';
 import { BACKEND_URL, Token } from '../constants';
 import CardTitleLoad from '../components/CardTitleLoad';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const MAP_ENABLED = true;
 
@@ -37,6 +37,7 @@ const Appointment = () => {
     });
     const [prescription, setPrescription] = useState<PrescriptionType>({id: 0, type: "Invalid"});
     const [loaded, setLoaded] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const getAppointmentData = async (id: number) => {
@@ -46,7 +47,7 @@ const Appointment = () => {
                 return
             }
 
-            const [, hash] = await getAppointmentToken(id);
+            const hash = await getAppointmentHash(id);
 
             // Retrieve from backend the additional data
             const response = await fetch(`${BACKEND_URL}/api/v1/appointments/${id}`);
@@ -95,14 +96,37 @@ const Appointment = () => {
         getAppointmentData(Number.parseInt(id));
     }, [id]);
 
-    const deleteAppointment = () => {
-        // TODO: implementare cancellazione prenotazione
-        alert('Prenotazione annullata');
+    const deleteAppointment = async () => {
+        // Exchange tokens
+        await cancelAppointment(appointment.id);
+
+        // Book appointment in db
+        let formData = new FormData();
+        formData.append('id_prescription', prescription.id.toString());
+
+        const response = await fetch(
+            `${BACKEND_URL}/api/v1/appointments/cancel/${appointment.id}`,
+            {
+                method: 'POST',
+                headers: {
+                    auth: localStorage.getItem('auth')!
+                },
+                body: formData
+            }
+        ).then(response => {
+            if (!response.ok) {
+                console.log(response.statusText);
+                // TODO: error handling
+                return;
+            }
+
+            navigate('/reservations');
+        })
     };
 
-    const modifyAppointment = () => {
-        // TODO: implementare modifica prenotazione
-        alert('Prenotazione modificata');
+    const modifyAppointment = async () => {
+        await deleteAppointment();
+        navigate(`/prescriptions/${prescription.id}/`);
     };
 
     return (

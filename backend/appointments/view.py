@@ -155,18 +155,18 @@ def reserve_appointment(id_appointment):
 
 
 @app.route(
-    f"/{BASE_ROOT}/{VERSION}/appointments/cancel/<int:id_prescription>",
+    f"/{BASE_ROOT}/{VERSION}/appointments/cancel/<int:id_appointment>",
     methods=["POST"],
     # Auth required for this endpoint
 )
-def cancel_appointment(id_prescription):
+def cancel_appointment(id_appointment):
     """
     Cancel an appointment
     ---
     tags:
       - Appointments
     parameters:
-      - name: id_prescription
+      - name: id_appointment
         in: path
         type: string
         required: true
@@ -194,17 +194,17 @@ def cancel_appointment(id_prescription):
 
     # Check if the account is owner of the prescription
     prescription: Prescription = Prescription.query.filter_by(
-        id=id_prescription
+        id=Appointment.query.filter_by(id=id_appointment).first().id_prescription
     ).first()
     if prescription.cf_patient != account.cf_patient:
         return (
             jsonify(
                 {
-                    "error": f"Account {account.pkey} is not owner of the prescription {id_prescription}."
+                    "error": f"Account {account.pkey} is not owner of the prescription {prescription.id}."
                 }
             ),
             403,
         )
 
     # Cancel the appointment
-    return cancel_booked_appointment(id_prescription)
+    return cancel_booked_appointment(id_appointment)
