@@ -1,7 +1,7 @@
 import { ethers } from "hardhat";
+import { DEFAULT_DOCTOR } from "../src/constants.ts";
 
 async function main() {
-  const DEFAULT_DOCTOR = "0x90F79bf6EB2c4f870365E785982E1f101E93b906"
   const DEFAULT_HOSPITAL = "0x976EA74026E726554dB657fA54763abd0C3a0aa9"
   const DEFAULT_HOSPITAL_PRIVKEY = "0x92db14e403b83dfe3df233f83dfa3a0d7096f21ca9b0d6d6b8d88b2b4ec1564e"
 
