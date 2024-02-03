@@ -35,4 +35,4 @@ yarn-error.log*
 /coverage.json
 
 # rollup log
-.rollup_logs.log
+rollup_logs.log
