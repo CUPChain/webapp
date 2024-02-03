@@ -4,6 +4,7 @@ import { DEFAULT_DOCTOR } from "../src/constants.ts";
 async function main() {
   const DEFAULT_HOSPITAL = "0x976EA74026E726554dB657fA54763abd0C3a0aa9"
   const DEFAULT_HOSPITAL_PRIVKEY = "0x92db14e403b83dfe3df233f83dfa3a0d7096f21ca9b0d6d6b8d88b2b4ec1564e"
+  const MINTER_ROLE = ethers.id("MINTER_ROLE");
 
   // Deploy prescriptions contract
   const PrescrTokens = await ethers.deployContract("PrescriptionTokens", []);
@@ -13,7 +14,7 @@ async function main() {
     `contract PrescriptionTokens successfully deployed to ${prescrTokens.target}`
   );
   // Give doctor role to default doctor
-  await prescrTokens.grantRole(DEFAULT_DOCTOR);
+  await prescrTokens.grantRole(MINTER_ROLE, DEFAULT_DOCTOR);
   console.log(`Granted doctor role to ${DEFAULT_DOCTOR}`)
 
   // Deploy appointments contract
@@ -24,7 +25,7 @@ async function main() {
     `contract AppointmentTokens successfully deployed to ${appTokens.target}`
   );
   // Give hospital role to default hospital
-  await appTokens.grantRole(DEFAULT_HOSPITAL);
+  await appTokens.grantRole(MINTER_ROLE, DEFAULT_HOSPITAL);
   console.log(`Granted hospital role to ${DEFAULT_HOSPITAL}`)
 
   // Make default hospital approve appointments contract to exchange its prescriptions
@@ -36,7 +37,7 @@ async function main() {
   const prescrContractWithHospitalSigner = new ethers.Contract(prescrTokens.target, prescrTokens.interface, hospitalWallet);
   await prescrContractWithHospitalSigner.setApprovalForAll(appTokens.target, true);
   console.log(`Hospital approved appointments contract ${appTokens.target} to handle its prescritpion tokens`);
-  
+
   const apptContractWithHospitalSigner = new ethers.Contract(appTokens.target, appTokens.interface, hospitalWallet);
   await apptContractWithHospitalSigner.setApprovalForAll(prescrTokens.target, true);
   console.log(`Hospital approved prescriptions contract ${prescrTokens.target} to handle its appointment tokens`);

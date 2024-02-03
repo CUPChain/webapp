@@ -21,20 +21,10 @@ import "./PrescriptionTokens.sol";
  */
 contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, AccessControl {
     address prescriptionsContract; // Address of Prescription Tokens that will be allowed to transfer appoinment tokens
-    mapping (uint256 => uint16) private tokenIdToCategory;
-    mapping (uint256 => bytes32) private tokenIdToHash;
+    mapping (uint256 => uint16) private tokenIdToCategory; // Category of the appointment token
+    mapping (uint256 => bytes32) private tokenIdToHash; // Metadata hash of the appointment token
     mapping (uint256 => uint256) private tokenIdToPrescriptionId; // Prescription token that was exchanged for the appointment token
-    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
-
-    /**
-     * @dev Throws if the caller of the function has not the DEFAULT_ADMIN_ROLE.
-     */
-    error CallerNotAdmin();
-
-    /**
-     * @dev Throws if the caller of the function has not the MINTER_ROLE.
-     */
-    error CallerNotMinter();
+    bytes32 private constant MINTER_ROLE = keccak256("MINTER_ROLE"); // Role for minting appointment tokens
 
     /**
      * @dev Initializes the AppointmentTokens contract.
@@ -49,28 +39,6 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
     }
 
     /**
-     * @dev Grants the MINTER_ROLE to a hospital address.
-     * Only the contract admin can call this function.
-     * 
-     * @param hospital The address of the hospital to grant the MINTER_ROLE to.
-     */
-    function grantRole(address hospital) public {
-        if (!hasRole(DEFAULT_ADMIN_ROLE, msg.sender)) revert CallerNotAdmin();
-        _grantRole(MINTER_ROLE, hospital);
-    }
-    
-    /**
-     * @dev Revokes the MINTER_ROLE from a specified hospital address.
-     * Only the contract admin can call this function.
-     * 
-     * @param hospital The address of the hospital to revoke the role from.
-     */
-    function revokeRole(address hospital) public {
-        if (!hasRole(DEFAULT_ADMIN_ROLE, msg.sender)) revert CallerNotAdmin();
-        _revokeRole(MINTER_ROLE, hospital);
-    }
-
-    /**
      * @dev Mints a new appointment token with the specified tokenId, metadataHash, and category.
      * Only a minter can call this function.
      * 
@@ -81,15 +49,15 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
     function safeMint(uint256 tokenId, bytes32 metadataHash, uint16 category)
         public
     {
-        if (!hasRole(MINTER_ROLE, msg.sender)) revert CallerNotMinter();
+        _checkRole(MINTER_ROLE);
         _safeMint(msg.sender, tokenId);
         tokenIdToCategory[tokenId] = category;
         tokenIdToHash[tokenId] = metadataHash;
     }
 
-    // Get list of token ids owned by function caller
     /**
      * @dev Retrieves the tokens owned by the caller.
+     * @notice This function is used to get the list of appointment tokens id owned by the function caller.
      * 
      * @return ids An array of token IDs owned by the caller.
      * @return hashes An array of token hashes corresponding to the token IDs.
@@ -110,9 +78,9 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
         return (ids, hashes, categories);
     }
 
-    // Get category of appointment (type of appointment)
     /**
      * @dev Returns the category of the specified token.
+     * @notice This function is used to get the category of the appointment token (type of appointment).
      * 
      * @param tokenId The ID of the token.
      * @return The category of the token.
@@ -121,9 +89,9 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
         return tokenIdToCategory[tokenId];
     }
 
-    // Get metadata hash of appointment (type of medical appointment)
     /**
      * @dev Retrieves the token information for a given token ID.
+     * @notice This function is used to get the metadata hash of the appointment token(type of medical appointment).
      * 
      * @param tokenId The ID of the token to retrieve.
      * @return The metadata hash associated with the token.
@@ -132,11 +100,26 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
         return tokenIdToHash[tokenId];
     }
 
+    /**
+     * @dev Exchanges an appointment token for a prescription.
+     * @notice This function is used to book an appointment by transferring prescription and appointment tokens between
+     * addresses of the patient who own the prescription and of hospital which own the appointment.
+     * 
+     * @param from The address of the token owner.
+     * @param to The address of the recipient.
+     * @param tokenId The ID of the appointment token to be transferred.
+     * @param prescriptionId The ID of the prescription associated with the token.
+     */
     function exchangeForPrescription(address from, address to, uint256 tokenId, uint256 prescriptionId) public {
         safeTransferFrom(from, to, tokenId);
         tokenIdToPrescriptionId[tokenId] = prescriptionId;
     }
 
+    /**
+     * @dev Cancels an appointment by transferring the appointment token back to the hospital and exchanging it for the corresponding prescription token.
+     * 
+     * @param appointmentToken The token ID of the appointment to be canceled.
+     */
     function cancelAppointment(uint256 appointmentToken) public {
         uint256 prescription = tokenIdToPrescriptionId[appointmentToken];
         address hospital = PrescriptionTokens(prescriptionsContract).ownerOf(prescription);
@@ -145,7 +128,7 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
         // The hospital has to have approved the AppointmentTokens contract to transfer the prescription token
         // For this reason, when an hospital creates an account on the blockchain, it has to call setApprovalForAll in PrescriptionTokens
         // This is the only function that allows this contract to transfer prescriptions,
-        // and it only exchanges them for the appointent that was made with them.
+        // and it only exchanges them for the appointment that was made with them.
         PrescriptionTokens(prescriptionsContract).safeTransferFrom(hospital, msg.sender, prescription);
     }
 

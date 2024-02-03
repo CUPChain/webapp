@@ -13,7 +13,7 @@ import "./AppointmentTokens.sol";
  * @title PrescriptionTokens
  * @dev This contract represents a collection of prescription tokens.
  * It extends the ERC721, ERC721Enumerable, ERC721Burnable, and AccessControl contracts.
- * Prescription tokens can be minted, transferred.
+ * Prescription tokens can be minted, transferred and burned.
  * The contract also provides functions to grant and revoke the MINTER_ROLE to doctors.
  * Additionally, it allows users to get a list of their owned tokens and retrieve 
  * the category and metadata hash of a token.
@@ -23,19 +23,9 @@ import "./AppointmentTokens.sol";
  * It also allows patient to exchange prescription tokens for appointment tokens.
  */
 contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, AccessControl {
-    mapping (uint256 => uint16) private tokenIdToCategory;
+    mapping (uint256 => uint16) private tokenIdToCategory; // Category of the prescription token
 
-    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
-
-    /**
-     * @dev Throws if the caller of the function has not the DEFAULT_ADMIN_ROLE.
-     */
-    error CallerNotAdmin();
-
-    /**
-     * @dev Throws if the caller of the function has not the MINTER_ROLE.
-     */
-    error CallerNotMinter();
+    bytes32 private constant MINTER_ROLE = keccak256("MINTER_ROLE"); // Role for minting prescription tokens
 
     /**
      * @dev Throws if the categories of the prescription and appointment tokens do not match.
@@ -50,46 +40,26 @@ contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, AccessC
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
-    //TODO: change name to something more expressive?
-    /**
-     * @dev Grants the MINTER_ROLE to a specified doctor.
-     * Only the admin can call this function.
-     * 
-     * @param doctor The address of the doctor to grant the MINTER_ROLE to.
-     */
-    function grantRole(address doctor) public {
-        if (!hasRole(DEFAULT_ADMIN_ROLE, msg.sender)) revert CallerNotAdmin();
-        _grantRole(MINTER_ROLE, doctor);
-    }
-
-    /**
-     * @dev Revokes the MINTER_ROLE of a doctor.
-     * Only the admin can call this function.
-     * 
-     * @param doctor The address of the doctor whose role is being revoked.
-     */
-    function revokeRole(address doctor) public {
-        if (!hasRole(DEFAULT_ADMIN_ROLE, msg.sender)) revert CallerNotAdmin();
-        _revokeRole(MINTER_ROLE, doctor);
-    }
-
     /**
      * @dev Mints a new token and assigns it to the specified address.
      * Only callers with the MINTER_ROLE can invoke this function.
+     * Reverts with an {AccessControlUnauthorizedAccount} error if `msg.sender`
+     * is missing `role`.
      * 
      * @param to The address to which the token will be assigned.
      * @param tokenId The unique identifier of the token.
      * @param category The category of the token.
      */
     function safeMint(address to, uint256 tokenId, uint16 category) public {
-        if (!hasRole(MINTER_ROLE, msg.sender)) revert CallerNotMinter();
+        //if (!hasRole(MINTER_ROLE, msg.sender)) revert CallerNotMinter();
+        _checkRole(MINTER_ROLE);
         _safeMint(to, tokenId);
         tokenIdToCategory[tokenId] = category;
     }
 
-    // Get list of token ids owned by function caller
      /**
      * @dev Retrieves the tokens owned by the caller.
+     * @notice This function is used to get the list of prescription token owned by the function caller.
      * 
      * @return ids An array of token IDs owned by the caller.
      * @return categories An array of token categories corresponding to the token IDs.
@@ -107,9 +77,9 @@ contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, AccessC
         return (ids, categories);
     }
 
-    // Get category of prescription (type of medical visit necessary for the prescription)
     /**
      * @dev Retrieves the token information for a given tokenId.
+     * @notice This function is used to get the category of the prescription token (type of medical visit necessary for the prescription).
      * 
      * @param tokenId The ID of the token to retrieve.
      * @return The category associated with the token.
@@ -118,10 +88,10 @@ contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, AccessC
         return tokenIdToCategory[tokenId];
     }
 
-    // Exchange for appointment token
     /**
      * @dev Book an appointment by transferring prescription and appointment tokens between 
      * addresses of the patient who own the prescription and of hospital which own the appointment.
+     * @notice This function is used to book an appointment by exchanging a prescription token for an appointment token.
      * 
      * @param prescriptionToken The ID of the prescription token.
      * @param appointmentsContract The address of the appointments contract.
