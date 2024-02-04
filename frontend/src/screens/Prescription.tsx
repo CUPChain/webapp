@@ -29,19 +29,10 @@ const Prescription = () => {
     const [appointments, setAppointments] = useState<AppointmentType[]>([]);
     const [loaded, setLoaded] = useState(false);
 
-    const [myPosition, setMyPosition] = useState<{latitude: number, longitude: number}>()
+    const [myPosition, setMyPosition] = useState<{ latitude: number, longitude: number; }>();
 
     useEffect(() => {
-        const fetchData = async (id: number) => {
-            // Check that token is owned by user
-            if (!await isOwned(id, Token.Prescription)) {
-                // TODO:
-                return;
-            }
-
-            const category = await getTokenCategory(id, Token.Prescription);
-
-
+        const fetchProfile = async () => {
             // Get profile data
             const response = await fetch(
                 `${BACKEND_URL}/api/v1/profile`, {
@@ -59,7 +50,9 @@ const Prescription = () => {
 
             const data = await response.json() as AccountType;
             setAccount(data);
+        };
 
+        const fetchCategory = async (id: number, category: number) => {
             // Get category name from database
             const categoryResponse = await fetch(`${BACKEND_URL}/api/v1/medical_exams/${category}`);
             if (!categoryResponse.ok) {
@@ -70,7 +63,9 @@ const Prescription = () => {
                 .then(data => data.medical_exam.name);
 
             setPrescription({ id: id, type: categoryName });
+        };
 
+        const fetchAppointments = async (category: number) => {
             // Get available appointments from database
             console.log(category);
             const appointmentsResponse = await fetch(`${BACKEND_URL}/api/v1/appointments?category=${category}`);
@@ -80,16 +75,27 @@ const Prescription = () => {
             }
             const availableAppointments = await appointmentsResponse.json()
                 .then(data => data.appointments as AppointmentType[]);
-            
+
             // Get hospital info for each available appointment
-            for (let i=0; i< availableAppointments.length; i++) {
+            for (let i = 0; i < availableAppointments.length; i++) {
                 availableAppointments[i].date = new Date(availableAppointments[i].date);
                 await getHospitalInfo(availableAppointments[i]);
             }
             availableAppointments.sort();
             setAppointments(availableAppointments); //TODO: sort by what?
+        };
 
-            
+        const fetchData = async (id: number) => {
+            // Check that token is owned by user
+            if (!await isOwned(id, Token.Prescription)) {
+                // TODO:
+                return;
+            }
+
+            const category = await getTokenCategory(id, Token.Prescription);
+            fetchCategory(id, category);
+            fetchAppointments(category);
+
             // Get current location
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function (position) {
@@ -105,6 +111,7 @@ const Prescription = () => {
             setLoaded(true);
         };
 
+        fetchProfile();
         fetchData(Number.parseInt(id));
     }, [id]);
 
@@ -204,9 +211,7 @@ const Prescription = () => {
                     <Col>
                         <Card spacing className='card-bg card-big no-after'>
                             <CardBody>
-                                <CardTitle tag='h5'>
-                                    Seleziona Appuntamento
-                                </CardTitle>
+                                <CardTitleLoad title='Appuntamenti disponibili' loaded={loaded} />
                                 <Table>
                                     <thead className='table-dark'>
                                         <tr>

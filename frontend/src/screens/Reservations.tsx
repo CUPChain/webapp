@@ -7,14 +7,15 @@ import 'typeface-lora';
 import Layout from '../components/Layout';
 import CardButton from '../components/CardButton';
 import { Section, Row, Col, Icon } from 'design-react-kit';
-import { Token } from '../constants';
 import { getHospitalInfo, getOwnedAppointmentTokens, getOwnedPrescriptionTokens } from '../utils';
 import { AppointmentType, PrescriptionType } from '../types';
 import { BACKEND_URL } from '../constants';
 import { verifyHash } from '../utils';
+import { Spinner } from 'reactstrap';
 
 
 const Reservations = () => {
+    const [loaded, setLoaded] = useState(false);
     const [prescriptions, setPrescriptions] = useState<PrescriptionType[]>([]);
     const [appointments, setAppointments] = useState<AppointmentType[]>([]);
 
@@ -68,8 +69,8 @@ const Reservations = () => {
                 }
                 const data = await response.json() as { appointment: AppointmentType; };
                 const appointment = data.appointment;
-                
-                appointment.date = new Date(appointment.date)
+
+                appointment.date = new Date(appointment.date);
                 appointment.type = medical_exams.find(x => x.value == category)?.label!;
 
                 const dataToCheck = {
@@ -78,7 +79,7 @@ const Reservations = () => {
                     date: appointment.date.toUTCString(),
                     category: appointment.code_medical_examination
                 };
-                console.log(dataToCheck)
+                console.log(dataToCheck);
 
                 // Verify that the appointment is valid
                 if (await verifyHash(hash, dataToCheck)) {
@@ -93,6 +94,7 @@ const Reservations = () => {
                 receivedAppointments[i] = data.appointment;
             }
             setAppointments(receivedAppointments);
+            setLoaded(true);
         };
         fetchData();
     }, []);
@@ -113,18 +115,23 @@ const Reservations = () => {
                             Seleziona una prescrizione per effettuare una prenotazione.
                         </p>
                         <>
-                            {prescriptions.length === 0 &&
-                                <b>Attualmente non risultano prescrizioni disponibili</b>
+                            {
+                                loaded ?
+                                    prescriptions.length === 0 ?
+                                        <b>Attualmente non risultano prescrizioni disponibili</b>
+                                        :
+                                        prescriptions.map((prescription) => (
+                                            <Row key={prescription.id}>
+                                                <CardButton
+                                                    title={prescription.type}
+                                                    description={"Token id: " + prescription.id}
+                                                    href={`/prescriptions/${prescription.id}`}
+                                                />
+                                            </Row>
+                                        ))
+                                    :
+                                    <Spinner style={{ marginLeft: '1rem' }} />
                             }
-                            {prescriptions.map((prescription) => (
-                                <Row key={prescription.id}>
-                                    <CardButton
-                                        title={prescription.type}
-                                        description={"Token id: " + prescription.id}
-                                        href={`/prescriptions/${prescription.id}`}
-                                    />
-                                </Row>
-                            ))}
                         </>
                     </Section>
                 </Col>
@@ -141,19 +148,24 @@ const Reservations = () => {
                             Seleziona un appuntamento per visualizzare i dettagli.
                         </p>
                         <>
-                            {appointments.length === 0 &&
-                                <b>Attualmente non risultano appuntamenti prenotati</b>
+                            {
+                                loaded ?
+                                    appointments.length === 0 ?
+                                        <b>Attualmente non risultano appuntamenti prenotati</b>
+                                        :
+                                        appointments.map((appointment) => (
+                                            <Row key={appointment.id}>
+                                                <CardButton
+                                                    title={appointment.type + (!appointment.valid ? " METADATA INVALIDI" : "")}
+                                                    date={appointment.date.toString().split("GMT")[0]}
+                                                    description={`Token id: ${appointment.id}, ${appointment.name}`}
+                                                    href={`/appointments/${appointment.id}`}
+                                                />
+                                            </Row>
+                                        ))
+                                    :
+                                    <Spinner style={{ marginLeft: '1rem' }} />
                             }
-                            {appointments.map((appointment) => (
-                                <Row key={appointment.id}>
-                                    <CardButton
-                                        title={appointment.type + (!appointment.valid ? " METADATA INVALIDI" : "")}
-                                        date={appointment.date.toString().split("GMT")[0]}
-                                        description={`Token id: ${appointment.id}, ${appointment.name}`}
-                                        href={`/appointments/${appointment.id}`}
-                                    />
-                                </Row>
-                            ))}
                         </>
                     </Section>
                 </Col>

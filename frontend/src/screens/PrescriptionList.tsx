@@ -46,13 +46,10 @@ const PrescriptionList = () => {
             return {
                 cf_patient: v.cf_patient,
                 id: v.id,
-                type: medical_exams.find(x => x.code == v.code_medical_examination)?.name!
+                type: medical_exams.find(x => x.code === v.code_medical_examination)?.name!
             };
-        })
+        });
         setPrescrList(prescriptions);
-    };
-
-    const onSelection = async (id: number) => {
     };
 
     const onNewPrescription = async () => {
@@ -111,7 +108,6 @@ const PrescriptionList = () => {
                                     <th scope='col'>Paziente</th>
                                     <th scope='col'>N. Prescrizione</th>
                                     <th scope='col'>Esame</th>
-                                    <th scope='col'>Azione</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -122,7 +118,7 @@ const PrescriptionList = () => {
                                             where={prescr.cf_patient}
                                             distance={prescr.id.toString()}
                                             when={prescr.type}
-                                            action={onSelection.bind(this, prescr.id)}
+                                            action={undefined}
                                         />
                                     ))
                                 }

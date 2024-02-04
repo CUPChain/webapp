@@ -12,10 +12,11 @@ import { AppointmentType, PrescriptionType } from '../types';
 import { cancelAppointment, getAppointmentHash, getHospitalInfo, getTokenCategory, isOwned, verifyHash } from '../utils';
 import { BACKEND_URL, Token } from '../constants';
 import CardTitleLoad from '../components/CardTitleLoad';
-import { useLocation, useNavigate } from 'react-router-dom';
-import 'leaflet/dist/leaflet.css'
-import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css'
+import { useNavigate } from 'react-router-dom';
+import 'leaflet/dist/leaflet.css';
+import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
 import "leaflet-defaulticon-compatibility";
+import { Spinner } from 'reactstrap';
 
 const MAP_ENABLED = true;
 
@@ -40,6 +41,8 @@ const Appointment = () => {
     });
     const [prescription, setPrescription] = useState<PrescriptionType>({ id: 0, type: "Invalid" });
     const [loaded, setLoaded] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [isChanging, setIsChanging] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -47,7 +50,7 @@ const Appointment = () => {
             // Check that token is owned by user
             if (!await isOwned(id, Token.Appointment)) {
                 // TODO:
-                return
+                return;
             }
 
             const hash = await getAppointmentHash(id);
@@ -57,12 +60,12 @@ const Appointment = () => {
             if (!response.ok) {
                 console.log(response.statusText);
                 // TODO: error handling
-                return
+                return;
             }
-            const data = await response.json() as { appointment: AppointmentType };
+            const data = await response.json() as { appointment: AppointmentType; };
             const appointment = data.appointment;
 
-            appointment.date = new Date(appointment.date)
+            appointment.date = new Date(appointment.date);
             const dataToCheck = {
                 id: appointment.id,
                 id_hospital: appointment.id_hospital,
@@ -94,42 +97,57 @@ const Appointment = () => {
 
             // Set loaded to true
             setLoaded(true);
-        }
+        };
 
         getAppointmentData(Number.parseInt(id));
     }, [id]);
 
-    const deleteAppointment = async () => {
-        // Exchange tokens
-        await cancelAppointment(appointment.id);
+    const deleteAppointment = async (): Promise<boolean> => {
+        try {
+            // Exchange tokens
+            await cancelAppointment(appointment.id);
 
-        // Book appointment in db
-        let formData = new FormData();
-        formData.append('id_prescription', prescription.id.toString());
+            // Book appointment in db
+            let formData = new FormData();
+            formData.append('id_prescription', prescription.id.toString());
 
-        const response = await fetch(
-            `${BACKEND_URL}/api/v1/appointments/cancel/${appointment.id}`,
-            {
-                method: 'POST',
-                headers: {
-                    auth: localStorage.getItem('auth')!
-                },
-                body: formData
-            }
-        ).then(response => {
-            if (!response.ok) {
-                console.log(response.statusText);
-                // TODO: error handling
-                return;
-            }
-
-            navigate('/reservations');
-        })
+            const response = await fetch(
+                `${BACKEND_URL}/api/v1/appointments/cancel/${appointment.id}`,
+                {
+                    method: 'POST',
+                    headers: {
+                        auth: localStorage.getItem('auth')!
+                    },
+                    body: formData
+                }
+            ).then(response => {
+                if (!response.ok) {
+                    console.log(response.statusText);
+                    // TODO: error handling
+                    return;
+                }
+            });
+            return true;
+        } catch (error) {
+            console.log(error);
+        }
+        return false;
     };
 
-    const modifyAppointment = async () => {
-        await deleteAppointment();
-        navigate(`/prescriptions/${prescription.id}/`);
+    const onDeletePress = async () => {
+        setIsDeleting(true);
+        if (await deleteAppointment()) {
+            navigate('/reservations');
+        }
+        setIsDeleting(false);
+    };
+
+    const onModifyPress = async () => {
+        setIsChanging(true);
+        if (await deleteAppointment()) {
+            navigate(`/prescriptions/${prescription.id}/`);
+        }
+        setIsChanging(false);
     };
 
     return (
@@ -216,23 +234,35 @@ const Appointment = () => {
 
                                 <div style={{ textAlign: 'center' }}>
                                     <Button
-                                        onClick={deleteAppointment}
-                                        color='danger'
+                                        color={!isDeleting && !isChanging ? 'danger' : 'dark'}
+                                        onClick={!isDeleting && !isChanging ? onDeletePress : () => { }}
                                         tag='button'
                                         size='lg'
                                         className='mt-3'
                                         style={{ marginRight: '1rem' }}
                                     >
-                                        Annulla prenotazione
+                                        <span style={{ display: 'flex', alignItems: 'center' }}>
+                                            Cancella prenotazione
+                                            {
+                                                isDeleting &&
+                                                <Spinner style={{ marginLeft: '1rem' }} />
+                                            }
+                                        </span>
                                     </Button>
                                     <Button
-                                        onClick={modifyAppointment}
-                                        color='warning'
+                                        color={!isDeleting && !isChanging ? 'warning' : 'dark'}
+                                        onClick={!isDeleting && !isChanging ? onModifyPress : () => { }}
                                         tag='button'
                                         size='lg'
                                         className='mt-3 ml-3'
                                     >
-                                        Modifica prenotazione
+                                        <span style={{ display: 'flex', alignItems: 'center' }}>
+                                            Modifica prenotazione
+                                            {
+                                                isChanging &&
+                                                <Spinner style={{ marginLeft: '1rem' }} />
+                                            }
+                                        </span>
                                     </Button>
                                 </div>
                             </CardBody>

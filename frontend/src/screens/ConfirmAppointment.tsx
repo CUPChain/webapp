@@ -6,14 +6,15 @@ import 'typeface-lora';
 import Layout from '../components/Layout';
 import BackButton from '../components/BackButton';
 import { Section, Col, Row, Card, CardBody, CardTitle, CardText, Button } from 'design-react-kit';
+import { Spinner } from 'reactstrap';
 import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
 import { AppointmentType, PrescriptionType, AccountType } from '../types';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { exchangePrescriptionAppointment } from '../utils';
 import { BACKEND_URL } from '../constants';
 import CardTitleLoad from '../components/CardTitleLoad';
-import 'leaflet/dist/leaflet.css'
-import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css'
+import 'leaflet/dist/leaflet.css';
+import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
 import "leaflet-defaulticon-compatibility";
 
 const MAP_ENABLED = true;
@@ -25,38 +26,46 @@ type ConfirmAppointmentProps = {
 };
 
 const ConfirmAppointment = () => {
+    const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
     const { appointment, prescription } = location.state as ConfirmAppointmentProps;
     console.log("appt", appointment.id, " presc", prescription.id);
 
     const confirmAppointment = async () => {
-        // Exchange tokens
-        await exchangePrescriptionAppointment(prescription.id, appointment.id);
-        // TODO: check for errors?
-        //alert('Prenotazione confermata');
+        setIsLoading(true);
 
-        // Book appointment in db
-        let formData = new FormData();
-        formData.append('id_prescription', prescription.id.toString());
+        try {
+            // Exchange tokens
+            await exchangePrescriptionAppointment(prescription.id, appointment.id);
+            // TODO: check for errors?
+            //alert('Prenotazione confermata');
 
-        const response = await fetch(
-            `${BACKEND_URL}/api/v1/appointments/reserve/${appointment.id}`,
-            {
-                method: 'POST',
-                headers: {
-                    auth: localStorage.getItem('auth')!
-                },
-                body: formData
-            }
-        ).then(response => {
-            if (!response.ok) {
-                console.log(response.statusText);
-                // TODO: error handling
-                return;
-            }
-            navigate('/reservations');
-        })
+            // Book appointment in db
+            let formData = new FormData();
+            formData.append('id_prescription', prescription.id.toString());
+
+            const response = await fetch(
+                `${BACKEND_URL}/api/v1/appointments/reserve/${appointment.id}`,
+                {
+                    method: 'POST',
+                    headers: {
+                        auth: localStorage.getItem('auth')!
+                    },
+                    body: formData
+                }
+            ).then(response => {
+                if (!response.ok) {
+                    console.log(response.statusText);
+                    // TODO: error handling
+                    return;
+                }
+                navigate('/reservations');
+            });
+        } catch (error) {
+            console.error(error);
+        }
+        setIsLoading(false);
     };
 
     return (
@@ -140,14 +149,20 @@ const ConfirmAppointment = () => {
 
                                 <div style={{ textAlign: 'center' }}>
                                     <Button
-                                        onClick={confirmAppointment}
-                                        color='primary'
+                                        color={!isLoading ? 'primary' : 'dark'}
+                                        onClick={!isLoading ? confirmAppointment : () => { }}
                                         tag='button'
                                         size='lg'
                                         className='mt-3'
-                                        style={{ marginRight: '1rem' }}
+                                        style={{ marginTop: '2rem' }}
                                     >
-                                        Conferma prenotazione
+                                        <span style={{ display: 'flex', alignItems: 'center' }}>
+                                            Conferma prenotazione
+                                            {
+                                                isLoading &&
+                                                <Spinner style={{ marginLeft: '1rem' }} />
+                                            }
+                                        </span>
                                     </Button>
                                 </div>
                             </CardBody>

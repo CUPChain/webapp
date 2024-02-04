@@ -4,18 +4,22 @@ import 'typeface-titillium-web';
 import 'typeface-roboto-mono';
 import 'typeface-lora';
 import Layout from '../components/Layout';
-import Select, { components, PlaceholderProps } from 'react-select';
+import Select from 'react-select';
 import { Section, Card, CardBody, CardTitle, Input, Button } from 'design-react-kit';
 import { BACKEND_URL } from '../constants';
 import { mintAppointment } from '../utils';
 import { ethers, keccak256 } from 'ethers';
+import { useNavigate } from 'react-router';
+import { Spinner } from 'reactstrap';
 
 
 const NewAppointment = () => {
+    const navigate = useNavigate();
     const [apptTypes, setApptTypes] = useState<{ value: number, label: string; }[]>([]);
     const [selectedType, setSelectedType] = useState(0);
     const [apptDate, setApptDate] = useState<string>();
     const [apptTime, setApptTime] = useState<string>();
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         // Retrieve list of possible medical exams
@@ -66,6 +70,8 @@ const NewAppointment = () => {
 
     // Save prescription to DB, get its token id in return, mint token with received id
     const saveAndMintAppointment = async () => {
+        setIsLoading(true);
+        
         let formData = new FormData();
         formData.append('code_medical_examination', selectedType.toString());
         formData.append('date', `${apptDate} ${apptTime}`);
@@ -111,6 +117,9 @@ const NewAppointment = () => {
         } catch(e) {
             console.log(e); // should rollback db
         }
+
+        // Refresh page
+        navigate('/login');
     };
 
     return (
@@ -130,7 +139,6 @@ const NewAppointment = () => {
                             //value={value}
                             onChange={(ev) => {
                                 setApptDate(ev.target.value);
-                                console.log(ev.target.value)
                             }}
                         />
 
@@ -141,7 +149,6 @@ const NewAppointment = () => {
                             //value={value}
                             onChange={(ev) => {
                                 setApptTime(ev.target.value);
-                                console.log(ev.target.value)
                             }}
                         />
 
@@ -153,8 +160,19 @@ const NewAppointment = () => {
                             options={apptTypes}
                         />
 
-                        <Button color='primary' onClick={saveAndMintAppointment} style={{ marginTop: '2rem' }}>
-                            Crea prescrizione
+                        <Button
+                            color={!isLoading ? 'primary' : 'dark'}
+                            onClick={!isLoading ? saveAndMintAppointment : () => { }}
+                            style={{ marginTop: '2rem' }}
+                            active={!isLoading}
+                        >
+                            <span style={{ display: 'flex', alignItems: 'center' }}>
+                                Crea appuntamento
+                                {
+                                    isLoading &&
+                                    <Spinner style={{ marginLeft: '1rem' }} />
+                                }
+                            </span>
                         </Button>
                     </CardBody>
                 </Card>

@@ -9,18 +9,22 @@ type RowTableProps = {
     where: string | undefined;
     distance: string | undefined;
     when: string | undefined;
-    action: () => void;
+    action?: () => void;
 };
 
 const RowTable = ({ where, distance, when, action }: RowTableProps) => {
+    const func = action || (() => { });
     return (
-        <tr className='align-middle position-relative' onClick={action} style={{ cursor: 'pointer' }}>
+        <tr className='align-middle position-relative' onClick={func} style={{ cursor: 'pointer' }}>
             <td>{where || 'Non disponibile'}</td>
             <td>{distance || 'Non disponibile'}</td>
             <td>{when || 'Non disponibile'}</td>
-            <td>
-                <Icon icon='it-arrow-right' color='primary' />
-            </td>
+            {
+                action &&
+                <td>
+                    <Icon icon='it-arrow-right' color='primary' />
+                </td>
+            }
         </tr>
     );
 };

@@ -11,6 +11,11 @@ const Notification = ({ type, text }: { type: Type, text: string }) => {
             justifyContent: "center",
             gap: "10px",
             textAlign: "center",
+            borderLeft: "3px solid",
+            borderColor: type === "success" ? "#4CAF50" :
+                type === "warning" ? "#FFC107" :
+                    type === "error" ? "#F44336" :
+                        "#007BFF",
         }}>
             {
                 type === "success" ? <Icon icon="it-check-circle" color="success" /> :

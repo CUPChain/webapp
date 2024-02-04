@@ -109,7 +109,7 @@ const getOwnedAppointmentTokens = async (): Promise<[number[], string[], number[
 const getOwnedPrescriptionTokens = async (): Promise<[number[], number[]]> => {
     const [, signer] = await loginMetamask();
 
-    const contract = new ethers.Contract(PRESCRIPTIONS_CONTRACT, PrescriptionTokens.abi, signer)
+    const contract = new ethers.Contract(PRESCRIPTIONS_CONTRACT, PrescriptionTokens.abi, signer);
 
     try {
         const data = await contract.getMyTokens();
@@ -139,14 +139,9 @@ const exchangePrescriptionAppointment = async (prescrID: number, apptID: number)
     }
 
     const contract = new ethers.Contract(PRESCRIPTIONS_CONTRACT, PrescriptionTokens.abi, signer);
-    console.log("ciao");
-    try {
-        const transaction = await contract.makeAppointment(prescrID, APPOINTMENTS_CONTRACT, apptID, hospital);
-        console.log(transaction);
-        await transaction.wait();
-    } catch (e) {
-        console.log(e);
-    }
+    const transaction = await contract.makeAppointment(prescrID, APPOINTMENTS_CONTRACT, apptID, hospital);
+    console.log(transaction);
+    await transaction.wait();
 };
 
 /** Cancel an appointment
@@ -159,14 +154,9 @@ const cancelAppointment = async (apptID: number) => {
 
     const appointmentContract = new ethers.Contract(APPOINTMENTS_CONTRACT, AppointmentTokens.abi, signer);
 
-    console.log("ciao");
-    try {
-        const transaction = await appointmentContract.cancelAppointment(apptID);
-        console.log(transaction);
-        await transaction.wait();
-    } catch (e) {
-        console.log(e);
-    }
+    const transaction = await appointmentContract.cancelAppointment(apptID);
+    console.log(transaction);
+    await transaction.wait();
 };
 
 /** Mint a prescription token
@@ -299,23 +289,23 @@ const getPersonalArea = (role: string) => {
     return '/';
 };
 
-const getDistanceFromLatLonInKm = (lat1: number,lon1: number,lat2: number,lon2: number): number => {
+const getDistanceFromLatLonInKm = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
     var R = 6371; // Radius of the earth in km
-    var dLat = deg2rad(lat2-lat1);  // deg2rad below
-    var dLon = deg2rad(lon2-lon1); 
-    var a = 
-      Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
-      Math.sin(dLon/2) * Math.sin(dLon/2)
-      ; 
-    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+    var dLat = deg2rad(lat2 - lat1);  // deg2rad below
+    var dLon = deg2rad(lon2 - lon1);
+    var a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2)
+        ;
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     var d = R * c; // Distance in km
     return d;
-}
-  
+};
+
 const deg2rad = (deg: number): number => {
-    return deg * (Math.PI/180)
-}
+    return deg * (Math.PI / 180);
+};
 
 const getHospitalInfo = async (appointment: AppointmentType) => {
     const hospitalResp = await fetch(`${BACKEND_URL}/api/v1/hospitals/${appointment.id_hospital}`);
@@ -325,13 +315,13 @@ const getHospitalInfo = async (appointment: AppointmentType) => {
     }
     const hospital = await hospitalResp.json()
         .then(data => data as {
-            id:number,
+            id: number,
             address: string,
             name: string,
             cap: string,
             city: string,
             latitude: number,
-            longitude: number
+            longitude: number;
         });
 
     appointment.address = hospital.address;
@@ -340,7 +330,7 @@ const getHospitalInfo = async (appointment: AppointmentType) => {
     appointment.city = hospital.city;
     appointment.latitude = hospital.latitude;
     appointment.longitude = hospital.longitude;
-}
+};
 
 export {
     getAppointmentHash,

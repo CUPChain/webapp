@@ -5,16 +5,17 @@ import 'typeface-roboto-mono';
 import 'typeface-lora';
 import Layout from '../components/Layout';
 import BackButton from '../components/BackButton';
-import Notification from '../components/Notification';
 import Select from 'react-select';
-import { Section, Card, CardBody, CardTitle, Input, Button, notify } from 'design-react-kit';
+import { Section, Card, CardBody, CardTitle, Input, Button } from 'design-react-kit';
 import { BACKEND_URL } from '../constants';
 import { mintPrescription } from '../utils';
 import { useNavigate } from 'react-router-dom';
+import { Spinner } from 'reactstrap';
 
 
 const NewPrescription = () => {
     const navigate = useNavigate();
+    const [isLoading, setIsLoading] = useState(false);
     const [prescrTypes, setPrescrTypes] = useState<{ value: number, label: string; }[]>([]);
     const [selectedType, setSelectedType] = useState(0);
     const [patientAddr, setPatientAddr] = useState<string>();
@@ -46,6 +47,7 @@ const NewPrescription = () => {
 
     // Save prescription to DB, get its token id in return, mint token with received id
     const saveAndMintPrescription = async () => {
+        setIsLoading(true);
         if (patientAddr === "" || patientAddr === undefined) {
             return;
         }
@@ -108,8 +110,19 @@ const NewPrescription = () => {
                             options={prescrTypes}
                         />
 
-                        <Button color='primary' onClick={saveAndMintPrescription} style={{ marginTop: '2rem' }}>
-                            Crea prescrizione
+                        <Button
+                            color={!isLoading ? 'primary' : 'dark'}
+                            onClick={!isLoading ? saveAndMintPrescription : () => { }}
+                            style={{ marginTop: '2rem' }}
+                            active={!isLoading}
+                        >
+                            <span style={{ display: 'flex', alignItems: 'center' }}>
+                                Crea prescrizione
+                                {
+                                    isLoading &&
+                                    <Spinner style={{ marginLeft: '1rem' }} />
+                                }
+                            </span>
                         </Button>
                     </CardBody>
                 </Card>

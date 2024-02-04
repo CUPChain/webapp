@@ -30,7 +30,7 @@ async function main() {
 
   // Make default hospital approve appointments contract to exchange its prescriptions
   // and prescriptions contract to exchange its appointments
-  const provider = new ethers.WebSocketProvider("ws://localhost:8545");
+  const provider = new ethers.JsonRpcProvider("http://127.0.0.1:8545");
   const hospitalPrivKey = new ethers.SigningKey(DEFAULT_HOSPITAL_PRIVKEY);
   const hospitalWallet = new ethers.NonceManager(new ethers.BaseWallet(hospitalPrivKey, provider));
 

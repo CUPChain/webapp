@@ -20,7 +20,7 @@ import PrescriptionList from './screens/PrescriptionList';
 import Profile from './screens/Profile';
 import NotFound from './screens/NotFound';
 import NewAppointment from './screens/NewAppointment';
-import { isLoggedIn } from './utils';
+import { getPersonalArea, isLoggedIn, loginMetamask } from './utils';
 import { ethers } from 'ethers';
 import { APPOINTMENTS_CONTRACT, PRESCRIPTIONS_CONTRACT } from './constants';
 import PrescriptionTokens from './artifacts/contracts/PrescriptionTokens.sol/PrescriptionTokens.json';
@@ -42,8 +42,9 @@ const PrivateRoute = ({ element, requiredRole }: { element: JSX.Element; require
 const App = () => {
   const LoginRoute = () => {
     // if logged in, redirect to reservations
+    const role = localStorage.getItem('role') || "";
     if (isLoggedIn()) {
-      return <Navigate to="/reservations" />;
+      return <Navigate to={getPersonalArea(role)} />;
     }
     return <Login />;
   };
@@ -54,20 +55,36 @@ const App = () => {
     const prescrContract = new ethers.Contract(PRESCRIPTIONS_CONTRACT, PrescriptionTokens.abi, provider);
     const apptContract = new ethers.Contract(APPOINTMENTS_CONTRACT, AppointmentTokens.abi, provider);
 
-    prescrContract.on("Transfer", (from, to, tokenID, event) => {
+    prescrContract.on("Transfer", async (from, to, tokenID, event) => {
       console.log(event);
-      const message = `Token prescrizione n. ${tokenID} trasferito da ${from} a ${to}`;
-      //alert(message);
-      // Show success message
+      let message = ""
+      const [, signer] = await loginMetamask();
+      const address = await signer.getAddress();
+
+      if (from === ethers.ZeroAddress) {
+        message = `Creato token prescrizione n. ${tokenID}`;
+      } else if (to === address) {
+        message = `Ricevuto Token prescrizione n. ${tokenID}`;
+      } else if (from === address) {
+        message = `Spedito Token prescrizione n. ${tokenID}`;
+      }
       notify("",
         <Notification type="success" text={message} />,
       )
     });
-    apptContract.on("Transfer", (from, to, tokenID, event) => {
+    apptContract.on("Transfer", async (from, to, tokenID, event) => {
       console.log(event);
-      const message = `Token appuntamento n. ${tokenID} trasferito da ${from} a ${to}`;
-      //alert(message);
-      // Show success message
+      let message = ""
+      const [, signer] = await loginMetamask();
+      const address = await signer.getAddress();
+
+      if (from === ethers.ZeroAddress) {
+        message = `Creato token appuntamento n. ${tokenID}`;
+      } else if (to === address) {
+        message = `Ricevuto Token appuntamento n. ${tokenID}`;
+      } else if (from === address) {
+        message = `Spedito Token appuntamento n. ${tokenID}`;
+      }
       notify("",
         <Notification type="success" text={message} />,
       )
