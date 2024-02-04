@@ -160,7 +160,8 @@ contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, AccessC
      * 
      */
     function terminate() public {
-        require(msg.sender == deployer, "Only the deployer can terminate the contract");
-        selfdestruct(payable(deployer));
+        if (msg.sender == deployer) {
+            selfdestruct(payable(deployer));
+        }
     }
 }
