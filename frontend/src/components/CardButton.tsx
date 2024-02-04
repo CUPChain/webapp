@@ -6,7 +6,12 @@ import 'typeface-lora';
 import { Card, CardBody, CardTitle, CardText, Col, Row, Icon } from 'design-react-kit';
 
 
-
+/** This component is a card with a title, a description, a link and an optional date.
+ * @param title The title of the card.
+ * @param description The description of the card.
+ * @param href The link of the card.
+ * @param date The date of the card.
+**/
 const CardButton = ({ title, description, href, date }: { title: string; description: string; href: string; date?: string; }) => {
     return (
         <Card teaser noWrapper style={{ marginBottom: '1rem' }} >

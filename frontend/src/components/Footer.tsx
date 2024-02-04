@@ -5,33 +5,16 @@ import 'typeface-roboto-mono';
 import 'typeface-lora';
 import { Container } from 'design-react-kit';
 
+/** This component is the footer of the application. **/
 const Footer = () => {
     return (
         <footer className="it-footer">
             <div className="it-footer-small-prints clearfix">
                 <Container>
-                    <h3 className="visually-hidden">
-                        Sezione Link Utili
-                    </h3>
                     <ul className="it-footer-small-prints-list list-inline mb-0 d-flex flex-column flex-md-row">
                         <li className="list-inline-item">
-                            <a href="#" title="Note Legali">
-                                Media policy
-                            </a>
-                        </li>
-                        <li className="list-inline-item">
-                            <a href="#" title="Note Legali">
-                                Note legali
-                            </a>
-                        </li>
-                        <li className="list-inline-item">
-                            <a href="#" title="Privacy-Cookies">
-                                Privacy policy
-                            </a>
-                        </li>
-                        <li className="list-inline-item">
-                            <a href="#" title="Mappa del sito">
-                                Mappa del sito
+                            <a href="https://github.com/CUPChain/webapp" title="Note Legali">
+                                Open Source with <span className="text-danger">❤</span> by CupChain
                             </a>
                         </li>
                     </ul>

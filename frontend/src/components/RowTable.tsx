@@ -12,6 +12,12 @@ type RowTableProps = {
     action?: () => void;
 };
 
+/** This component is a row of a table with | where | distance | when | action |.
+ * @param where The where of the row.
+ * @param distance The distance of the row.
+ * @param when The when of the row.
+ * @param action The action of the row (if undefined, the row is not clickable and the action is not shown).
+ **/
 const RowTable = ({ where, distance, when, action }: RowTableProps) => {
     const func = action || (() => { });
     return (

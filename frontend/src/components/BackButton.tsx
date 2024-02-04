@@ -6,12 +6,12 @@ import 'typeface-lora';
 import { Icon } from 'design-react-kit';
 import { useNavigate } from 'react-router-dom';
 
-
-
+/** This component is a simple back button that uses the useNavigate hook to go back to the previous page. **/
 const BackButton = () => {
     const navigate = useNavigate();
 
     const goBack = () => {
+        // Go back to the previous page
         navigate(-1);
     };
 

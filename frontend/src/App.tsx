@@ -57,23 +57,26 @@ const App = () => {
 
     prescrContract.on("Transfer", async (from, to, tokenID, event) => {
       console.log(event);
+      let title = "Token prescrizione";
       let message = ""
       const [, signer] = await loginMetamask();
       const address = await signer.getAddress();
 
       if (from === ethers.ZeroAddress) {
+        title = "Token prescrizione"; 
         message = `Creato token prescrizione n. ${tokenID}`;
       } else if (to === address) {
         message = `Ricevuto Token prescrizione n. ${tokenID}`;
       } else if (from === address) {
         message = `Spedito Token prescrizione n. ${tokenID}`;
       }
-      notify("",
+      notify(title,
         <Notification type="success" text={message} />,
       )
     });
     apptContract.on("Transfer", async (from, to, tokenID, event) => {
       console.log(event);
+      let title = "Token appuntamento";
       let message = ""
       const [, signer] = await loginMetamask();
       const address = await signer.getAddress();
@@ -85,7 +88,7 @@ const App = () => {
       } else if (from === address) {
         message = `Spedito Token appuntamento n. ${tokenID}`;
       }
-      notify("",
+      notify(title,
         <Notification type="success" text={message} />,
       )
     });

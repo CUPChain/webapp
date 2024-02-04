@@ -1,7 +1,10 @@
 import { CardTitle, Col, Row, Spinner } from "design-react-kit";
 
-
-const CardTitleLoad = ({ title, loaded }: { title: string, loaded: boolean }) => {
+/** This component is a card title with a loading spinner.
+ * @param title The title of the card.
+ * @param loaded A boolean that indicates if the data is loaded.
+ */
+const CardTitleLoad = ({ title, loaded }: { title: string, loaded: boolean; }) => {
     return (
         <CardTitle tag='h5'>
             <Row style={{ alignItems: 'center' }}>
@@ -16,7 +19,7 @@ const CardTitleLoad = ({ title, loaded }: { title: string, loaded: boolean }) =>
                 }
             </Row>
         </CardTitle>
-    )
-}
+    );
+};
 
 export default CardTitleLoad;

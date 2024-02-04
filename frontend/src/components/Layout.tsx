@@ -4,6 +4,7 @@ import 'typeface-titillium-web';
 import 'typeface-roboto-mono';
 import 'typeface-lora';
 
+/** This component is the base layout of the application. **/
 const Layout = ({ children, color = 'muted' }: { children: React.ReactNode; color?: 'primary' | 'neutral' | 'muted' | string; }) => {
     color = 'bg-' + color;
     return (

@@ -6,7 +6,7 @@ import 'typeface-lora';
 import { Header, HeaderContent, HeaderRightZone, Button, Icon } from 'design-react-kit';
 import { getPersonalArea, isLoggedIn, logout } from '../utils';
 
-
+/** This component is the header of the application. **/
 const CustomHeader = () => {
     const getPersonalAreaIcon = (role: string) => {
         if (role === 'patient') {
