@@ -9,7 +9,7 @@ import { Section, Col, Row, Card, CardBody, CardTitle, CardText, Button } from '
 import QRCode from 'react-qr-code';
 import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
 import { AppointmentType, PrescriptionType } from '../types';
-import { cancelAppointment, getAppointmentHash, getHospitalInfo, getTokenCategory, isOwned, verifyHash } from '../utils';
+import { cancelAppointment, getAppointmentHash, getHospitalInfo, getTokenCategory, isOwned, verifyHash, signString, loginMetamask } from '../utils';
 import { BACKEND_URL, Token } from '../constants';
 import CardTitleLoad from '../components/CardTitleLoad';
 import { useNavigate } from 'react-router-dom';
@@ -19,6 +19,7 @@ import "leaflet-defaulticon-compatibility";
 import { Spinner } from 'reactstrap';
 
 const MAP_ENABLED = true;
+const DEFAULT_QR_VALUE = 'CUPCHAIN';
 
 const Appointment = () => {
     // How do we know what was the id of the prescription that got exchanged for the appointment?
@@ -43,6 +44,7 @@ const Appointment = () => {
     const [loaded, setLoaded] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const [isChanging, setIsChanging] = useState(false);
+    const [QRValue, setQRValue] = useState(DEFAULT_QR_VALUE);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -150,6 +152,13 @@ const Appointment = () => {
         setIsChanging(false);
     };
 
+    const generateQR = async () => {
+        // Sign with metamask the appointment id
+        const [, signer] = await loginMetamask();
+        const signature = await signString(appointment.id.toString(), signer) as string;
+        setQRValue(signature);
+    };
+
     return (
         <Layout>
             <Section color='muted' className='mt-1'>
@@ -228,8 +237,35 @@ const Appointment = () => {
                                     </li>
                                 </ul>
 
-                                <div style={{ textAlign: 'center', marginTop: '3rem', marginBottom: '2rem' }}>
-                                    <QRCode value={appointment.id.toString()} />
+                                <div style={{
+                                    textAlign: 'center',
+                                    marginTop: '3rem',
+                                    marginBottom: '2rem',
+                                    position: 'relative',
+                                }}>
+                                    <QRCode
+                                        value={QRValue}
+                                        style={{
+                                            filter: QRValue === DEFAULT_QR_VALUE ? 'blur(5px)' : ''
+                                        }}
+                                    />
+                                    {
+                                        QRValue === DEFAULT_QR_VALUE &&
+                                        <Button
+                                            color='primary'
+                                            onClick={generateQR}
+                                            tag='button'
+                                            size='lg'
+                                            style={{
+                                                position: 'absolute',
+                                                bottom: '50%',
+                                                right: '50%',
+                                                transform: 'translate(50%, 50%)'
+                                            }}
+                                        >
+                                            Genera QR code
+                                        </Button>
+                                    }
                                 </div>
 
                                 <div style={{ textAlign: 'center' }}>

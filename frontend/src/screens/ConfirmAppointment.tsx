@@ -60,7 +60,7 @@ const ConfirmAppointment = () => {
                     // TODO: error handling
                     return;
                 }
-                navigate('/reservations');
+                navigate(`/appointments/${appointment.id}`);
             });
         } catch (error) {
             console.error(error);
