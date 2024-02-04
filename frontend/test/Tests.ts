@@ -17,17 +17,17 @@ describe.only("Prescription Contract", function () {
 
         await appointmentContract.waitForDeployment();
 
-        return { prescriptionContract, appointmentContract, owner , address1, address2 };
+        return { prescriptionContract, appointmentContract, owner, address1, address2 };
     }
 
     describe.only("Deployment", function () {
         it("Deployer has default admin role", async function () {
-            const { 
-                prescriptionContract, 
-                appointmentContract, 
-                owner, 
-                address1 , 
-                address2 
+            const {
+                prescriptionContract,
+                appointmentContract,
+                owner,
+                address1,
+                address2
             } = await loadFixture(deploymentFixture);
 
             expect(await prescriptionContract.hasRole(DEFAULT_ADMIN_ROLE, owner)).to.be.true;
@@ -36,12 +36,12 @@ describe.only("Prescription Contract", function () {
         });
 
         it("Other role's admin is the default admin role", async function () {
-            const { 
-                prescriptionContract, 
-                appointmentContract, 
-                owner, 
-                address1 , 
-                address2 
+            const {
+                prescriptionContract,
+                appointmentContract,
+                owner,
+                address1,
+                address2
             } = await loadFixture(deploymentFixture);
 
             expect(await prescriptionContract.getRoleAdmin(MINTER_ROLE)).to.equal(DEFAULT_ADMIN_ROLE);
@@ -50,19 +50,49 @@ describe.only("Prescription Contract", function () {
         });
     });
 
+    describe.only("Token name and symbol", function () {
+        it("Token has correct name", async function () {
+            const {
+                prescriptionContract,
+                appointmentContract,
+                owner,
+                address1,
+                address2
+            } = await loadFixture(deploymentFixture);
+
+            expect(await prescriptionContract.name()).to.equal("Prescription");
+
+            expect(await appointmentContract.name()).to.equal("Appointment");
+        });
+
+        it("Token has correct symbol", async function () {
+            const {
+                prescriptionContract,
+                appointmentContract,
+                owner,
+                address1,
+                address2
+            } = await loadFixture(deploymentFixture);
+
+            expect(await prescriptionContract.symbol()).to.equal("PRE");
+
+            expect(await appointmentContract.symbol()).to.equal("APP");
+        });
+    });
+
     describe.only("Granting roles", function () {
         it("Should grant minter role correctly", async function () {
-            const { 
-                prescriptionContract, 
-                appointmentContract, 
-                owner, 
-                address1 , 
-                address2 
+            const {
+                prescriptionContract,
+                appointmentContract,
+                owner,
+                address1,
+                address2
             } = await loadFixture(deploymentFixture);
 
             expect(await prescriptionContract.connect(owner).grantRole(MINTER_ROLE, address1))
                 .to.emit(prescriptionContract, "RoleGranted").withArgs(MINTER_ROLE, address1, owner);
-            
+
             it("Doctor should now have minter role", async function () {
                 expect(await prescriptionContract.hasRole(MINTER_ROLE, address1)).to.be.true;
             });
@@ -76,12 +106,12 @@ describe.only("Prescription Contract", function () {
         });
 
         it("Should not grant minter role", async function () {
-            const { 
-                prescriptionContract, 
-                appointmentContract, 
-                owner, 
-                address1 , 
-                address2 
+            const {
+                prescriptionContract,
+                appointmentContract,
+                owner,
+                address1,
+                address2
             } = await loadFixture(deploymentFixture);
 
             expect(await prescriptionContract.connect(address1).grantRole(MINTER_ROLE, address2))
