@@ -8,7 +8,6 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "./AppointmentTokens.sol";
 
-
 /**
  * @title PrescriptionTokens
  * @dev This contract represents a collection of prescription tokens.
