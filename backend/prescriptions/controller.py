@@ -136,9 +136,17 @@ def retrieve_all_prescriptions_by_doctor(cf):
         A JSON response containing the list of prescriptions for the doctor.
         If no prescriptions are found, a JSON response with an error message is returned.
     """
+    # prescriptions = db.session.execute(
+    #     db.select(Prescription).where(Prescription.cf_doctor == cf)
+    # )
+
     prescriptions = db.session.execute(
         db.select(Prescription).where(Prescription.cf_doctor == cf)
+        .join(Prescription, Prescription.code_medical_examination == MedicalExam.code)
     )
+
+    print(prescriptions)
+
     if prescriptions:
         return jsonify(
             {

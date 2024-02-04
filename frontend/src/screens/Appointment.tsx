@@ -13,13 +13,16 @@ import { cancelAppointment, getAppointmentHash, getHospitalInfo, getTokenCategor
 import { BACKEND_URL, Token } from '../constants';
 import CardTitleLoad from '../components/CardTitleLoad';
 import { useLocation, useNavigate } from 'react-router-dom';
+import 'leaflet/dist/leaflet.css'
+import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css'
+import "leaflet-defaulticon-compatibility";
 
 const MAP_ENABLED = true;
 
 const Appointment = () => {
     // How do we know what was the id of the prescription that got exchanged for the appointment?
     const id = window.location.pathname.split('/')[2];
-    
+
     const [appointment, setAppointment] = useState<AppointmentType>({
         id: 0,
         code_medical_examination: 0,
@@ -35,7 +38,7 @@ const Appointment = () => {
         longitude: 0,
         valid: false
     });
-    const [prescription, setPrescription] = useState<PrescriptionType>({id: 0, type: "Invalid"});
+    const [prescription, setPrescription] = useState<PrescriptionType>({ id: 0, type: "Invalid" });
     const [loaded, setLoaded] = useState(false);
     const navigate = useNavigate();
 
@@ -61,12 +64,12 @@ const Appointment = () => {
 
             appointment.date = new Date(appointment.date)
             const dataToCheck = {
-                    id: appointment.id,
-                    id_hospital: appointment.id_hospital,
-                    date: appointment.date.toUTCString(),
-                    category: appointment.code_medical_examination
+                id: appointment.id,
+                id_hospital: appointment.id_hospital,
+                date: appointment.date.toUTCString(),
+                category: appointment.code_medical_examination
             };
-            
+
             await getHospitalInfo(data.appointment);
 
             // Verify that the appointment is valid
@@ -78,16 +81,16 @@ const Appointment = () => {
 
             // Get prescription info
             const prescriptionCategory = await getTokenCategory(appointment.id_prescription, Token.Prescription);
-             // Get category name from database
-             const categoryResponse = await fetch(`${BACKEND_URL}/api/v1/medical_exams/${prescriptionCategory}`);
-             if (!categoryResponse.ok) {
-                 console.log("error:", categoryResponse);
-                 return;
-             }
-             const categoryName = await categoryResponse.json()
-                 .then(data => data.medical_exam.name);
-                 
-            setPrescription({id: appointment.id_prescription, type: categoryName});
+            // Get category name from database
+            const categoryResponse = await fetch(`${BACKEND_URL}/api/v1/medical_exams/${prescriptionCategory}`);
+            if (!categoryResponse.ok) {
+                console.log("error:", categoryResponse);
+                return;
+            }
+            const categoryName = await categoryResponse.json()
+                .then(data => data.medical_exam.name);
+
+            setPrescription({ id: appointment.id_prescription, type: categoryName });
 
             // Set loaded to true
             setLoaded(true);
@@ -134,7 +137,7 @@ const Appointment = () => {
             <Section color='muted' className='mt-1'>
                 <BackButton />
                 <Row>
-                    <Col className='col-4 d-flex flex-column'>
+                    <Col className='col-5'>
                         <Card className='card-bg' teaser noWrapper style={{ marginBottom: '1rem' }} >
                             <CardBody>
                                 <CardTitle tag='h6' style={{ marginBottom: '0.1rem' }}>
@@ -146,18 +149,22 @@ const Appointment = () => {
                                 </CardText>
                             </CardBody>
                         </Card>
-                        <Card className='card-bg flex-grow-1' teaser noWrapper style={{ marginBottom: '1rem', overflow: 'hidden' }} >
+                        <Card className='card-bg' teaser noWrapper style={{ marginBottom: '1rem', overflow: 'hidden' }} >
                             <CardBody>
                                 {
                                     MAP_ENABLED && appointment.latitude ?
-                                        <MapContainer center={[appointment.latitude, appointment.longitude]} zoom={13} scrollWheelZoom={false}>
+                                        <MapContainer
+                                            center={[appointment.latitude, appointment.longitude]}
+                                            zoom={15}
+                                            scrollWheelZoom={true}
+                                        >
                                             <TileLayer
                                                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                                                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                             />
                                             <Marker position={[appointment.latitude, appointment.longitude]}>
                                                 <Popup>
-                                                    A pretty CSS3 popup. <br /> Easily customizable.
+                                                    {appointment.name}
                                                 </Popup>
                                             </Marker>
                                         </MapContainer>

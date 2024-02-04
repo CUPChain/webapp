@@ -12,8 +12,11 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { exchangePrescriptionAppointment } from '../utils';
 import { BACKEND_URL } from '../constants';
 import CardTitleLoad from '../components/CardTitleLoad';
+import 'leaflet/dist/leaflet.css'
+import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css'
+import "leaflet-defaulticon-compatibility";
 
-const MAP_ENABLED = false;
+const MAP_ENABLED = true;
 
 type ConfirmAppointmentProps = {
     appointment: AppointmentType;
@@ -76,17 +79,23 @@ const ConfirmAppointment = () => {
                             <CardBody>
                                 {
                                     MAP_ENABLED ?
-                                        <MapContainer center={[appointment.latitude, appointment.longitude]} zoom={13} scrollWheelZoom={false}>
-                                            <TileLayer
-                                                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                                            />
-                                            <Marker position={[appointment.latitude, appointment.longitude]}>
-                                                <Popup>
-                                                    A pretty CSS3 popup. <br /> Easily customizable.
-                                                </Popup>
-                                            </Marker>
-                                        </MapContainer>
+                                        <div className='mini-map'>
+                                            <MapContainer
+                                                center={[appointment.latitude, appointment.longitude]}
+                                                zoom={15}
+                                                scrollWheelZoom={true}
+                                            >
+                                                <TileLayer
+                                                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                                />
+                                                <Marker position={[appointment.latitude, appointment.longitude]}>
+                                                    <Popup>
+                                                        {appointment.name}
+                                                    </Popup>
+                                                </Marker>
+                                            </MapContainer>
+                                        </div>
                                         :
                                         <CardText>
                                             [MAPPA DISABILITATA]
@@ -97,7 +106,7 @@ const ConfirmAppointment = () => {
                     </Col>
                     <Col>
                         <Card spacing className='card-bg card-big no-after'>
-                            <CardBody>                                
+                            <CardBody>
                                 <CardTitleLoad title='Dettagli Appuntamento' loaded={true} />
                                 <ul>
                                     <li>

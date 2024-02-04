@@ -12,10 +12,22 @@ import RowTable from '../components/RowTable';
 
 const PrescriptionList = () => {
     const navigate = useNavigate();
-    const [prescrList, setPrescrList] = useState<{ patient: string, id: number, type: string; }[]>([]);
+    const [prescrList, setPrescrList] = useState<{ cf_patient: string, id: number, type: string; }[]>([]);
     const [filter, setFilter] = useState<string>("");
 
     const fetchPrescrList = async () => {
+        let medical_exams: { code: number, name: string; }[] = [];
+
+        const responseME = await fetch(`${BACKEND_URL}/api/v1/medical_exams`);
+        if (!responseME.ok) {
+            // TODO: handle error
+            console.log(responseME.statusText);
+            return;
+        }
+
+        const dataME = await responseME.json() as { medical_exams: { code: number, name: string; }[]; };
+        medical_exams = dataME.medical_exams;
+
         const response = await fetch(
             `${BACKEND_URL}/api/v1/prescriptions`,
             {
@@ -28,9 +40,16 @@ const PrescriptionList = () => {
         if (!response.ok) {
             console.log(response.statusText);
         }
-        const data = await response.json() as { prescriptions: { patient: string, id: number, type: string; }[]; };
+        const data = await response.json() as { prescriptions: { cf_patient: string, id: number, code_medical_examination: number; }[]; };
         console.log(data);
-        setPrescrList(data.prescriptions);
+        const prescriptions = data.prescriptions.map(v => {
+            return {
+                cf_patient: v.cf_patient,
+                id: v.id,
+                type: medical_exams.find(x => x.code == v.code_medical_examination)?.name!
+            };
+        })
+        setPrescrList(prescriptions);
     };
 
     const onSelection = async (id: number) => {
@@ -89,9 +108,9 @@ const PrescriptionList = () => {
                         <Table>
                             <thead className='table-dark'>
                                 <tr>
-                                    <th scope='col'>Chi</th>
-                                    <th scope='col'>Cosa</th>
-                                    <th scope='col'>Quando</th>
+                                    <th scope='col'>Paziente</th>
+                                    <th scope='col'>N. Prescrizione</th>
+                                    <th scope='col'>Esame</th>
                                     <th scope='col'>Azione</th>
                                 </tr>
                             </thead>
@@ -100,7 +119,7 @@ const PrescriptionList = () => {
                                     prescrList.map((prescr) => (
                                         <RowTable
                                             key={prescr.id}
-                                            where={prescr.patient}
+                                            where={prescr.cf_patient}
                                             distance={prescr.id.toString()}
                                             when={prescr.type}
                                             action={onSelection.bind(this, prescr.id)}
