@@ -1,19 +1,13 @@
 const { ethers } = require('ethers');
+const config = require('./rollup_config.js');
 const log4js = require("log4js");
 log4js.configure({
-    appenders: { rollup: { type: 'file', filename: 'rollup_logs.log', flags: 'w' } },
+    appenders: { rollup: { type: 'file', filename: 'scripts/rollup_logs.log', flags: 'w' } },
     categories: { default: { appenders: ['rollup'], level: 'all' } }
 });
 
 
-// queste magari vanno messe in un file apposito
-const MINISTER_PRIVATE_KEY = '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80'
-const RECIPIENT_ADDRESS = '0x70997970C51812dc3A010C7d01b50e0d17dc79C8';
-const NODE_URL_PRIVATE = 'http://localhost:8545';
-const NODE_URL_PUBLIC = 'http://localhost:8546';
-const ROLLUP_ONCE_EVERY = 5;
-
-// questa va bene qui penso
+// Last block number included in the last rollup
 var lastRollupCheckpoint = -1;
 
 /**
@@ -50,11 +44,11 @@ async function writeRollup(privateProvider, publicUrl, endBlock, logger) {
 
     // Connect to the public chain
     let publicProvider = new ethers.JsonRpcProvider(publicUrl);
-    let wallet = new ethers.Wallet(MINISTER_PRIVATE_KEY, publicProvider);
+    let wallet = new ethers.Wallet(config.MINISTER_PRIVATE_KEY, publicProvider);
 
     // Send the transaction
     let transaction = {
-        to: RECIPIENT_ADDRESS,
+        to: config.RECIPIENT_ADDRESS,
         value: ethers.parseUnits('1', 'wei'),
         data: packedData
     };
@@ -74,15 +68,18 @@ async function writeRollup(privateProvider, publicUrl, endBlock, logger) {
  */
 async function listenForBlocks(nodeUrl) {
     const privateProvider = new ethers.JsonRpcProvider(nodeUrl);
-    const logger = log4js.getLogger("rollup");
+    const logger = log4js.getLogger("rollup"); // logs are written in rollup_logs.log
 
     // Listen for new blocks
     privateProvider.on('block', async (blockNumber) => {
-        let finalizedBlock = await privateProvider.getBlock('finalized');
+        if (blockNumber % config.ROLLUP_ONCE_EVERY === 0) { // when 1 block out of ROLLUP_ONCE_EVERY is proposed
+            let finalizedBlock = (await privateProvider.getBlock('finalized')).number; // get the latest finalized block number, so history is very likely to be stable
+            let endBlock = lastRollupCheckpoint === -1 ? config.ROLLUP_ONCE_EVERY : lastRollupCheckpoint + config.ROLLUP_ONCE_EVERY; // compute the next rollup endpoint block number
 
-        if ((finalizedBlock.number != 0) && (finalizedBlock.number != lastRollupCheckpoint) && (finalizedBlock.number % ROLLUP_ONCE_EVERY === 0)) {
-            await writeRollup(privateProvider, NODE_URL_PUBLIC, finalizedBlock.number, logger);
-            lastRollupCheckpoint = finalizedBlock.number;
+            if ((finalizedBlock != 0) && (finalizedBlock != lastRollupCheckpoint) && (finalizedBlock >= endBlock)) { // if the rollup endpoint block is already finalized
+                await writeRollup(privateProvider, config.NODE_URL_PUBLIC, endBlock, logger); // write the rollup
+                lastRollupCheckpoint = endBlock; // update the last rollup checkpoint
+            }
         }
     });
 
@@ -91,16 +88,16 @@ async function listenForBlocks(nodeUrl) {
         try {
             await privateProvider.getBlockNumber(); // Try to fetch the block number to check the connection
         } catch (error) {
-            // shutdown the script in case of connection loss
+            // shutdown the script when hardhat is shut down
             await logger.warn('Connection to Ethereum node is lost:', error);
             process.exit(1);
         }
     };
-    setInterval(checkConnectionStatus, 2000);
+    setInterval(checkConnectionStatus, 3000);
 }
 
 async function main() {
-    listenForBlocks(NODE_URL_PRIVATE);
+    listenForBlocks(config.NODE_URL_PRIVATE);
 }
 
 main();

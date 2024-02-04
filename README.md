@@ -45,12 +45,16 @@ cd backend
 flask run
 ```
 ## Blockchain
-Execute these commands from inside the `frontend/` folder
-### `npx hardhat node`
-Starts the blockchain node. It always resets the chain.
+Execute these commands from inside the `frontend/` folder:
+### `npx hardhat node --port 8546`
+### `npx hardhat node --port 8545`
+Starts the blockchain nodes (8546 for public one, 8545 for private one). It always resets the chains.
 
 ### `npx hardhat run scripts/deploy.ts --network localhost`
-Deploys the contracts located in `contracts/`. The script needs to get updated when creating new contracts.
+Deploys the contracts located in `contracts/` on the private chain. The script needs to get updated when creating new contracts.
+
+### `node scripts/rollup.js &`
+Runs the rollup script in the background (& for Linux). It will shut down automatically when the connection to the private chain ends. Rollups are logged in the `scripts/rollup_logs.log` file.
 
 ### Chain explorer
 ```bash

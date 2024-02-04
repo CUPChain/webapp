@@ -36,3 +36,4 @@ yarn-error.log*
 
 # rollup log
 rollup_logs.log
+scripts/rollup_logs.log
