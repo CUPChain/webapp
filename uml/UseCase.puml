@@ -1,4 +1,4 @@
-@startuml
+@startuml UseCaseDiagram
 left to right direction
 actor Patient as p
 package Professional {
@@ -22,18 +22,21 @@ package "Administrative Services" {
   usecase "Give Hospital Role" as GHR
 }
  
-usecase "Perform Medical Statistic" as PMS
-usecase "Check Verifiability" as CV
+package "Blockchain Enabled"{
+  usecase "Perform Medical Statistic" as PMS
+  usecase "Check Verifiability" as CV
+}
 
 p -up-> CV
-g -up-> CV
+g --> CV
 p --> OP
 p --> BA
 p --> GTA
 d --> MP
 h --> AA
 h --> BPT
-g --> GDR
-g --> GHR
+h --> CV
+g -up-> GDR
+g -up-> GHR
 s --> PMS
 @enduml

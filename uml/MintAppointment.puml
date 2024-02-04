@@ -1,4 +1,4 @@
-@startuml
+@startuml MintAppointmentNFT
 title Mint Appointment NFT
 autonumber
 actor       Hospital       as Hospital

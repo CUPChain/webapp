@@ -1,4 +1,4 @@
-@startuml
+@startuml Reservation
 title Reservation
 autonumber
 

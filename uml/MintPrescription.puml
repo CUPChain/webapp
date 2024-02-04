@@ -1,4 +1,4 @@
-@startuml
+@startuml MintPrescriptionNFT
 title Mint Prescription NFT
 autonumber
 actor       Doctor       as Doctor

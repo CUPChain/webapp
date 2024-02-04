@@ -1,0 +1,103 @@
+<?xml version="1.0" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="827pt" height="116pt" viewBox="0.00 0.00 827.39 116.00">
+<g id="graph0" class="graph" transform="translate(4,112) scale(1)" data-name="G">
+
+<polygon fill="white" stroke="none" points="-4,4 -4,-112 823.39,-112 823.39,4 -4,4" style=""/>
+<!-- PrescriptionTokens -->
+<g id="node1" class="node" pointer-events="visible" data-name="PrescriptionTokens">
+
+<ellipse fill="none" stroke="black" cx="279.96" cy="-90" rx="86.27" ry="18" style=""/>
+<text text-anchor="middle" x="279.96" y="-85.8" font-family="Times,serif" font-size="14.00" style="">PrescriptionTokens</text>
+</g>
+<!-- ERC721 -->
+<g id="node2" class="node" pointer-events="visible" data-name="ERC721">
+
+<ellipse fill="none" stroke="black" cx="575.96" cy="-18" rx="44.11" ry="18" style=""/>
+<text text-anchor="middle" x="575.96" y="-13.8" font-family="Times,serif" font-size="14.00" style="">ERC721</text>
+</g>
+<!-- PrescriptionTokens&#45;&gt;ERC721 -->
+<g id="edge1" class="edge" data-name="PrescriptionTokens-&gt;ERC721">
+
+<path fill="none" stroke="black" d="M342.02,-77.17C391.36,-67.35 461.97,-52.39 522.96,-36 525.87,-35.22 528.87,-34.37 531.88,-33.49" style=""/>
+<polygon fill="black" stroke="black" points="532.74,-36.89 541.29,-30.63 530.71,-30.19 532.74,-36.89" style=""/>
+</g>
+<!-- ERC721Enumerable -->
+<g id="node3" class="node" pointer-events="visible" data-name="ERC721Enumerable">
+
+<ellipse fill="none" stroke="black" cx="90.96" cy="-18" rx="90.91" ry="18" style=""/>
+<text text-anchor="middle" x="90.96" y="-13.8" font-family="Times,serif" font-size="14.00" style="">ERC721Enumerable</text>
+</g>
+<!-- PrescriptionTokens&#45;&gt;ERC721Enumerable -->
+<g id="edge2" class="edge" data-name="PrescriptionTokens-&gt;ERC721Enumerable">
+
+<path fill="none" stroke="black" d="M238.95,-73.81C210.91,-63.43 173.5,-49.57 143.3,-38.39" style=""/>
+<polygon fill="black" stroke="black" points="144.55,-35.12 133.96,-34.93 142.12,-41.68 144.55,-35.12" style=""/>
+</g>
+<!-- ERC721Burnable -->
+<g id="node4" class="node" pointer-events="visible" data-name="ERC721Burnable">
+
+<ellipse fill="none" stroke="black" cx="279.96" cy="-18" rx="79.9" ry="18" style=""/>
+<text text-anchor="middle" x="279.96" y="-13.8" font-family="Times,serif" font-size="14.00" style="">ERC721Burnable</text>
+</g>
+<!-- PrescriptionTokens&#45;&gt;ERC721Burnable -->
+<g id="edge3" class="edge" data-name="PrescriptionTokens-&gt;ERC721Burnable">
+
+<path fill="none" stroke="black" d="M279.96,-71.7C279.96,-64.41 279.96,-55.73 279.96,-47.54" style=""/>
+<polygon fill="black" stroke="black" points="283.46,-47.62 279.96,-37.62 276.46,-47.62 283.46,-47.62" style=""/>
+</g>
+<!-- AccessControl -->
+<g id="node5" class="node" pointer-events="visible" data-name="AccessControl">
+
+<ellipse fill="none" stroke="black" cx="445.96" cy="-18" rx="67.79" ry="18" style=""/>
+<text text-anchor="middle" x="445.96" y="-13.8" font-family="Times,serif" font-size="14.00" style="">AccessControl</text>
+</g>
+<!-- PrescriptionTokens&#45;&gt;AccessControl -->
+<g id="edge4" class="edge" data-name="PrescriptionTokens-&gt;AccessControl">
+
+<path fill="none" stroke="black" d="M316.8,-73.46C341.48,-63.06 374.14,-49.28 400.45,-38.19" style=""/>
+<polygon fill="black" stroke="black" points="401.67,-41.47 409.53,-34.36 398.95,-35.02 401.67,-41.47" style=""/>
+</g>
+<!-- AppointmentTokens -->
+<g id="node6" class="node" pointer-events="visible" data-name="AppointmentTokens">
+
+<ellipse fill="none" stroke="black" cx="474.96" cy="-90" rx="90.36" ry="18" style=""/>
+<text text-anchor="middle" x="474.96" y="-85.8" font-family="Times,serif" font-size="14.00" style="">AppointmentTokens</text>
+</g>
+<!-- AppointmentTokens&#45;&gt;ERC721 -->
+<g id="edge5" class="edge" data-name="AppointmentTokens-&gt;ERC721">
+
+<path fill="none" stroke="black" d="M499.15,-72.23C512.94,-62.68 530.35,-50.61 545.11,-40.38" style=""/>
+<polygon fill="black" stroke="black" points="546.9,-43.4 553.12,-34.83 542.91,-37.64 546.9,-43.4" style=""/>
+</g>
+<!-- AppointmentTokens&#45;&gt;ERC721Enumerable -->
+<g id="edge6" class="edge" data-name="AppointmentTokens-&gt;ERC721Enumerable">
+
+<path fill="none" stroke="black" d="M409.82,-77.13C342.69,-64.89 238.11,-45.83 167.18,-32.89" style=""/>
+<polygon fill="black" stroke="black" points="168.05,-29.5 157.58,-31.15 166.79,-36.38 168.05,-29.5" style=""/>
+</g>
+<!-- AppointmentTokens&#45;&gt;ERC721Burnable -->
+<g id="edge8" class="edge" data-name="AppointmentTokens-&gt;ERC721Burnable">
+
+<path fill="none" stroke="black" d="M432.64,-73.81C403.09,-63.2 363.44,-48.97 331.95,-37.66" style=""/>
+<polygon fill="black" stroke="black" points="333.2,-34.39 322.61,-34.31 330.84,-40.98 333.2,-34.39" style=""/>
+</g>
+<!-- AppointmentTokens&#45;&gt;AccessControl -->
+<g id="edge9" class="edge" data-name="AppointmentTokens-&gt;AccessControl">
+
+<path fill="none" stroke="black" d="M467.79,-71.7C464.66,-64.15 460.92,-55.12 457.42,-46.68" style=""/>
+<polygon fill="black" stroke="black" points="460.68,-45.4 453.62,-37.5 454.22,-48.08 460.68,-45.4" style=""/>
+</g>
+<!-- ERC721URIStorage -->
+<g id="node7" class="node" pointer-events="visible" data-name="ERC721URIStorage">
+
+<ellipse fill="none" stroke="black" cx="728.96" cy="-18" rx="90.37" ry="18" style=""/>
+<text text-anchor="middle" x="728.96" y="-13.8" font-family="Times,serif" font-size="14.00" style="">ERC721URIStorage</text>
+</g>
+<!-- AppointmentTokens&#45;&gt;ERC721URIStorage -->
+<g id="edge7" class="edge" data-name="AppointmentTokens-&gt;ERC721URIStorage">
+
+<path fill="none" stroke="black" d="M526.36,-74.83C566.9,-63.66 623.59,-48.04 666.7,-36.16" style=""/>
+<polygon fill="black" stroke="black" points="667.46,-39.58 676.17,-33.55 665.6,-32.83 667.46,-39.58" style=""/>
+</g>
+</g>
+</svg>
