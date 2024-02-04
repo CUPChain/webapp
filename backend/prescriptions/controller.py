@@ -16,10 +16,12 @@ def retrieve_prescription(id):
         flask.Response: The JSON response containing the prescription and associated medical exam data,
         or a message indicating that no prescription was found with the given ID.
     """
-
-    prescription = db.session.execute(
-        db.select(Prescription).filter_by(id=id)
-    ).one_or_none()
+    prescription = (
+        db.session.query(Prescription, MedicalExam)
+        .filter(Prescription.id == id)
+        .join(Prescription, Prescription.code_medical_examination == MedicalExam.code)
+        .one_or_none()
+    )
 
     if prescription:
         return jsonify(
@@ -128,26 +130,15 @@ def retrieve_all_prescriptions_by_doctor(cf):
         A JSON response containing the list of prescriptions for the doctor.
         If no prescriptions are found, a JSON response with an error message is returned.
     """
-    # prescriptions = db.session.execute(
-    #     db.select(Prescription).where(Prescription.cf_doctor == cf)
-    # )
-
     prescriptions = db.session.execute(
-        db.select(Prescription, MedicalExam)
-        .where(Prescription.cf_doctor == cf)
-        .join(MedicalExam, Prescription.code_medical_examination == MedicalExam.code)
+        db.select(Prescription).where(Prescription.cf_doctor == cf)
     )
-
     if prescriptions:
-        prescriptions = list(prescriptions)
         return jsonify(
             {
                 "prescriptions": [
                     prescription[0].toDict() for prescription in prescriptions
-                ],
-                "medical_exam": [
-                    prescription[1].toDict() for prescription in prescriptions
-                ],
+                ]
             }
         )
     else:
