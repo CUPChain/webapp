@@ -25,6 +25,7 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
     mapping (uint256 => bytes32) private tokenIdToHash; // Metadata hash of the appointment token
     mapping (uint256 => uint256) private tokenIdToPrescriptionId; // Prescription token that was exchanged for the appointment token
     bytes32 private constant MINTER_ROLE = keccak256("MINTER_ROLE"); // Role for minting appointment tokens
+    address private deployer; // Address of the contract deployer
 
     /**
      * @dev Initializes the AppointmentTokens contract.
@@ -36,6 +37,7 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
     {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         prescriptionsContract = _prescriptionsContract;
+        deployer = msg.sender;
     }
 
     /**
@@ -193,5 +195,15 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
         returns (bool)
     {
         return super.supportsInterface(interfaceId);
+    }
+
+    /**
+     * @dev Terminate the contract. Only the deployer can call this function.
+     * 
+     * 
+     */
+    function terminate() public {
+        require(msg.sender == deployer, "Only the deployer can terminate the contract");
+        selfdestruct(payable(deployer));
     }
 }

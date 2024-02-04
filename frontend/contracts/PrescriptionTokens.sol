@@ -26,6 +26,7 @@ contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, AccessC
     mapping (uint256 => uint16) private tokenIdToCategory; // Category of the prescription token
 
     bytes32 private constant MINTER_ROLE = keccak256("MINTER_ROLE"); // Role for minting prescription tokens
+    address private deployer; // Address of the contract deployer
 
     /**
      * @dev Throws if the categories of the prescription and appointment tokens do not match.
@@ -35,9 +36,11 @@ contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, AccessC
     /**
      * @dev Constructor function that initializes the PrescriptionTokens contract.
      * It sets the name and symbol for the ERC721 token and grants the DEFAULT_ADMIN_ROLE to the contract deployer.
+     * Also sets the deployer address.
      */
     constructor() ERC721("Prescription", "PRE"){
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        deployer = msg.sender;
     }
 
     /**
@@ -150,5 +153,15 @@ contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, AccessC
         returns (bool)
     {
         return super.supportsInterface(interfaceId);
+    }
+
+    /**
+     * @dev Terminate the contract. Only the deployer can call this function.
+     * 
+     * 
+     */
+    function terminate() public {
+        require(msg.sender == deployer, "Only the deployer can terminate the contract");
+        selfdestruct(payable(deployer));
     }
 }
