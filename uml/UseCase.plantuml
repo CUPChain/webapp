@@ -1,0 +1,39 @@
+@startuml
+left to right direction
+actor Patient as p
+package Professional {
+  actor Government as g
+  actor Doctor as d
+  actor Hospital as h
+  actor Statistician as s
+}
+
+package "Medical Services" {
+  usecase "Give Prescription Token" as MP
+  usecase "Obtain Prescription Token" as OP 
+  usecase "Book Appointment" as BA
+  usecase "Produce Appointment Token" as AA
+  usecase "Go to Appointment" as GTA
+  usecase "Burn Prescription Token" as BPT
+}
+
+package "Administrative Services" {
+  usecase "Give Doctor Role" as GDR
+  usecase "Give Hospital Role" as GHR
+}
+ 
+usecase "Perform Medical Statistic" as PMS
+usecase "Check Verifiability" as CV
+
+p -up-> CV
+g -up-> CV
+p --> OP
+p --> BA
+p --> GTA
+d --> MP
+h --> AA
+h --> BPT
+g --> GDR
+g --> GHR
+s --> PMS
+@enduml
