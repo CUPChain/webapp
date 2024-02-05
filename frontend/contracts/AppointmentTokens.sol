@@ -21,18 +21,18 @@ import "./PrescriptionTokens.sol";
  * patients for prescription token that has the same category.
  */
 contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, AccessControl {
-    // Address of the PrescriptionTokens contract, which will be allowed to transfer appoinment tokens for hospitals
+    /// @notice Address of the PrescriptionTokens contract, which will be allowed to transfer appoinment tokens for hospitals
     address prescriptionsContract;
-    // Category of the appointment token. It indicates the type of medical exam represented by the appointment
+    /// @notice Category of the appointment token. It indicates the type of medical exam represented by the appointment
     mapping (uint256 => uint16) private tokenIdToCategory;
-    // Metadata hash of the appointment token
+    /// @notice Metadata hash of the appointment token
     mapping (uint256 => bytes32) private tokenIdToHash;
-    // Prescription token that was exchanged for the appointment token
+    /// @notice Prescription token that was exchanged for the appointment token
     mapping (uint256 => uint256) private tokenIdToPrescriptionId;
 
-    // Role for minting appointment tokens
+    /// @notice Role for minting appointment tokens
     bytes32 private constant MINTER_ROLE = keccak256("MINTER_ROLE");
-    // Address of the contract deployer
+    /// @notice Address of the contract deployer
     address private deployer;
 
     /**

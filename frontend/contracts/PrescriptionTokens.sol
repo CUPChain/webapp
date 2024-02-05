@@ -20,12 +20,12 @@ import "./AppointmentTokens.sol";
  * It also allows patient to exchange prescription tokens for appointment tokens.
  */
 contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, AccessControl {
-    // Category of the prescription token. It indicates the type of medical exam requested by the prescription
+    /// @notice Category of the prescription token. It indicates the type of medical exam requested by the prescription
     mapping (uint256 => uint16) private tokenIdToCategory;
 
-    // Role for minting prescription tokens
+    /// @notice Role for minting prescription tokens
     bytes32 private constant MINTER_ROLE = keccak256("MINTER_ROLE");
-    // Address of the contract deployer
+    /// @notice Address of the contract deployer
     address private deployer;
 
     /**

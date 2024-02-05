@@ -30,9 +30,10 @@ async function writeRollup(privateProvider, publicUrl, endBlock, logger) {
 
     // compute hash of concatenated hashes
     let hashDigest = ethers.keccak256(ethers.toUtf8Bytes(toHash))
+    let numberDigest = BigInt(hashDigest); // convert to integer to save gas
 
     // Pack the data to be sent in the transaction
-    let packedData = ethers.solidityPacked(['bytes32', 'uint256', 'uint256'], [hashDigest, startBlock, endBlock]);
+    let packedData = ethers.solidityPacked(['uint256', 'uint256', 'uint256'], [numberDigest, startBlock, endBlock]);
 
     // Extracting info from packed data to verify correctness
     let revertedhash = packedData.slice(0, 66);
