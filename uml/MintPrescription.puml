@@ -1,11 +1,14 @@
 @startuml MintPrescriptionNFT
 title Mint Prescription NFT
 autonumber
+actor       Patient      as Patient
 actor       Doctor       as Doctor
 boundary    PrescriptionPage    as PrescriptionPage
 control     PrescriptionController     as PrescriptionController
 entity      Prescription      as Prescription
 database    Database    as Database
+
+Patient -> Doctor : Give public key
 Doctor -> PrescriptionPage ++ : Create prescription
 PrescriptionPage -> PrescriptionController ++ : Create prescription 
 PrescriptionController -> Prescription ++ : Create prescription
@@ -19,4 +22,6 @@ participant PrescriptionSmartContract as PrescriptionSmartContract
 PrescriptionPage -> PrescriptionSmartContract : Mint Prescription NFT
 PrescriptionSmartContract -> PrescriptionPage : Emit Event
 PrescriptionPage -> Doctor -- : Prescription created
+Doctor -> Patient -- : Prescription created
+
 @enduml

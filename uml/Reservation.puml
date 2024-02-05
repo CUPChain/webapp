@@ -4,41 +4,57 @@ autonumber
 
 actor Patient as Patient
 boundary ReservationPage as ReservationPage
-participant PatientWallet as PatientWallet
-participant SmartContract as SmartContract 
+participant PrescriptionSmartContract as PrescriptionSmartContract
+participant AppointmentSmartContract as AppointmentSmartContract 
 control ReservationController as ReservationController
+entity Prescription as Prescription
+entity Appointment as Appointment
 database Database as Database
 
 Patient -> ReservationPage ++ : Get my prescription NFTs
-ReservationPage -> PatientWallet ++ : Get my prescription NFTs
-PatientWallet -> ReservationPage -- : Response with prescription NFTs
-ReservationPage -> ReservationController ++ : Retrieve additional data for my prescription NFTs
-ReservationController -> Database ++ : Retrieve additional data for my prescription NFTs
-Database -> ReservationController -- : Response with additional data for my prescription NFTs
-ReservationController -> ReservationPage -- : Response with additional data for my prescription NFTs
-ReservationPage -> Patient -- : Show my prescription NFTs with additional data
+ReservationPage -> PrescriptionSmartContract ++ : Get my prescription NFTs
+PrescriptionSmartContract -> ReservationPage -- : Prescription NFTs
+ReservationPage -> ReservationController ++ : Retrieve additional data for NFTs IDs
+ReservationController -> Prescription ++ : Retrieve additional data for NFTs IDs
+Prescription -> Database ++ : Retrieve additional data for NFTs IDs
+Database -> Prescription -- : Prescriptions with additional data
+Prescription -> ReservationController -- : Prescriptions with additional data
+ReservationController -> ReservationPage -- : Prescriptions with additional data
+ReservationPage -> Patient -- : Show my prescription NFTs with all data
 
 Patient -> ReservationPage ++ : Click on a prescription NFT
 ReservationPage -> ReservationController ++ : Retrieve nearby appointments for the category of the prescription
-ReservationController -> Database ++ : Retrieve nearby appointments for the category of the prescription
-Database -> ReservationController -- : Response with nearby appointments for the category of the prescription
-ReservationController -> ReservationPage -- : Response with nearby appointments for the category of the prescription
+ReservationController -> Appointment ++ : Retrieve nearby appointments for the category of the prescription
+Appointment -> Database ++ : Retrieve nearby appointments for the category of the prescription
+Database -> Appointment -- : Appointments nearby for the category of the prescription
+Appointment -> ReservationController -- : Appointments nearby for the category of the prescription
+ReservationController -> ReservationPage -- : Appointments nearby for the category of the prescription
 ReservationPage -> Patient -- : Show nearby appointments for the category of the prescription
 
 Patient -> ReservationPage ++ : Click on an appointment
-ReservationPage -> ReservationController ++ : Retrieve appointment details
-ReservationController -> Database ++ : Retrieve appointment details
-Database -> ReservationController -- : Response with appointment details
-ReservationController -> ReservationPage -- : Response with appointment details
-ReservationPage -> Patient -- : Show appointment details
+ReservationPage -> ReservationController ++ : Retrieve appointment ID details
+ReservationController -> Appointment ++ : Retrieve appointment ID details
+Appointment -> Database ++ : Retrieve appointment ID details
+Database -> Appointment -- : Appointment 
+Appointment -> ReservationController -- : Appointment
+ReservationController -> ReservationPage -- : Appointment
+ReservationPage -> Patient -- : Show appointment with all details
+
 
 Patient -> ReservationPage ++ : Click on "Reserve Appointment"
+
+ReservationPage -> PrescriptionSmartContract ++ : Give prescription NFT to hospital
+PrescriptionSmartContract -> AppointmentSmartContract ++ : Give appointment NFT to patient
+AppointmentSmartContract -> PrescriptionSmartContract  --: Transfer appointment NFT to patient
+PrescriptionSmartContract -> ReservationPage -- : Emit event
+
 ReservationPage -> ReservationController ++ : Reserve the appointment
-ReservationController -> Database ++ : Reserve the appointment
-Database -> ReservationController -- : Response with reservation status
-ReservationController -> ReservationPage -- : Response with reservation status
-ReservationPage -> SmartContract ++ : Exchange prescription NFT for appointment NFT
-SmartContract -> ReservationPage -- : Emit event 
-ReservationPage -> Patient -- : Show reservation status
+ReservationController -> Appointment ++ : Reserve appointment
+Appointment -> Database ++ : Reserve appointment
+Database -> Appointment -- : Appointment reserved
+Appointment -> ReservationController -- : Appointment reserved
+ReservationController -> ReservationPage -- : Appointment reserved
+ 
+ReservationPage -> Patient -- : Show reservation
 
 @enduml
