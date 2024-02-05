@@ -55,9 +55,7 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
      * It sets the name and symbol for the token and grants the DEFAULT_ADMIN_ROLE to the contract deployer.
      * Also sets the deployer address.
      */
-    constructor(address _prescriptionsContract)
-        ERC721("Appointment", "APP")
-    {
+    constructor(address _prescriptionsContract) ERC721("Appointment", "APP") {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         prescriptionsContract = _prescriptionsContract;
         deployer = msg.sender;
@@ -71,9 +69,7 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
      * @param metadataHash The hash of the metadata associated with the appointment token.
      * @param category The category of the appointment token.
      */
-    function safeMint(uint256 tokenId, bytes32 metadataHash, uint16 category)
-        public
-    {
+    function safeMint(uint256 tokenId, bytes32 metadataHash, uint16 category) public {
         _checkRole(MINTER_ROLE);
         _safeMint(msg.sender, tokenId);
         tokenIdToCategory[tokenId] = category;

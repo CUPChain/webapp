@@ -53,7 +53,7 @@ contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, AccessC
      * It sets the name and symbol for the token and grants the DEFAULT_ADMIN_ROLE to the contract deployer.
      * Also sets the deployer address.
      */
-    constructor() ERC721("Prescription", "PRE"){
+    constructor() ERC721("Prescription", "PRE") {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         deployer = msg.sender;
     }

@@ -9,7 +9,7 @@ describe.only("Contract tests", function () {
     async function deploymentFixture() {
         await network.provider.send("evm_setAutomine", [true]);
 
-        const [owner, doctor, hospital] = await ethers.getSigners();
+        const [owner, doctor, hospital, patient] = await ethers.getSigners();
 
         const prescriptionContract = await ethers.deployContract("PrescriptionTokens");
 
@@ -19,7 +19,7 @@ describe.only("Contract tests", function () {
 
         await appointmentContract.waitForDeployment();
 
-        return { prescriptionContract, appointmentContract, owner, doctor, hospital };
+        return { prescriptionContract, appointmentContract, owner, doctor, hospital, patient };
     }
 
     describe.only("Deployment", function () {
@@ -29,7 +29,8 @@ describe.only("Contract tests", function () {
                 appointmentContract,
                 owner,
                 doctor,
-                hospital
+                hospital,
+                patient
             } = await loadFixture(deploymentFixture);
 
             expect(await prescriptionContract.hasRole(DEFAULT_ADMIN_ROLE, owner))
@@ -45,7 +46,8 @@ describe.only("Contract tests", function () {
                 appointmentContract,
                 owner,
                 doctor,
-                hospital
+                hospital,
+                patient
             } = await loadFixture(deploymentFixture);
 
             expect(await prescriptionContract.getRoleAdmin(MINTER_ROLE)).to.equal(DEFAULT_ADMIN_ROLE);
@@ -61,7 +63,8 @@ describe.only("Contract tests", function () {
                 appointmentContract,
                 owner,
                 doctor,
-                hospital
+                hospital,
+                patient
             } = await loadFixture(deploymentFixture);
 
             expect(await prescriptionContract.name()).to.equal("Prescription");
@@ -75,7 +78,8 @@ describe.only("Contract tests", function () {
                 appointmentContract,
                 owner,
                 doctor,
-                hospital
+                hospital,
+                patient
             } = await loadFixture(deploymentFixture);
 
             expect(await prescriptionContract.symbol()).to.equal("PRE");
@@ -91,7 +95,8 @@ describe.only("Contract tests", function () {
                 appointmentContract,
                 owner,
                 doctor,
-                hospital
+                hospital,
+                patient
             } = await loadFixture(deploymentFixture);
 
             expect(await prescriptionContract.grantRole(MINTER_ROLE, doctor), "Should grant minter role to doctor")
@@ -113,7 +118,8 @@ describe.only("Contract tests", function () {
                 appointmentContract,
                 owner,
                 doctor,
-                hospital
+                hospital,
+                patient
             } = await loadFixture(deploymentFixture);
 
             await expect(prescriptionContract.connect(hospital).grantRole(MINTER_ROLE, doctor), 
@@ -139,7 +145,8 @@ describe.only("Contract tests", function () {
                 appointmentContract,
                 owner,
                 doctor,
-                hospital
+                hospital,
+                patient
             } = await loadFixture(deploymentFixture);
 
             await prescriptionContract.grantRole(MINTER_ROLE, doctor);
@@ -165,7 +172,8 @@ describe.only("Contract tests", function () {
                 appointmentContract,
                 owner,
                 doctor,
-                hospital
+                hospital,
+                patient
             } = await loadFixture(deploymentFixture);
 
             await prescriptionContract.grantRole(MINTER_ROLE, doctor);
@@ -185,6 +193,80 @@ describe.only("Contract tests", function () {
                 .withArgs(doctor, DEFAULT_ADMIN_ROLE);
 
             expect(await appointmentContract.hasRole(MINTER_ROLE, hospital), "Hospital shoul still have minter role").to.be.true;
+        });
+    });
+
+    describe.only("Minting tokens", function () {
+        it("Should mint prescription token correctly", async function () {
+            const {
+                prescriptionContract,
+                appointmentContract,
+                owner,
+                doctor,
+                hospital,
+                patient
+            } = await loadFixture(deploymentFixture);
+
+            await prescriptionContract.grantRole(MINTER_ROLE, doctor);
+
+            expect(await prescriptionContract.connect(doctor).safeMint(patient, 1, 1), 
+                "Should mint prescription token to patient")
+                .to.emit(prescriptionContract, "MintedPrescription").withArgs(1, patient);
+
+            expect(await prescriptionContract.ownerOf(1), "Patient should be now the owner of the prescription token")
+                .to.equal(patient);
+        });
+
+        it("Should mint appointment token correctly", async function () {
+            const {
+                prescriptionContract,
+                appointmentContract,
+                owner,
+                doctor,
+                hospital,
+                patient
+            } = await loadFixture(deploymentFixture);
+
+            await appointmentContract.grantRole(MINTER_ROLE, hospital);
+
+            expect(await appointmentContract.connect(hospital).safeMint(2, ethers.id(""), 1), 
+                "Should mint appointment token to hospital")
+                .to.emit(appointmentContract, "MintedAppointment").withArgs(2);
+
+            expect(await appointmentContract.ownerOf(2), "Hospital should now be the owner of the appointment token")
+                .to.equal(hospital);
+        });
+
+        it("Should not mint prescription token correctly", async function () {
+            const {
+                prescriptionContract,
+                appointmentContract,
+                owner,
+                doctor,
+                hospital,
+                patient
+            } = await loadFixture(deploymentFixture);
+
+            await expect(prescriptionContract.connect(doctor).safeMint(patient, 1, 1), 
+                "Doctor should not be able to mint prescription without role")
+                .to.be.revertedWithCustomError(prescriptionContract, "AccessControlUnauthorizedAccount")
+                .withArgs(doctor, MINTER_ROLE);
+        });
+
+        it("Should not mint appointment token correctly", async function () {
+            const {
+                prescriptionContract,
+                appointmentContract,
+                owner,
+                doctor,
+                hospital,
+                patient
+            } = await loadFixture(deploymentFixture);
+
+            await expect(appointmentContract.connect(hospital).safeMint(2, ethers.id(""), 1), 
+                "Hospital should not be able to mint appointment without role")
+                .to.be.revertedWithCustomError(appointmentContract, "AccessControlUnauthorizedAccount")
+                .withArgs(hospital, MINTER_ROLE);
         });
     });
 });
