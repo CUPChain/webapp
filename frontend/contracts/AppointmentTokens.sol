@@ -36,6 +36,21 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
     address private deployer;
 
     /**
+     * @dev Emitted when an appointment token is being minted.
+     *
+     * `tokenId` is the id of the token that is being minted.
+     */
+    event MintedAppointment(uint256 tokenId);
+    /**
+     * @dev Emitted when an appointment is being cancelled.
+     *
+     * `appointmentId` is the id of the appointment token
+     * that is being returned to the ospital in exchange for
+     * the prescription token identified by `prescriptionId`.
+     */
+    event CancelledAppointment(uint256 appointmentId, uint256 prescriptionId);
+
+    /**
      * @dev Constructor function that initializes the PrescriptionTokens contract.
      * It sets the name and symbol for the token and grants the DEFAULT_ADMIN_ROLE to the contract deployer.
      * Also sets the deployer address.
@@ -63,6 +78,8 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
         _safeMint(msg.sender, tokenId);
         tokenIdToCategory[tokenId] = category;
         tokenIdToHash[tokenId] = metadataHash;
+
+        emit MintedAppointment(tokenId);
     }
 
     /**
@@ -139,6 +156,8 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
         // This is the only function that allows this contract to transfer prescriptions,
         // and it only exchanges them for the appointment that was made with them.
         PrescriptionTokens(prescriptionsContract).safeTransferFrom(hospital, msg.sender, prescription);
+
+        emit CancelledAppointment(appointmentToken, prescription);
     }
 
     // The following functions are overrides required by Solidity.

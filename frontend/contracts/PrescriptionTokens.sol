@@ -34,6 +34,21 @@ contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, AccessC
     error CategoriesDontMatch();
 
     /**
+     * @dev Emitted when a prescription token is being minted.
+     *
+     * `tokenId` is the id of the token that is being minted.
+     */
+    event MintedPrescription(uint256 tokenId, address recipient);
+    /**
+     * @dev Emitted when an appointment is being booked.
+     *
+     * `appointmentId` is the id of the appointment token
+     * that is being retrieved from the ospital in exchange for
+     * the prescription token identified by `prescriptionId`.
+     */
+    event BookedAppointment(uint256 prescriptionId, uint256 appointmentId);
+
+    /**
      * @dev Constructor function that initializes the PrescriptionTokens contract.
      * It sets the name and symbol for the token and grants the DEFAULT_ADMIN_ROLE to the contract deployer.
      * Also sets the deployer address.
@@ -57,6 +72,8 @@ contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, AccessC
         _checkRole(MINTER_ROLE);
         _safeMint(to, tokenId);
         tokenIdToCategory[tokenId] = category;
+
+        emit MintedPrescription(tokenId, to);
     }
 
      /**
@@ -103,6 +120,8 @@ contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, AccessC
         if (tokenIdToCategory[prescriptionToken] != AppointmentTokens(appointmentsContract).getCategory(appointmentToken)) revert CategoriesDontMatch();
         safeTransferFrom(msg.sender, hospital, prescriptionToken);
         AppointmentTokens(appointmentsContract).exchangeForPrescription(hospital, msg.sender, appointmentToken, prescriptionToken);
+
+        emit BookedAppointment(prescriptionToken, appointmentToken);
     }
 
     // The following functions are overrides required by Solidity.
