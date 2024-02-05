@@ -210,8 +210,7 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
      * 
      */
     function terminate() public {
-        if (msg.sender == deployer) {
-            selfdestruct(payable(deployer));
-        }
+        require(msg.sender == deployer, "You are not the deployer");
+        selfdestruct(payable(deployer));
     }
 }
