@@ -55,39 +55,37 @@ const App = () => {
     const prescrContract = new ethers.Contract(PRESCRIPTIONS_CONTRACT, PrescriptionTokens.abi, provider);
     const apptContract = new ethers.Contract(APPOINTMENTS_CONTRACT, AppointmentTokens.abi, provider);
 
-    prescrContract.on("Transfer", async (from, to, tokenID, event) => {
+    prescrContract.on("MintedPrescription", async (tokenID, recipient, event) => {
       console.log(event);
-      let title = "Token prescrizione";
-      let message = ""
-      const [, signer] = await loginMetamask();
-      const address = await signer.getAddress();
-
-      if (from === ethers.ZeroAddress) {
-        title = "Token prescrizione"; 
-        message = `Creato token prescrizione n. ${tokenID}`;
-      } else if (to === address) {
-        message = `Ricevuto Token prescrizione n. ${tokenID}`;
-      } else if (from === address) {
-        message = `Spedito Token prescrizione n. ${tokenID}`;
-      }
+      let title = "Token prescrizione creato";
+      let message = `Creato token prescrizione n. ${tokenID}`;
       notify(title,
         <Notification type="success" text={message} />,
       )
     });
-    apptContract.on("Transfer", async (from, to, tokenID, event) => {
-      console.log(event);
-      let title = "Token appuntamento";
-      let message = ""
-      const [, signer] = await loginMetamask();
-      const address = await signer.getAddress();
 
-      if (from === ethers.ZeroAddress) {
-        message = `Creato token appuntamento n. ${tokenID}`;
-      } else if (to === address) {
-        message = `Ricevuto Token appuntamento n. ${tokenID}`;
-      } else if (from === address) {
-        message = `Spedito Token appuntamento n. ${tokenID}`;
-      }
+    prescrContract.on("BookedAppointment", async (prescriptionID, appointmentID, event) => {
+      console.log(event);
+      let title = "Appuntamento prenotato";
+      let message = `Scambiato token prescrizione n. ${prescriptionID} per token appuntamento n. ${appointmentID}`;
+      notify(title,
+        <Notification type="success" text={message} />,
+      )
+    });
+
+    apptContract.on("MintedAppointment", async (tokenID, event) => {
+      console.log(event);
+      let title = "Token appuntamento creato";
+      let message = `Creato token appuntamento n. ${tokenID}`;
+      notify(title,
+        <Notification type="success" text={message} />,
+      )
+    });
+
+    apptContract.on("CancelledAppointment", async (appointmentID, prescriptionID, event) => {
+      console.log(event);
+      let title = "Appuntamento cancellato";
+      let message = `Cancellato appuntamento n. ${appointmentID}, riottenuto token prescrizione n. ${prescriptionID}`;
       notify(title,
         <Notification type="success" text={message} />,
       )
