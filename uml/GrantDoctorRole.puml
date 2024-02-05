@@ -1,0 +1,28 @@
+@startuml DoctorRole
+title Grant Doctor Role
+autonumber
+
+actor Government
+actor Doctor
+participant PrescriptionSmartContract
+participant AccessControl
+
+
+Government -> PrescriptionSmartContract : Grant role to Doctor
+PrescriptionSmartContract -> AccessControl : Grant role to Doctor
+AccessControl -> AccessControl : Check if sender is authorized
+
+alt #LightGreen Valid Public Address
+
+    AccessControl -> PrescriptionSmartContract : Doctor role granted
+    AccessControl -> Government : Emit RoleGranted event
+    PrescriptionSmartContract -> Doctor : Doctor enabled to mint prescription tokens
+
+else #LightCoral Invalid Public Address
+
+    AccessControl -> PrescriptionSmartContract : Revert and do not grant doctor role
+    PrescriptionSmartContract -> Doctor : Doctor not enabled to mint prescription tokens
+
+end
+
+@enduml

@@ -21,7 +21,7 @@ Database -> LoginController : Current Nonce
 LoginController -> LoginPage : Current Nonce
 LoginPage -> User : Sign this Nonce with Metamask
 
-else #Pink Invalid Public Address
+else #LightCoral Invalid Public Address
 
 Database -> LoginController : No, this public address is not valid
 LoginController -> LoginPage : Invalid public address 
@@ -42,7 +42,7 @@ Database -> LoginController : Session JWT
 LoginController -> LoginPage : Session JWT
 LoginPage -> User : Authenticated
 
-else #Pink Invalid Signature
+else #LightCoral Invalid Signature
 
 LoginController -> LoginPage : Invalid Signature
 LoginPage -> User !! : Invalid Signature

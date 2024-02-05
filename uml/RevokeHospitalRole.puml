@@ -1,0 +1,28 @@
+@startuml HospitalRole
+title Revoke Hospital Role
+autonumber
+
+actor Government
+actor Hospital
+participant AppointmentSmartContract
+participant AccessControl
+
+
+Government -> AppointmentSmartContract : Revoke role to Hospital
+AppointmentSmartContract -> AccessControl : Revoke role to Hospital
+AccessControl -> AccessControl : Check if sender is authorized
+
+alt #LightGreen Valid Public Address
+
+    AccessControl -> AppointmentSmartContract : Hospital role revoked
+    AccessControl -> Government : Emit RoleRevoked event
+    AppointmentSmartContract -> Hospital : Hospital disabled to mint appointment tokens
+
+else #LightCoral Invalid Public Address
+
+    AccessControl -> AppointmentSmartContract : Revert and do not revoke Hospital role
+    AppointmentSmartContract -> Hospital : Hospital not disabled to mint appointment tokens
+
+end
+
+@enduml

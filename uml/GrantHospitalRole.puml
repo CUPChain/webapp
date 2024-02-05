@@ -1,0 +1,28 @@
+@startuml HospitalRole
+title Grant Hospital Role
+autonumber
+
+actor Government
+actor Hospital
+participant AppointmentSmartContract
+participant AccessControl
+
+
+Government -> AppointmentSmartContract : Grant role to Hospital
+AppointmentSmartContract -> AccessControl : Grant role to Hospital
+AccessControl -> AccessControl : Check if sender is authorized
+
+alt #LightGreen Valid Public Address
+
+    AccessControl -> AppointmentSmartContract : Hospital role granted
+    AccessControl -> Government : Emit RoleGranted event
+    AppointmentSmartContract -> Hospital : Hospital enabled to mint appointment tokens
+
+else #LightCoral Invalid Public Address
+
+    AccessControl -> AppointmentSmartContract : Revert and do not grant Hospital role
+    AppointmentSmartContract -> Hospital : Hospital not enabled to mint appointment tokens
+
+end
+
+@enduml

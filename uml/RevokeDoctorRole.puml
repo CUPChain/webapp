@@ -1,0 +1,28 @@
+@startuml DoctorRole
+title Revoke Doctor Role
+autonumber
+
+actor Government
+actor Doctor
+participant PrescriptionSmartContract
+participant AccessControl
+
+
+Government -> PrescriptionSmartContract : Revoke role to Doctor
+PrescriptionSmartContract -> AccessControl : Revoke role to Doctor
+AccessControl -> AccessControl : Check if sender is authorized
+
+alt #LightGreen Valid Public Address
+
+    AccessControl -> PrescriptionSmartContract : Doctor role revoked
+    AccessControl -> Government : Emit RoleRevoked event
+    PrescriptionSmartContract -> Doctor : Doctor disabled to mint prescription tokens
+
+else #LightCoral Invalid Public Address
+
+    AccessControl -> PrescriptionSmartContract : Revert and do not revoke doctor role
+    PrescriptionSmartContract -> Doctor : Doctor not disabled to mint prescription tokens
+
+end
+
+@enduml
