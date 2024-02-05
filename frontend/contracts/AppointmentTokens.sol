@@ -11,26 +11,34 @@ import "./PrescriptionTokens.sol";
 /**
  * @title AppointmentTokens
  * @dev This contract represents a collection of appointment tokens.
- * It extends ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, and AccessControl contracts.
- * Each appointment token is associated with a category and a metadata hash.
+ * Each appointment token is associated with a type of medical exam (category),
+ * a hash of its metadata, and optionally with the id of the prescription token that was given to the hospital 
+ * in exchange for the appointment.
  * The contract allows minting appointment tokens, granting and revoking minting role to hospitals,
  * getting the list of tokens owned by an address, getting the category of an appointment token,
- * and getting the category and metadata hash of an appointment token.
+ * and getting the metadata hash of an appointment token.
  * @notice This contract is used by hospitals to mint appointment tokens and transfer them to 
- * patients which have the corresponding prescription token.
+ * patients for prescription token that has the same category.
  */
 contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, AccessControl {
-    address prescriptionsContract; // Address of Prescription Tokens that will be allowed to transfer appoinment tokens
-    mapping (uint256 => uint16) private tokenIdToCategory; // Category of the appointment token
-    mapping (uint256 => bytes32) private tokenIdToHash; // Metadata hash of the appointment token
-    mapping (uint256 => uint256) private tokenIdToPrescriptionId; // Prescription token that was exchanged for the appointment token
-    bytes32 private constant MINTER_ROLE = keccak256("MINTER_ROLE"); // Role for minting appointment tokens
-    address private deployer; // Address of the contract deployer
+    // Address of the PrescriptionTokens contract, which will be allowed to transfer appoinment tokens for hospitals
+    address prescriptionsContract;
+    // Category of the appointment token. It indicates the type of medical exam represented by the appointment
+    mapping (uint256 => uint16) private tokenIdToCategory;
+    // Metadata hash of the appointment token
+    mapping (uint256 => bytes32) private tokenIdToHash;
+    // Prescription token that was exchanged for the appointment token
+    mapping (uint256 => uint256) private tokenIdToPrescriptionId;
+
+    // Role for minting appointment tokens
+    bytes32 private constant MINTER_ROLE = keccak256("MINTER_ROLE");
+    // Address of the contract deployer
+    address private deployer;
 
     /**
-     * @dev Initializes the AppointmentTokens contract.
-     * 
-     * @param _prescriptionsContract The address of the Prescriptions contract.
+     * @dev Constructor function that initializes the PrescriptionTokens contract.
+     * It sets the name and symbol for the token and grants the DEFAULT_ADMIN_ROLE to the contract deployer.
+     * Also sets the deployer address.
      */
     constructor(address _prescriptionsContract)
         ERC721("Appointment", "APP")
@@ -58,8 +66,8 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
     }
 
     /**
-     * @dev Retrieves the tokens owned by the caller.
-     * @notice This function is used to get the list of appointment tokens id owned by the function caller.
+     * @dev Retrieves the list of appointment tokens id owned by the function caller
+     * along with their associated categories and metadata hashes.
      * 
      * @return ids An array of token IDs owned by the caller.
      * @return hashes An array of token hashes corresponding to the token IDs.
@@ -81,8 +89,7 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
     }
 
     /**
-     * @dev Returns the category of the specified token.
-     * @notice This function is used to get the category of the appointment token (type of appointment).
+     * @dev Retrieves the category of the specified token.
      * 
      * @param tokenId The ID of the token.
      * @return The category of the token.
@@ -92,25 +99,24 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
     }
 
     /**
-     * @dev Retrieves the token information for a given token ID.
-     * @notice This function is used to get the metadata hash of the appointment token(type of medical appointment).
+     * @dev Retrieves the metadata hash of the specified token.
      * 
-     * @param tokenId The ID of the token to retrieve.
-     * @return The metadata hash associated with the token.
+     * @param tokenId The ID of the token.
+     * @return The metadata hash of the token.
      */
     function getHash(uint256 tokenId) public view returns (bytes32) {
         return tokenIdToHash[tokenId];
     }
 
     /**
-     * @dev Exchanges an appointment token for a prescription.
-     * @notice This function is used to book an appointment by transferring prescription and appointment tokens between
-     * addresses of the patient who own the prescription and of hospital which own the appointment.
+     * @dev This function is used to book an appointment by transferring the appointment token to the
+     * address of the patient and saving the id of the prescription token that was exchanged for the appointment.
+     * It is used by the PrescriptionTokens contract while exchanging prescription and appointment tokens.
      * 
      * @param from The address of the token owner.
      * @param to The address of the recipient.
      * @param tokenId The ID of the appointment token to be transferred.
-     * @param prescriptionId The ID of the prescription associated with the token.
+     * @param prescriptionId The ID of the prescription used by the patient to book the appointment.
      */
     function exchangeForPrescription(address from, address to, uint256 tokenId, uint256 prescriptionId) public {
         safeTransferFrom(from, to, tokenId);
@@ -118,7 +124,8 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
     }
 
     /**
-     * @dev Cancels an appointment by transferring the appointment token back to the hospital and exchanging it for the corresponding prescription token.
+     * @dev Cancels an appointment by transferring the appointment token back to the hospital and exchanging it
+     * for the prescription token that was used to book the appointment.
      * 
      * @param appointmentToken The token ID of the appointment to be canceled.
      */
