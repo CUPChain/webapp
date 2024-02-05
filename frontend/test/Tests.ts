@@ -269,4 +269,75 @@ describe.only("Contract tests", function () {
                 .withArgs(hospital, MINTER_ROLE);
         });
     });
+
+    describe.only("Getting tokens created by contract", function () {
+        it("Should get the proper list of owned prescription token", async function () {
+            const {
+                prescriptionContract,
+                appointmentContract,
+                owner,
+                doctor,
+                hospital,
+                patient
+            } = await loadFixture(deploymentFixture);
+
+            const [ids, categories] = await prescriptionContract.connect(patient).getMyTokens();
+
+            expect(ids, "Ids array should be empty").to.be.empty;
+
+            expect(categories, "Categories array should be empty").to.be.empty;
+
+            await prescriptionContract.grantRole(MINTER_ROLE, doctor);
+
+            await prescriptionContract.connect(doctor).safeMint(patient, 1, 1);
+
+            const [ids2, categories2] = await prescriptionContract.connect(patient).getMyTokens();
+
+            expect(ids2.length, "Ids array should contains 1 element").to.equal(1);
+
+            expect(categories2.length, "Categories array should contains 1 element").to.equal(1);
+
+            expect(ids2[0], "Token id should be equal to 1").to.equal(1);
+
+            expect(categories2[0], "Token category should be equal to 1").to.equal(1);
+        });
+
+        it("Should get the proper list of owned appointment token", async function () {
+            const {
+                prescriptionContract,
+                appointmentContract,
+                owner,
+                doctor,
+                hospital,
+                patient
+            } = await loadFixture(deploymentFixture);
+
+            const [ids, hashes, categories] = await appointmentContract.connect(hospital).getMyTokens();
+
+            expect(ids, "Ids array should be empty").to.be.empty;
+
+            expect(hashes, "Hashes array should be empty").to.be.empty;
+
+            expect(categories, "Categories array should be empty").to.be.empty;
+            
+            await appointmentContract.grantRole(MINTER_ROLE, hospital);
+            
+            await appointmentContract.connect(hospital).safeMint(2, ethers.id(""), 1);
+            
+            const [ids2, hashes2, categories2] = await appointmentContract.connect(hospital).getMyTokens();
+            
+            expect(ids2.length, "Ids array should contains 1 element").to.equal(1);
+            
+            expect(hashes2.length, "Hashes array shoud contains 1 element").to.equal(1);
+
+            expect(categories2.length, "Categories array should contains 1 element").to.equal(1);
+            
+            expect(ids2[0], "Token id should be equal to 2").to.equal(2);
+            
+            expect(hashes2[0], "Token metadata should be equal to\"\"").to.equal(ethers.id(""));
+            
+            expect(categories2[0], "Token category should be equal to 1").to.equal(1);
+            
+        });
+    });
 });
