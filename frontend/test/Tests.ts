@@ -377,6 +377,19 @@ describe.only("Contract tests", function () {
             expect(await prescriptionContract.ownerOf(1),
                 "Hospital should now be the owner of th prescription with id 1")
                 .to.equal(hospital);
+
+            expect(await appointmentContract.connect(patient).cancelAppointment(2), 
+                "Patient should be able to cancel the appointment and get back the prescritpion")
+                .to.emit(appointmentContract, "CanceledAppointment")
+                .withArgs(2, 1);
+
+            expect(await prescriptionContract.ownerOf(1), 
+                "Patient should now be the owner of the prescription with id 1")
+                .to.equal(patient);
+
+            expect(await appointmentContract.ownerOf(2), 
+                "Hospital should now be the owner od the appointment with id 2")
+                .to.equal(hospital);
         });
 
         it("Should not exchange tokens correctly", async function () {
@@ -389,18 +402,6 @@ describe.only("Contract tests", function () {
                 patient,
                 patient2
             } = await loadFixture(deploymentFixture);
-
-            console.log("prescription address: ", prescriptionContract.target);
-
-            console.log("appointment address: ", appointmentContract.target);
-
-            console.log("owner: ", owner.address);
-
-            console.log("doctor: ", doctor.address);
-
-            console.log("hospital: ", hospital.address);
-
-            console.log("patient: ", patient.address);
 
             await prescriptionContract.grantRole(MINTER_ROLE, doctor);
 
@@ -421,13 +422,39 @@ describe.only("Contract tests", function () {
             await prescriptionContract.connect(doctor).safeMint(patient2, 3, 2);
 
             await expect(prescriptionContract.connect(patient2).makeAppointment(3, 2), 
-                "Patient 2 should not be able to exchange prescription with id 3 since the categories don't match")
+                "Patient should not be able to exchange prescription with id 3 since the categories don't match")
                 .to.be.revertedWithCustomError(prescriptionContract, "CategoriesDontMatch");
             
             await expect(prescriptionContract.connect(patient2).makeAppointment(1, 2), 
-                "Patient 2 should not be able to exchange prescription with id 1 since he's not his owner")
+                "Patient should not be able to exchange prescription with id 1 since he's not his owner")
                 .to.be.revertedWithCustomError(prescriptionContract, "ERC721IncorrectOwner")
                 .withArgs(patient2, 1, patient);
+            
+            await expect(prescriptionContract.connect(patient2).safeTransferFrom(patient, patient2, 1), 
+                "Any user should not be able to exchange a token without the owner's permission")
+                .to.be.revertedWithCustomError(prescriptionContract, "DisabledFunction");
+
+            await expect(appointmentContract.connect(patient2).exchangeForPrescription(hospital, patient, 1, 2), 
+                "Patient should not be able to exchange prescription directly with the appointment contract")
+                .to.be.revertedWithCustomError(appointmentContract, "NonContractCaller");
+            
+            await expect(appointmentContract.connect(patient2).cancelAppointment(4), 
+                "Patient should not be able to cancel an appointment with id 4 since it does not exist")
+                .to.be.revertedWithCustomError(appointmentContract, "ERC721NonexistentToken");
+
+            await prescriptionContract.connect(patient).makeAppointment(1, 2);
+
+            await expect(appointmentContract.connect(patient2).cancelAppointment(2), 
+                "Patient should not be able to cancel an appointment with id 2 since he's not his owner")
+                .to.be.revertedWithCustomError(appointmentContract, "ERC721IncorrectOwner");
+
+            await expect(appointmentContract.connect(patient2).safeTransferFrom(patient, patient2, 1), 
+                "Any user should not be able to exchange a token without the owner's permission")
+                .to.be.revertedWithCustomError(appointmentContract, "DisabledFunction");
+            
+            await expect(prescriptionContract.connect(patient2).givePrescriptionBack(hospital, patient, 2), 
+                "Patient should not be able to give back prescription directly with the prescription contract")
+                .to.be.revertedWithCustomError(prescriptionContract, "NonContractCaller");
         });
     });
 });

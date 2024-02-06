@@ -21,7 +21,7 @@ import "./AppointmentTokens.sol";
  */
 contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, ERC721Pausable, AccessControl {
     /// @notice Address of the AppointmentTokens contract, which will be allowed to transfer prescription tokens for hospitals
-    address appointmentsContract;
+    address private appointmentsContract;
     /// @notice Category of the prescription token. It indicates the type of medical exam requested by the prescription
     mapping (uint256 => uint16) private tokenIdToCategory;
 
@@ -119,20 +119,20 @@ contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, ERC721P
      * addresses of the patient who own the prescription and of hospital which own the appointment.
      * @notice This function is used to book an appointment by exchanging a prescription token for an appointment token.
      * 
-     * @param prescriptionToken The ID of the prescription token.
-     * @param appointmentToken The ID of the appointment token.
+     * @param prescriptionId The ID of the prescription token.
+     * @param appointmentId The ID of the appointment token.
      */
-    function makeAppointment(uint256 prescriptionToken, uint256 appointmentToken) public whenNotPaused {
-        address hospital = AppointmentTokens(appointmentsContract).ownerOf(appointmentToken);
+    function makeAppointment(uint256 prescriptionId, uint256 appointmentId) public whenNotPaused {
+        address hospital = AppointmentTokens(appointmentsContract).ownerOf(appointmentId);
 
-        if (tokenIdToCategory[prescriptionToken] != AppointmentTokens(appointmentsContract).getCategory(appointmentToken)) {
+        if (tokenIdToCategory[prescriptionId] != AppointmentTokens(appointmentsContract).getCategory(appointmentId)) {
             revert CategoriesDontMatch();
         }
         
-        _safeTransfer(msg.sender, hospital, prescriptionToken);
-        AppointmentTokens(appointmentsContract).exchangeForPrescription(hospital, msg.sender, appointmentToken, prescriptionToken);
+        _safeTransfer(msg.sender, hospital, prescriptionId);
+        AppointmentTokens(appointmentsContract).exchangeForPrescription(hospital, msg.sender, appointmentId, prescriptionId);
 
-        emit BookedAppointment(prescriptionToken, appointmentToken);
+        emit BookedAppointment(prescriptionId, appointmentId);
     }
     
     /**

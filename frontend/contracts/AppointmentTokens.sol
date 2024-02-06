@@ -22,7 +22,7 @@ import "./PrescriptionTokens.sol";
  */
 contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721Burnable, ERC721Pausable, AccessControl {
     /// @notice Address of the PrescriptionTokens contract, which will be allowed to transfer appoinment tokens for hospitals
-    address prescriptionsContract;
+    address private prescriptionsContract;
     /// @notice Category of the appointment token. It indicates the type of medical exam represented by the appointment
     mapping (uint256 => uint16) private tokenIdToCategory;
     /// @notice Metadata hash of the appointment token
