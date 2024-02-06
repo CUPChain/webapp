@@ -124,6 +124,16 @@ contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, AccessC
         emit BookedAppointment(prescriptionToken, appointmentToken);
     }
 
+    function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory data) 
+        public virtual 
+        override(ERC721, IERC721)
+    {
+        if(msg.sender != address(this)) revert UnathorizedCaller();
+        super.safeTransferFrom(from, to, tokenId, data);
+    }
+
+    error UnathorizedCaller();
+
     // The following functions are overrides required by Solidity.
 
     /**

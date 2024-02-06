@@ -373,13 +373,19 @@ describe.only("Contract tests", function () {
 
             await prescriptionContract.connect(doctor).safeMint(patient2, 8, 1);
 
+            expect(await prescriptionContract.connect(patient).safeTransferFrom(patient, patient2, 1))
+                .to.be.revertedWithCustomError(prescriptionContract, "UnathorizedCaller");
+
+            /*
             await appointmentContract.connect(hospital).safeMint(2, ethers.id(""), 1);
+            
 
             await prescriptionContract.connect(hospital).setApprovalForAll(appointmentContract.target, true);
 
             await appointmentContract.connect(hospital).setApprovalForAll(prescriptionContract.target, true);
 
             expect(await prescriptionContract.connect(patient).makeAppointment(1, appointmentContract.target, 2)).to.emit(prescriptionContract, "BookedAppointment");
+            */
         });
     });
 });

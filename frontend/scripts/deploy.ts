@@ -36,7 +36,7 @@ async function main() {
 
   const prescrContractWithHospitalSigner = new ethers.Contract(prescrTokens.target, prescrTokens.interface, hospitalWallet);
   await prescrContractWithHospitalSigner.setApprovalForAll(appTokens.target, true);
-  console.log(`Hospital approved appointments contract ${appTokens.target} to handle its prescritpion tokens`);
+  console.log(`Hospital approved appointments contract ${appTokens.target} to handle its prescription tokens`);
 
   const apptContractWithHospitalSigner = new ethers.Contract(appTokens.target, appTokens.interface, hospitalWallet);
   await apptContractWithHospitalSigner.setApprovalForAll(prescrTokens.target, true);
