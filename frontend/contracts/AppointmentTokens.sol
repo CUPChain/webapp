@@ -3,8 +3,8 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Pausable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "./PrescriptionTokens.sol";
 
@@ -20,7 +20,7 @@ import "./PrescriptionTokens.sol";
  * @notice This contract is used by hospitals to mint appointment tokens and transfer them to 
  * patients for prescription token that has the same category.
  */
-contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, AccessControl {
+contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721Burnable, ERC721Pausable, AccessControl {
     /// @notice Address of the PrescriptionTokens contract, which will be allowed to transfer appoinment tokens for hospitals
     address prescriptionsContract;
     /// @notice Category of the appointment token. It indicates the type of medical exam represented by the appointment
@@ -32,8 +32,6 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
 
     /// @notice Role for minting appointment tokens
     bytes32 private constant MINTER_ROLE = keccak256("MINTER_ROLE");
-    /// @notice Address of the contract deployer
-    address private deployer;
 
     /**
      * @dev Emitted when an appointment token is being minted.
@@ -49,16 +47,29 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
      * the prescription token identified by `prescriptionId`.
      */
     event CancelledAppointment(uint256 appointmentId, uint256 prescriptionId);
+    /**
+     * @dev Throws if the function is being called directly, and not by another contract.
+     */
+    error NonContractCaller();
+    /**
+     * @dev Throws if the function being called is disabled.
+     */
+    error DisabledFunction();
 
     /**
      * @dev Constructor function that initializes the PrescriptionTokens contract.
      * It sets the name and symbol for the token and grants the DEFAULT_ADMIN_ROLE to the contract deployer.
      * Also sets the deployer address.
      */
-    constructor(address _prescriptionsContract) ERC721("Appointment", "APP") {
+    constructor() ERC721("Appointment", "APP") {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        prescriptionsContract = _prescriptionsContract;
-        deployer = msg.sender;
+    }
+    /**
+     * @dev Sets the address of the PrescriptionTokens contract. Only the Admin can call this function.
+     */
+    function setPrescriptionsAddress(address contractAddress) public whenNotPaused {
+        _checkRole(DEFAULT_ADMIN_ROLE);
+        prescriptionsContract = contractAddress;
     }
 
     /**
@@ -131,8 +142,9 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
      * @param tokenId The ID of the appointment token to be transferred.
      * @param prescriptionId The ID of the prescription used by the patient to book the appointment.
      */
-    function exchangeForPrescription(address from, address to, uint256 tokenId, uint256 prescriptionId) public {
-        safeTransferFrom(from, to, tokenId);
+    function exchangeForPrescription(address from, address to, uint256 tokenId, uint256 prescriptionId) public whenNotPaused{
+        if (msg.sender != prescriptionsContract) revert NonContractCaller();
+        _safeTransfer(from, to, tokenId);
         tokenIdToPrescriptionId[tokenId] = prescriptionId;
     }
 
@@ -142,18 +154,32 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
      * 
      * @param appointmentToken The token ID of the appointment to be canceled.
      */
-    function cancelAppointment(uint256 appointmentToken) public {
+    function cancelAppointment(uint256 appointmentToken) public whenNotPaused {
         uint256 prescription = tokenIdToPrescriptionId[appointmentToken];
         address hospital = PrescriptionTokens(prescriptionsContract).ownerOf(prescription);
 
-        safeTransferFrom(msg.sender, hospital, appointmentToken);
-        // The hospital has to have approved the AppointmentTokens contract to transfer the prescription token
-        // For this reason, when an hospital creates an account on the blockchain, it has to call setApprovalForAll in PrescriptionTokens
-        // This is the only function that allows this contract to transfer prescriptions,
-        // and it only exchanges them for the appointment that was made with them.
-        PrescriptionTokens(prescriptionsContract).safeTransferFrom(hospital, msg.sender, prescription);
+        _safeTransfer(msg.sender, hospital, appointmentToken);
+        PrescriptionTokens(prescriptionsContract).givePrescriptionBack(hospital, msg.sender, prescription);
 
         emit CancelledAppointment(appointmentToken, prescription);
+    }
+
+    // Override transfer function. Users cannot call it directly.
+    function transferFrom(address, address, uint256) 
+        public virtual 
+        override(ERC721, IERC721)
+    {
+        revert DisabledFunction();
+    }
+    
+    function pause() public {
+        _checkRole(DEFAULT_ADMIN_ROLE);
+        _pause();
+    }
+
+    function unpause() public {
+        _checkRole(DEFAULT_ADMIN_ROLE);
+        _unpause();
     }
 
     // The following functions are overrides required by Solidity.
@@ -169,7 +195,7 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
      */
     function _update(address to, uint256 tokenId, address auth)
         internal
-        override(ERC721, ERC721Enumerable)
+        override(ERC721, ERC721Enumerable, ERC721Pausable)
         returns (address)
     {
         return super._update(to, tokenId, auth);
@@ -190,21 +216,6 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
     }
 
     /**
-     * @dev Returns the URI for a given token ID.
-     * 
-     * @param tokenId The ID of the token.
-     * @return A string representing the URI of the token.
-     */
-    function tokenURI(uint256 tokenId)
-        public
-        view
-        override(ERC721, ERC721URIStorage)
-        returns (string memory)
-    {
-        return super.tokenURI(tokenId);
-    }
-
-    /**
      * @dev Checks if the contract supports a given interface by calling the corresponding function in the parent contracts.
      * 
      * @param interfaceId The interface identifier.
@@ -213,19 +224,9 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        override(ERC721, ERC721Enumerable, ERC721URIStorage, AccessControl)
+        override(ERC721, ERC721Enumerable, AccessControl)
         returns (bool)
     {
         return super.supportsInterface(interfaceId);
-    }
-
-    /**
-     * @dev Terminate the contract. Only the deployer can call this function.
-     * 
-     * 
-     */
-    function terminate() public {
-        require(msg.sender == deployer, "You are not the deployer");
-        selfdestruct(payable(deployer));
     }
 }

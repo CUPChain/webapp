@@ -3,8 +3,8 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Pausable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "./AppointmentTokens.sol";
 
@@ -19,19 +19,14 @@ import "./AppointmentTokens.sol";
  * @notice This contract is used by doctors to mint prescription tokens and transfer them to patients.
  * It also allows patient to exchange prescription tokens for appointment tokens.
  */
-contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, AccessControl {
+contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, ERC721Pausable, AccessControl {
+    /// @notice Address of the AppointmentTokens contract, which will be allowed to transfer prescription tokens for hospitals
+    address appointmentsContract;
     /// @notice Category of the prescription token. It indicates the type of medical exam requested by the prescription
     mapping (uint256 => uint16) private tokenIdToCategory;
 
     /// @notice Role for minting prescription tokens
     bytes32 private constant MINTER_ROLE = keccak256("MINTER_ROLE");
-    /// @notice Address of the contract deployer
-    address private deployer;
-
-    /**
-     * @dev Throws if the categories of the prescription and appointment tokens do not match.
-     */
-    error CategoriesDontMatch();
 
     /**
      * @dev Emitted when a prescription token is being minted.
@@ -49,13 +44,32 @@ contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, AccessC
     event BookedAppointment(uint256 prescriptionId, uint256 appointmentId);
 
     /**
+     * @dev Throws if the categories of the prescription and appointment tokens do not match.
+     */
+    error CategoriesDontMatch();
+    /**
+     * @dev Throws if the function is being called directly, and not by another contract.
+     */
+    error NonContractCaller();
+    /**
+     * @dev Throws if the function being called is disabled.
+     */
+    error DisabledFunction();
+
+    /**
      * @dev Constructor function that initializes the PrescriptionTokens contract.
      * It sets the name and symbol for the token and grants the DEFAULT_ADMIN_ROLE to the contract deployer.
      * Also sets the deployer address.
      */
     constructor() ERC721("Prescription", "PRE") {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        deployer = msg.sender;
+    }
+    /**
+     * @dev Sets the address of the AppointmentTokens contract. Only the Admin can call this function.
+     */
+    function setAppointmentsAddress(address contractAddress) public whenNotPaused {
+        _checkRole(DEFAULT_ADMIN_ROLE);
+        appointmentsContract = contractAddress;
     }
 
     /**
@@ -68,7 +82,7 @@ contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, AccessC
      * @param tokenId The unique identifier of the token.
      * @param category The category of the token.
      */
-    function safeMint(address to, uint256 tokenId, uint16 category) public {
+    function safeMint(address to, uint256 tokenId, uint16 category) public whenNotPaused {
         _checkRole(MINTER_ROLE);
         _safeMint(to, tokenId);
         tokenIdToCategory[tokenId] = category;
@@ -111,28 +125,50 @@ contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, AccessC
      * @notice This function is used to book an appointment by exchanging a prescription token for an appointment token.
      * 
      * @param prescriptionToken The ID of the prescription token.
-     * @param appointmentsContract The address of the appointments contract.
      * @param appointmentToken The ID of the appointment token.
      */
-    function makeAppointment(uint256 prescriptionToken, address appointmentsContract, uint256 appointmentToken) public {
+    function makeAppointment(uint256 prescriptionToken, uint256 appointmentToken) public whenNotPaused {
         address hospital = AppointmentTokens(appointmentsContract).ownerOf(appointmentToken);
 
-        if (tokenIdToCategory[prescriptionToken] != AppointmentTokens(appointmentsContract).getCategory(appointmentToken)) revert CategoriesDontMatch();
-        safeTransferFrom(msg.sender, hospital, prescriptionToken);
+        if (tokenIdToCategory[prescriptionToken] != AppointmentTokens(appointmentsContract).getCategory(appointmentToken)) {
+            revert CategoriesDontMatch();
+        }
+        
+        _safeTransfer(msg.sender, hospital, prescriptionToken);
         AppointmentTokens(appointmentsContract).exchangeForPrescription(hospital, msg.sender, appointmentToken, prescriptionToken);
 
         emit BookedAppointment(prescriptionToken, appointmentToken);
     }
+    
+    /**
+     * @dev This function is used to return the prescription token that was used to book an appointment to the patient.
+     * 
+     * @param hospital The address of the hospital that was given the prescription token.
+     * @param patient The address of the patient.
+     * @param tokenId The ID of the prescription token to be transferred back to the patient.
+     */
+    function givePrescriptionBack(address hospital, address patient, uint256 tokenId) public whenNotPaused {
+        if (msg.sender != appointmentsContract) revert NonContractCaller();
+        _safeTransfer(hospital, patient, tokenId);
+    }
 
-    function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory data) 
+    // Override transfer function. Users cannot call it directly.
+    function transferFrom(address, address, uint256) 
         public virtual 
         override(ERC721, IERC721)
     {
-        if(msg.sender != address(this)) revert UnathorizedCaller();
-        super.safeTransferFrom(from, to, tokenId, data);
+        revert DisabledFunction();
     }
 
-    error UnathorizedCaller();
+    function pause() public {
+        _checkRole(DEFAULT_ADMIN_ROLE);
+        _pause();
+    }
+
+    function unpause() public {
+        _checkRole(DEFAULT_ADMIN_ROLE);
+        _unpause();
+    }
 
     // The following functions are overrides required by Solidity.
 
@@ -147,7 +183,7 @@ contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, AccessC
      */
     function _update(address to, uint256 tokenId, address auth)
         internal
-        override(ERC721, ERC721Enumerable)
+        override(ERC721, ERC721Enumerable, ERC721Pausable)
         returns (address)
     {
         return super._update(to, tokenId, auth);
@@ -180,15 +216,5 @@ contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, AccessC
         returns (bool)
     {
         return super.supportsInterface(interfaceId);
-    }
-
-    /**
-     * @dev Terminate the contract. Only the deployer can call this function.
-     * 
-     * 
-     */
-    function terminate() public {
-        require(msg.sender == deployer, "You are not the deployer");
-        selfdestruct(payable(deployer));
     }
 }

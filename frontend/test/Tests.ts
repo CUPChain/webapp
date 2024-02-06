@@ -15,7 +15,7 @@ describe.only("Contract tests", function () {
 
         await prescriptionContract.waitForDeployment();
 
-        const appointmentContract = await ethers.deployContract("AppointmentTokens", [prescriptionContract.target]);
+        const appointmentContract = await ethers.deployContract("AppointmentTokens");
 
         await appointmentContract.waitForDeployment();
 
@@ -342,7 +342,44 @@ describe.only("Contract tests", function () {
     });
 
     describe.only("Exchanging prescription and appointment token", function () {
-        it("Should exchange correctly", async function () {
+        it("Should exchange tokens correctly", async function () {
+            const {
+                prescriptionContract,
+                appointmentContract,
+                owner,
+                doctor,
+                hospital,
+                patient,
+                patient2
+            } = await loadFixture(deploymentFixture);
+
+            await prescriptionContract.grantRole(MINTER_ROLE, doctor);
+
+            await appointmentContract.grantRole(MINTER_ROLE, hospital);
+
+            await prescriptionContract.setAppointmentsAddress(appointmentContract.target);
+
+            await appointmentContract.setPrescriptionsAddress(prescriptionContract.target);
+
+            await prescriptionContract.connect(doctor).safeMint(patient, 1, 1);
+
+            await appointmentContract.connect(hospital).safeMint(2, ethers.id(""), 1);
+
+            expect(await prescriptionContract.connect(patient).makeAppointment(1, 2), 
+                "Patient should be able to book an appointment with his prescription")
+                .to.emit(prescriptionContract, "BookedAppointment")
+                .withArgs(1, 2);
+
+            expect(await appointmentContract.ownerOf(2), 
+                "Patient should now be the owner of the appointment with id 2")
+                .to.equal(patient);
+            
+            expect(await prescriptionContract.ownerOf(1),
+                "Hospital should now be the owner of th prescription with id 1")
+                .to.equal(hospital);
+        });
+
+        it("Should not exchange tokens correctly", async function () {
             const {
                 prescriptionContract,
                 appointmentContract,
@@ -369,23 +406,28 @@ describe.only("Contract tests", function () {
 
             await appointmentContract.grantRole(MINTER_ROLE, hospital);
 
+            await prescriptionContract.setAppointmentsAddress(appointmentContract.target);
+
+            await appointmentContract.setPrescriptionsAddress(prescriptionContract.target);
+
             await prescriptionContract.connect(doctor).safeMint(patient, 1, 1);
 
-            await prescriptionContract.connect(doctor).safeMint(patient2, 8, 1);
-
-            expect(await prescriptionContract.connect(patient).safeTransferFrom(patient, patient2, 1))
-                .to.be.revertedWithCustomError(prescriptionContract, "UnathorizedCaller");
-
-            /*
             await appointmentContract.connect(hospital).safeMint(2, ethers.id(""), 1);
+
+            await expect(prescriptionContract.connect(patient2).makeAppointment(3, 2), 
+                "Patient 2 should not be able to exchange prescription with id 3 since it does not exist")
+                .to.be.revertedWithCustomError(prescriptionContract, "CategoriesDontMatch");
+
+            await prescriptionContract.connect(doctor).safeMint(patient2, 3, 2);
+
+            await expect(prescriptionContract.connect(patient2).makeAppointment(3, 2), 
+                "Patient 2 should not be able to exchange prescription with id 3 since the categories don't match")
+                .to.be.revertedWithCustomError(prescriptionContract, "CategoriesDontMatch");
             
-
-            await prescriptionContract.connect(hospital).setApprovalForAll(appointmentContract.target, true);
-
-            await appointmentContract.connect(hospital).setApprovalForAll(prescriptionContract.target, true);
-
-            expect(await prescriptionContract.connect(patient).makeAppointment(1, appointmentContract.target, 2)).to.emit(prescriptionContract, "BookedAppointment");
-            */
+            await expect(prescriptionContract.connect(patient2).makeAppointment(1, 2), 
+                "Patient 2 should not be able to exchange prescription with id 1 since he's not his owner")
+                .to.be.revertedWithCustomError(prescriptionContract, "ERC721IncorrectOwner")
+                .withArgs(patient2, 1, patient);
         });
     });
 });

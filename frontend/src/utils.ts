@@ -132,7 +132,7 @@ const exchangePrescriptionAppointment = async (prescrID: number, apptID: number)
     const [, signer] = await loginMetamask();
 
     const contract = new ethers.Contract(PRESCRIPTIONS_CONTRACT, PrescriptionTokens.abi, signer);
-    const transaction = await contract.makeAppointment(prescrID, APPOINTMENTS_CONTRACT, apptID);
+    const transaction = await contract.makeAppointment(prescrID, apptID);
     console.log(transaction);
     await transaction.wait();
 };

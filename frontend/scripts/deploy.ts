@@ -18,7 +18,7 @@ async function main() {
   console.log(`Granted doctor role to ${DEFAULT_DOCTOR}`)
 
   // Deploy appointments contract
-  const AppTokens = await ethers.deployContract("AppointmentTokens", [prescrTokens.target]);
+  const AppTokens = await ethers.deployContract("AppointmentTokens", []);
   const appTokens = await AppTokens.waitForDeployment();
 
   console.log(
@@ -26,22 +26,15 @@ async function main() {
   );
   // Give hospital role to default hospital
   await appTokens.grantRole(MINTER_ROLE, DEFAULT_HOSPITAL);
-  console.log(`Granted hospital role to ${DEFAULT_HOSPITAL}`)
+  console.log(`Granted hospital role to ${DEFAULT_HOSPITAL}`);
 
-  // Make default hospital approve appointments contract to exchange its prescriptions
-  // and prescriptions contract to exchange its appointments
-  const provider = new ethers.JsonRpcProvider("http://127.0.0.1:8545");
-  const hospitalPrivKey = new ethers.SigningKey(DEFAULT_HOSPITAL_PRIVKEY);
-  const hospitalWallet = new ethers.NonceManager(new ethers.BaseWallet(hospitalPrivKey, provider));
+  // Set appointmentsContract address in prescriptions contract
+  await prescrTokens.setAppointmentsAddress(appTokens.target);
+  console.log("Set appointments contract address in prescriptions contract");
 
-  const prescrContractWithHospitalSigner = new ethers.Contract(prescrTokens.target, prescrTokens.interface, hospitalWallet);
-  await prescrContractWithHospitalSigner.setApprovalForAll(appTokens.target, true);
-  console.log(`Hospital approved appointments contract ${appTokens.target} to handle its prescription tokens`);
-
-  const apptContractWithHospitalSigner = new ethers.Contract(appTokens.target, appTokens.interface, hospitalWallet);
-  await apptContractWithHospitalSigner.setApprovalForAll(prescrTokens.target, true);
-  console.log(`Hospital approved prescriptions contract ${prescrTokens.target} to handle its appointment tokens`);
-  provider.destroy();
+  // Set prescriptionsContract address in prescriptions contract
+  await appTokens.setAppointmentsAddress(prescrTokens.target);
+  console.log("Set prescriptions contract address in appointments contract");
 }
 
 // We recommend this pattern to be able to use async/await everywhere
