@@ -43,17 +43,11 @@ contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, ERC721P
      */
     event BookedAppointment(uint256 prescriptionId, uint256 appointmentId);
 
-    /**
-     * @dev Throws if the categories of the prescription and appointment tokens do not match.
-     */
+    /// @dev Throws if the categories of the prescription and appointment tokens do not match.
     error CategoriesDontMatch();
-    /**
-     * @dev Throws if the function is being called directly, and not by another contract.
-     */
+    /// @dev Throws if the function is being called directly, and not by another contract.
     error NonContractCaller();
-    /**
-     * @dev Throws if the function being called is disabled.
-     */
+    /// @dev Throws if the function being called is disabled.
     error DisabledFunction();
 
     /**
@@ -64,6 +58,7 @@ contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, ERC721P
     constructor() ERC721("Prescription", "PRE") {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
+
     /**
      * @dev Sets the address of the AppointmentTokens contract. Only the Admin can call this function.
      */
@@ -152,7 +147,11 @@ contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, ERC721P
         _safeTransfer(hospital, patient, tokenId);
     }
 
-    // Override transfer function. Users cannot call it directly.
+    /**
+     * @dev Overrides the transfer function from ERC721 and ERC721Enumerable contracts.
+     * Users cannot call this function directly.
+     *
+     */
     function transferFrom(address, address, uint256) 
         public virtual 
         override(ERC721, IERC721)
@@ -160,17 +159,21 @@ contract PrescriptionTokens is ERC721, ERC721Enumerable, ERC721Burnable, ERC721P
         revert DisabledFunction();
     }
 
+    /**
+     * @dev Pauses the contract. Only the Admin can call this function.
+     */
     function pause() public {
         _checkRole(DEFAULT_ADMIN_ROLE);
         _pause();
     }
 
+    /**
+     * @dev Unpauses the contract. Only the Admin can call this function.
+     */
     function unpause() public {
         _checkRole(DEFAULT_ADMIN_ROLE);
         _unpause();
     }
-
-    // The following functions are overrides required by Solidity.
 
     /**
      * @dev Updates the ownership of a token and returns the address of the new owner.

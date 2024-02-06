@@ -47,13 +47,9 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721Burnable, ERC721Pa
      * the prescription token identified by `prescriptionId`.
      */
     event CancelledAppointment(uint256 appointmentId, uint256 prescriptionId);
-    /**
-     * @dev Throws if the function is being called directly, and not by another contract.
-     */
+    /// @dev Throws if the function is being called directly, and not by another contract.
     error NonContractCaller();
-    /**
-     * @dev Throws if the function being called is disabled.
-     */
+    /// @dev Throws if the function being called is disabled.
     error DisabledFunction();
 
     /**
@@ -64,6 +60,7 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721Burnable, ERC721Pa
     constructor() ERC721("Appointment", "APP") {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
+    
     /**
      * @dev Sets the address of the PrescriptionTokens contract. Only the Admin can call this function.
      */
@@ -164,7 +161,10 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721Burnable, ERC721Pa
         emit CancelledAppointment(appointmentToken, prescription);
     }
 
-    // Override transfer function. Users cannot call it directly.
+    /**
+     * @dev Overrides the transfer function from ERC721 contract to prevent users from calling it directly.
+     * 
+     */
     function transferFrom(address, address, uint256) 
         public virtual 
         override(ERC721, IERC721)
@@ -172,17 +172,21 @@ contract AppointmentTokens is ERC721, ERC721Enumerable, ERC721Burnable, ERC721Pa
         revert DisabledFunction();
     }
     
+    /*
+     * @dev Pauses the contract. Only the Admin can call this function.
+     */
     function pause() public {
         _checkRole(DEFAULT_ADMIN_ROLE);
         _pause();
     }
 
+    /*
+     * @dev Unpauses the contract. Only the Admin can call this function.
+     */
     function unpause() public {
         _checkRole(DEFAULT_ADMIN_ROLE);
         _unpause();
     }
-
-    // The following functions are overrides required by Solidity.
 
     /**
      * @dev Updates the ownership of a token and returns the address of the new owner.
