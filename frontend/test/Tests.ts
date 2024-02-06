@@ -9,7 +9,7 @@ describe.only("Contract tests", function () {
     async function deploymentFixture() {
         await network.provider.send("evm_setAutomine", [true]);
 
-        const [owner, doctor, hospital, patient] = await ethers.getSigners();
+        const [owner, doctor, hospital, patient, patient2] = await ethers.getSigners();
 
         const prescriptionContract = await ethers.deployContract("PrescriptionTokens");
 
@@ -19,7 +19,7 @@ describe.only("Contract tests", function () {
 
         await appointmentContract.waitForDeployment();
 
-        return { prescriptionContract, appointmentContract, owner, doctor, hospital, patient };
+        return { prescriptionContract, appointmentContract, owner, doctor, hospital, patient, patient2 };
     }
 
     describe.only("Deployment", function () {
@@ -338,6 +338,48 @@ describe.only("Contract tests", function () {
             
             expect(categories2[0], "Token category should be equal to 1").to.equal(1);
             
+        });
+    });
+
+    describe.only("Exchanging prescription and appointment token", function () {
+        it("Should exchange correctly", async function () {
+            const {
+                prescriptionContract,
+                appointmentContract,
+                owner,
+                doctor,
+                hospital,
+                patient,
+                patient2
+            } = await loadFixture(deploymentFixture);
+
+            console.log("prescription address: ", prescriptionContract.target);
+
+            console.log("appointment address: ", appointmentContract.target);
+
+            console.log("owner: ", owner.address);
+
+            console.log("doctor: ", doctor.address);
+
+            console.log("hospital: ", hospital.address);
+
+            console.log("patient: ", patient.address);
+
+            await prescriptionContract.grantRole(MINTER_ROLE, doctor);
+
+            await appointmentContract.grantRole(MINTER_ROLE, hospital);
+
+            await prescriptionContract.connect(doctor).safeMint(patient, 1, 1);
+
+            await prescriptionContract.connect(doctor).safeMint(patient2, 8, 1);
+
+            await appointmentContract.connect(hospital).safeMint(2, ethers.id(""), 1);
+
+            await prescriptionContract.connect(hospital).setApprovalForAll(appointmentContract.target, true);
+
+            await appointmentContract.connect(hospital).setApprovalForAll(prescriptionContract.target, true);
+
+            expect(await prescriptionContract.connect(patient).makeAppointment(1, appointmentContract.target, 2)).to.emit(prescriptionContract, "BookedAppointment");
         });
     });
 });
