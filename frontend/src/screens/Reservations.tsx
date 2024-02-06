@@ -157,7 +157,7 @@ const Reservations = () => {
                                             <Row key={appointment.id}>
                                                 <CardButton
                                                     title={appointment.type + (!appointment.valid ? " METADATA INVALIDI" : "")}
-                                                    date={appointment.date.toString().split("GMT")[0]}
+                                                    date={appointment.date.toUTCString()}
                                                     description={`Token id: ${appointment.id}, ${appointment.name}`}
                                                     href={`/appointments/${appointment.id}`}
                                                 />

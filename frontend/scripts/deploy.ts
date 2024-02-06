@@ -33,7 +33,7 @@ async function main() {
   console.log("Set appointments contract address in prescriptions contract");
 
   // Set prescriptionsContract address in prescriptions contract
-  await appTokens.setAppointmentsAddress(prescrTokens.target);
+  await appTokens.setPrescriptionsAddress(prescrTokens.target);
   console.log("Set prescriptions contract address in appointments contract");
 }
 

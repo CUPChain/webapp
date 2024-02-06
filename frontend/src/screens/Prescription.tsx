@@ -228,7 +228,7 @@ const Prescription = () => {
                                                     key={appointment.id}
                                                     where={appointment.name}
                                                     distance={appointment.distance}
-                                                    when={appointment.date.toString().split("GMT")[0]}
+                                                    when={appointment.date.toUTCString()}
                                                     action={onSelection.bind(this, appointment.id)}
                                                 />
                                             ))

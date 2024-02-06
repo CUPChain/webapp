@@ -218,7 +218,7 @@ const Appointment = () => {
                                         <b>Data:</b> {appointment.date.toDateString()}
                                     </li>
                                     <li>
-                                        <b>Ora:</b> {appointment.date.toTimeString()}
+                                        <b>Ora:</b> {appointment.date.toUTCString().slice(16)}
                                     </li>
                                 </ul>
 
