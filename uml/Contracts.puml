@@ -1,0 +1,155 @@
+@startuml
+
+abstract ERC721 {
+    - {field} _name: string
+    - {field} _symbol: string
+    - {field} _owners: mapping(uint256 => address)
+    - {field} _balances: mapping(address => uint256)
+    - {field} _tokenApprovals: mapping(uint256 => address)
+    - {field} _operatorApprovals: mapping(address => mapping(address => bool))
+    + constructor(_name: string, _symbol: string)
+    + supportsInterface(interfaceId: bytes4): bool
+    + balanceOf(owner: address): uint256
+    + ownerOf(tokenId: uint256): address
+    + name(): string
+    + symbol(): string
+    # _baseURI(): string
+    + tokenURI(tokenId: uint256): string
+    + approve(to: address, tokenId: uint256)
+    + getApproved(tokenId: uint256): address
+    + setApprovalForAll(operator: address, approved: bool)
+    + isApprovedForAll(owner: address, operator: address): bool
+    + transferFrom(from: address, to: address, tokenId: uint256)
+    + safeTransferFrom(from: address, to: address, tokenId: uint256)
+    + safeTransferFrom(from: address, to: address, tokenId: uint256, _data: bytes)
+    # _ownerOf(tokenId: uint256): address
+    # _getApproved(tokenId: uint256): address
+    # _isAuthorized(owner: address, spender: address, tokenId: uint256): bool
+    # _checkAuthorized(owner: address, spender: address, tokenId: uint256)
+    # _increaseBalance(account: address, value: uint128)
+    # _update(to: address, tokenId: uint256, auth: address): address
+    # _mint(to: address, tokenId: uint256)
+    # _safeMint(to: address, tokenId: uint256)
+    # _safeMint(to: address, tokenId: uint256, data: bytes)
+    # _burn(tokenId: uint256)
+    # _transfer(from: address, to: address, tokenId: uint256)
+    # _safeTransfer(from: address, to: address, tokenId: uint256)
+    # _safeTransfer(from: address, to: address, tokenId: uint256, data: bytes)
+    # _approve(to: address, tokenId: uint256, auth: address)
+    # _approve(to: address, tokenId: uint256, auth: address, emitEvent: bool)
+    # _setApprovalForAll(owner: address, operator: address, approved: bool)
+    # _requireOwned(tokenId: uint256): address
+    + _checkOnERC721Received(from: address, to: address, tokenId: uint256, data: bytes)
+}
+
+abstract ERC721Enumerable {
+    - {field} _ownedTokens: mapping(address => mapping(uint256 => uint256))
+    - {field} _ownedTokensIndex: mapping(uint256 => uint256)
+    - {field} _allTokens: uint256[]
+    - {field} _allTokensIndex: mapping(uint256 => uint256)
+    + <<error>> ERC721OutOfBoundsIndex(address owner, uint256 index)
+    + <<error>> ERC721EnumerableForbiddenBatchMint()
+    + supportsInterface(interfaceId: bytes4): bool
+    + tokenOfOwnerByIndex(owner: address, index: uint256): uint256
+    + totalSupply(): uint256
+    + tokenByIndex(index: uint256): uint256
+    # _update(to: address, tokenId: uint256, auth: address): address
+    # _addTokenToOwnerEnumeration(to: address, tokenId: uint256)
+    # _addTokenToAllTokensEnumeration(tokenId: uint256)
+    # _removeTokenFromOwnerEnumeration(from: address, tokenId: uint256)
+    # _removeTokenFromAllTokensEnumeration(tokenId: uint256)
+    # _increaseBalance(account: address, amount: uint128)
+}
+
+abstract ERC721Burnable {
+  + burn(tokenId: uint)
+}
+
+abstract ERC721Pausable {
+  # _update(to: address, tokenId: uint256, auth: address): address
+}
+
+abstract AccessControl {
+  - {field} _roles: mapping(bytes32 => RoleData)
+  + {field} DEFAULT_ADMIN_ROLE: bytes32
+  + <<modifier>> onlyRole(role: bytes32)
+  + supportsInterface(interfaceId: bytes4): bool
+  + hasRole(role: bytes32, account: address): bool
+  # _checkRole(role: bytes32)
+  # _checkRole(role: bytes32, account: address)
+  + getRoleAdmin(role: bytes32): bytes32
+  + grantRole(role: bytes32, account: address)
+  + revokeRole(role: bytes32, account: address)
+  + renounceRole(role: bytes32, callerConfirmation: address)
+  - _setRoleAdmin(role: bytes32, adminRole: bytes32)
+  - _grantRole(role: bytes32, account: address): bool
+  - _revokeRole(role: bytes32, account: address): bool
+}
+
+class PrescriptionTokens {
+    - {field} appointmentsContract: address
+    - {field} tokenIdToCategory: mapping(uint256 => uint16)
+    - {field}  MINTER_ROLE: bytes32
+    + <<event>> MintedPrescription(uint256 tokenId, address recipient)
+    + <<event>> BookedAppointment(uint256 prescriptionId, uint256 appointmentId)
+    + <<error>> CategoriesDontMatch()
+    + <<error>> NonContractCaller()
+    + <<error>> DisabledFunction()
+    + constructor(_name: string, _symbol: string)
+    + setAppointmentsAddress(contractAddress: address)
+    + safeMint(to: address, tokenId: uint256, category: uint16)
+    + getMyTokens(): (ids: uint[], categories: uint16[])
+    + getCategory(tokenId: uint256): uint16
+    + makeAppointment(prescriptionId: uint256, appointmentId: uint256)
+    + givePrescriptionBack(hospital: address, patient: address, tokenId: uint256)
+    + transferFrom(address, address, uint)
+    + pause()
+    + unpause()
+    + _update(to: address, tokenId: uint256, auth: address): address
+    + _increaseBalance(account: address, value: uint128)
+    + supportsInterface(interfaceId: bytes4): bool
+}
+
+class AppointmentTokens {
+    - {field} prescriptionsContract: address
+    - {field} tokenIdToCategory: mapping(uint256 => uint16)
+    - {field} tokenIdToHash: mapping(uint256 => bytes32)
+    - {field} tokenIdToPrescriptionId: mapping(uint256 => uint256)
+    - {field} MINTER_ROLE: bytes32
+    + <<event>> MintedAppointment(uint256 tokenId)
+    + <<event>> CancelledAppointment(uint256 appointmentId, uint256 prescriptionId)
+    + <<error>> NonContractCaller()
+    + <<error>> DisabledFunction()
+    + constructor(_name: string, _symbol: string)
+    + setPrescriptionsAddress(contractAddress: address)
+    + safeMint(tokenId: uint256, metadataHash: bytes32, category: uint16)
+    + getMyTokens(): (ids: uint[], hashes: bytes32[], categories: uint16[])
+    + getCategory(tokenId: uint256): uint16
+    + getHash(tokenId: uint256): bytes32
+    + exchangeForPrescription(from: address, to: address, tokenId: uint256, prescriptionId: uint256)
+    + cancelAppointment(appointmentToken: uint256)
+    + transferFrom(address, address, uint)
+    + pause()
+    + unpause()
+    + _update(to: address, tokenId: uint256, auth: address): address
+    + _increaseBalance(account: address, value: uint128)
+    + supportsInterface(interfaceId: bytes4): bool
+}
+
+PrescriptionTokens --|> ERC721
+PrescriptionTokens --|> ERC721Enumerable
+PrescriptionTokens --|> ERC721Burnable
+PrescriptionTokens --|> AccessControl
+PrescriptionTokens --|> ERC721Pausable
+PrescriptionTokens --> AppointmentTokens
+
+AppointmentTokens --|> ERC721
+AppointmentTokens --|> ERC721Enumerable
+AppointmentTokens --|> ERC721Burnable
+AppointmentTokens --|> AccessControl
+AppointmentTokens --|> ERC721Pausable
+AppointmentTokens --> PrescriptionTokens 
+
+hide circle
+
+@enduml
