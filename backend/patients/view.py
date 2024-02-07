@@ -44,7 +44,6 @@ def get_patient(cf):
             403,
         )
 
-    # TODO: Check if the doctor is the patient's doctor
 
     # Check if the doctor is the patient's doctor
     return retrieve_patient(cf)

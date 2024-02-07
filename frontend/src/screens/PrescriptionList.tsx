@@ -20,7 +20,6 @@ const PrescriptionList = () => {
 
         const responseME = await fetch(`${BACKEND_URL}/api/v1/medical_exams`);
         if (!responseME.ok) {
-            // TODO: handle error
             console.log(responseME.statusText);
             return;
         }

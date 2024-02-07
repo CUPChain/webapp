@@ -11,7 +11,6 @@ import { AppointmentType } from "./types";
  * @throws {Error} - If user is not logged in
 **/
 const loginMetamask = async (): Promise<[ethers.Provider, ethers.Signer]> => {
-    //TODO: throwa errori quando fallisce?
     if (typeof window.ethereum === 'undefined') {
         throw new Error("Metamask not installed");
     }
@@ -21,7 +20,6 @@ const loginMetamask = async (): Promise<[ethers.Provider, ethers.Signer]> => {
     try {
         signer = await provider.getSigner();
     } catch (err) { // User probably not logged in metamask
-        // TODO: how to wait for user to log in?
         throw new Error("User not logged in");
     }
     return [provider, signer];

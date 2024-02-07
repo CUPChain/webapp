@@ -25,7 +25,6 @@ const NewPrescription = () => {
         const fetchExamTypes = async () => {
             const response = await fetch(`${BACKEND_URL}/api/v1/medical_exams`);
             if (!response.ok) {
-                // TODO: handle error
                 console.log(response.statusText);
                 return;
             }
@@ -71,7 +70,6 @@ const NewPrescription = () => {
         );
         if (!response.ok) {
             console.log(response.statusText);
-            // TODO: error handling
             return;
         }
         const tokenId = (await response.json()).id as number;

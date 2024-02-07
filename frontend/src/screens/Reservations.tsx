@@ -25,7 +25,6 @@ const Reservations = () => {
 
             const response = await fetch(`${BACKEND_URL}/api/v1/medical_exams`);
             if (!response.ok) {
-                // TODO: handle error
                 console.log(response.statusText);
                 return;
             }
@@ -64,7 +63,6 @@ const Reservations = () => {
                 const response = await fetch(`${BACKEND_URL}/api/v1/appointments/${id}`);
                 if (!response.ok) {
                     console.log(response.statusText);
-                    // TODO: error handling
                     continue;
                 }
                 const data = await response.json() as { appointment: AppointmentType; };

@@ -45,7 +45,6 @@ const Profile = () => {
             }
             );
             if (!response.ok) {
-                // TODO: handle error
                 console.log(response.statusText);
                 return;
             }

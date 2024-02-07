@@ -65,7 +65,6 @@ def get_role_account(pkey: str) -> str:
     account = db.session.execute(
         db.select(Account).filter_by(pkey=pkey)).one_or_none()
     
-    # TODO: It could be better to use an hash or enum for the role
     # If account is None, then return empty string
     if not account:
         return ""

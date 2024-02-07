@@ -43,7 +43,6 @@ const Prescription = () => {
             }
             );
             if (!response.ok) {
-                // TODO: handle error
                 console.log(response.statusText);
                 return;
             }
@@ -82,13 +81,12 @@ const Prescription = () => {
                 await getHospitalInfo(availableAppointments[i]);
             }
             availableAppointments.sort();
-            setAppointments(availableAppointments); //TODO: sort by what?
+            setAppointments(availableAppointments);
         };
 
         const fetchData = async (id: number) => {
             // Check that token is owned by user
             if (!await isOwned(id, Token.Prescription)) {
-                // TODO:
                 return;
             }
 

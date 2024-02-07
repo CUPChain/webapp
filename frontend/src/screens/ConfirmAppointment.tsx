@@ -38,8 +38,6 @@ const ConfirmAppointment = () => {
         try {
             // Exchange tokens
             await exchangePrescriptionAppointment(prescription.id, appointment.id);
-            // TODO: check for errors?
-            //alert('Prenotazione confermata');
 
             // Book appointment in db
             let formData = new FormData();
@@ -57,7 +55,6 @@ const ConfirmAppointment = () => {
             ).then(response => {
                 if (!response.ok) {
                     console.log(response.statusText);
-                    // TODO: error handling
                     return;
                 }
                 navigate(`/appointments/${appointment.id}`);

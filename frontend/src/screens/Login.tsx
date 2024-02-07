@@ -56,7 +56,6 @@ const Login = () => {
             // Redirect to reservations page
             navigate(getPersonalArea(loginData.role));
         } catch (err) {
-            // TODO: better error handling
             console.log(err);
         }
     };

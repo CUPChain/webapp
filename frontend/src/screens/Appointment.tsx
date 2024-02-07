@@ -51,7 +51,6 @@ const Appointment = () => {
         const getAppointmentData = async (id: number) => {
             // Check that token is owned by user
             if (!await isOwned(id, Token.Appointment)) {
-                // TODO:
                 return;
             }
 
@@ -61,7 +60,6 @@ const Appointment = () => {
             const response = await fetch(`${BACKEND_URL}/api/v1/appointments/${id}`);
             if (!response.ok) {
                 console.log(response.statusText);
-                // TODO: error handling
                 return;
             }
             const data = await response.json() as { appointment: AppointmentType; };
@@ -125,7 +123,6 @@ const Appointment = () => {
             ).then(response => {
                 if (!response.ok) {
                     console.log(response.statusText);
-                    // TODO: error handling
                     return;
                 }
             });

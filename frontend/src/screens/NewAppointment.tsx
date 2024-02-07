@@ -27,7 +27,6 @@ const NewAppointment = () => {
             // Retrieve names of all possible exams
             const namesResponse = await fetch(`${BACKEND_URL}/api/v1/medical_exams`);
             if (!namesResponse.ok) {
-                // TODO: handle error
                 console.log(namesResponse.statusText);
                 return;
             }
@@ -43,7 +42,6 @@ const NewAppointment = () => {
                 }
             );
             if (!examsResponse.ok) {
-                // TODO: handle error
                 console.log(examsResponse.statusText);
                 return;
             }
@@ -89,7 +87,6 @@ const NewAppointment = () => {
         );
         if (!response.ok) {
             console.log(response.statusText);
-            // TODO: error handling
             return;
         }
         const createdAppointment = (await response.json());
@@ -97,7 +94,7 @@ const NewAppointment = () => {
         const hospitalId = createdAppointment.id_hospital;
         const dateTime = new Date(createdAppointment.date);
 
-        const hashableData = { //TODO: should we hash hospital id as well?
+        const hashableData = {
             id: tokenId,
             category: selectedType,
             date: dateTime.toUTCString(),
